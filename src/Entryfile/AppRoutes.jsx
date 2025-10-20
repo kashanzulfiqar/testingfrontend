@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "./features/users.jsx";
+import { Spin } from 'antd';
 
 const LoginPage = React.lazy(() => import("../initialpage/loginpage"));
 const RegistrationPage = React.lazy(() => import("../initialpage/RegistrationPage"));
@@ -107,24 +108,24 @@ const AppRoutes = () => {
     <div>
       <Routes>
         <Route path="/admin-login" element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <AdminLogin />
           </Suspense>
         } />
         <Route path="/login" element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <LoginPage />
           </Suspense>
         } />
         <Route path="/client/login" element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <ClientLogin />
           </Suspense>
         } />
         <Route
           path="/client/forgot-password"
           element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <ClientForgotPassword />
             </Suspense>
           }
@@ -132,43 +133,43 @@ const AppRoutes = () => {
         <Route
           path="/client/reset-password/:token"
           element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <ClientResetPassword />
             </Suspense>
           }
         />
         <Route path="/login/:email/:token" element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <LoginPage />
           </Suspense>
         } />
         <Route path="/forget" element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <AdminForgot />
           </Suspense>
         } />
         <Route path="/forget-password" element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <ForgotPassword />
           </Suspense>
         } />
         <Route path="/reset-password/:token" element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <ResetPassword />
           </Suspense>
         } />
         <Route path="/reset/:token" element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <AdminResetPassword />
           </Suspense>
         } />
         <Route path="/register" element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <RegistrationPage />
           </Suspense>
         } />
         <Route path={`/change-password`} element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <ChangePassword />
           </Suspense>
         } />
@@ -177,7 +178,7 @@ const AppRoutes = () => {
           path="/"
           element={
             <>
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
                 <RequireAuth />
               </Suspense>
             </>
@@ -196,187 +197,187 @@ const AppRoutes = () => {
             }
           />
           <Route path={`super-admin/dashboard`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <SuperAdminMain />
             </Suspense>
           } />
           <Route
             path={`super-admin/disabled-companies`}
             element={
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
                 <DisabledCompanies />
               </Suspense>
             }
           />
           <Route path={`main/dashboard`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <AdminDashboard />
             </Suspense>
           } />
           <Route path={`employee/dashboard`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <EmployeeDashboard />
             </Suspense>
           } />
 
           <Route path={`employee/allemployees`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <AllEmployees />
             </Suspense>
           } />
           <Route path={`task-board/:id`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <TaskBoard />
             </Suspense>
           } />
           <Route path={`task-board`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <TaskBoardList />
             </Suspense>
           } />
           <Route path={`employee/employees-list`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Employeeslist />
             </Suspense>
           } />
           <Route path={`employee/holidays`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Holidays />
             </Suspense>
           } />
           <Route path={`employee/requests`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <LeaveEmployee />
             </Suspense>
           } />
           <Route path={`employee/request-admin`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <LeaveAdmin />
             </Suspense>
           } />
           <Route path={`employee/request-admin/:id`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <LeaveAdmin />
             </Suspense>
           } />
           <Route path={`employee/timesheet`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Timesheet />
             </Suspense>
           } />
           <Route
             path={`/profile/employee-profile/:id`}
             element={
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
                 <EmployeeProfile />
               </Suspense>
             }
           />
           <Route path={`/profile`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <EmployeeProfile />
             </Suspense>
           } />
           <Route path={`payroll/payslip`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <SalarySlip />
             </Suspense>
           } />
           <Route
             path={`payroll/payroll-histroy`}
             element={
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
                 <PayrollHistory />
               </Suspense>
             }
           />
           <Route path={`clients`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Clients />
             </Suspense>
           } />
           <Route path={`clients-list`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <ClientsList />
             </Suspense>
           } />
           <Route path={`client/client-profile`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <ClientProfile />
             </Suspense>
           } />
           <Route path={`client/focal-profile`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <FocalProfile />
             </Suspense>
           } />
           <Route path={`invoices`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Invoices />
             </Suspense>
           } />
           <Route path={`invoices/create-invoice`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Invoicecreate />
             </Suspense>
           } />
           <Route path={`invoices/edit-invoice`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <EditInvoice />
             </Suspense>
           } />
           <Route path={`invoices/view-invoice`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Invoiceview />
             </Suspense>
           } />
           <Route path={`payments`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Payments />
             </Suspense>
           } />
           <Route path={`expenses`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Expenses />
             </Suspense>
           } />
           <Route path={`profit-loss`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <ProfitLoss />
             </Suspense>
           } />
           <Route path={`projects/tasks`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Tasks />
             </Suspense>
           } />
           <Route path={`employee-timesheet`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <EmployeeTimesheet />
             </Suspense>
           } />
           <Route path={`admin-timesheet`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <AdminTimeSheet />
             </Suspense>
           } />
           <Route
             path={`admin-timesheet/details`}
             element={
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
                 <ViewDetailTimesheet />
               </Suspense>
             }
           />
           <Route path={`employee-report`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <EmployeesReport />
             </Suspense>
           } />
           <Route
             path={`employee/resource-allocation`}
             element={
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
                 <ResourceAllocation />
               </Suspense>
             }
@@ -384,46 +385,46 @@ const AppRoutes = () => {
           <Route
             path={`/resource-allocation/details`}
             element={
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
                 <ResourceAllocationDetails />
               </Suspense>
             }
           />
           <Route path={`/leads`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Leads />
             </Suspense>
           } />
           <Route path={`/leads-details`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <LeadsDetails />
             </Suspense>
           } />
           <Route path={`/documentation`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <GitBook />
             </Suspense>
           } />
           <Route path={`/report-problem`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Query />
             </Suspense>
           } />
 
           <Route path="/settings" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Settings />
             </Suspense>
           } />
 
           <Route path="/subscription-details" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Billing />
             </Suspense>
           } />
 
           <Route path="/invoice-history" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <BillingHistory />
             </Suspense>
           } />
@@ -431,7 +432,7 @@ const AppRoutes = () => {
           <Route
             path="/employee/attendance-employee"
             element={
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
                 <AttendanceEmployee />
               </Suspense>
             }
@@ -439,59 +440,59 @@ const AppRoutes = () => {
           <Route
             path="/employee/attendance-admin"
             element={
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
                 <AttendanceAdmin />
               </Suspense>
             }
           />
 
           <Route path="/payroll/current-payroll" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <EmployeeSalary />
             </Suspense>
           } />
 
           <Route path="/projects/project_dashboard" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Projects />
             </Suspense>
           } />
           <Route
             path="/projects/projects-view/:_id"
             element={
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
                 <ProjectView />
               </Suspense>
             }
           />
           <Route path="/tasks/:_id" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <TaskDetails />
             </Suspense>
           } />
           <Route path="/profit-loss/view" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <ViewPL />
             </Suspense>
           } />
 
           <Route path="/attendance-report" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <AttendanceReport />
             </Suspense>
           } />
           <Route path="/lead-report" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <LeadReport />
             </Suspense>
           } />
           {/* <Route path="/client-report" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <ClientReport />
             </Suspense>
           } /> */}
           <Route path="/recruitment/*" element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <RecruitmentLayout>
                 <Routes>
                   <Route path="/" element={<Navigate to="/recruitment/dashboard" replace />} />
@@ -509,14 +510,14 @@ const AppRoutes = () => {
           } />
 
           <Route path={`payment/setup`} element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <PaymentSetup />
             </Suspense>
           } />
         </Route>
 
         <Route path="*" element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
             <Error404 />
           </Suspense>
         }></Route>
