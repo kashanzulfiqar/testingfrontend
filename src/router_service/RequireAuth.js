@@ -267,7 +267,7 @@ const RequireAuth = ({Role}) => {
             <Sidebar barMenu={barMenu} /> 
             {routeLoading && (
               <div style={{position: 'absolute', inset: 0, background: 'rgb(247,247,247)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 7}}>
-                <Spin size="large" />
+                <Spin size="large"/>
               </div>
             )}
             <Outlet />
