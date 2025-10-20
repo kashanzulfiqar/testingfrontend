@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate } from
 import config from 'config';
 import { useSelector } from 'react-redux';
 import { Helmet } from "react-helmet";
-import { Input, Button, Divider, message } from "antd";
+import { Input, Button, Divider, message, Spin } from "antd";
 import { Link as ScrollLink, Element, scroller } from "react-scroll";
 import { Link as RouterLink } from "react-router-dom";
 import { RightOutlined } from "@ant-design/icons";
@@ -180,7 +180,7 @@ const LandingApp = () => {
             className="content container-fluid Landing"
             style={{ backgroundColor: "white" }}
           >
-            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Loading...</div>}>
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/terms-and-conditions" element={<TermsAndConditions />} />

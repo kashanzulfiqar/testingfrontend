@@ -14097,3 +14097,7 @@ ul.nav.landingNav li.nav-item {
   pointer-events: none !important; /* Prevent clicking */
   cursor: not-allowed !important; /* Show a "no entry" cursor */
 }
+
+.ant-spin-dot-item {
+  background-color: #FF9B44 !important;
+}
