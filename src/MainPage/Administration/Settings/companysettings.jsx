@@ -20,8 +20,11 @@ import InvoiceTags from "./InvoiceTags";
 import InvoiceCounter from "./InvoiceCounter";
 import BankDetails from "./BankDetails";
 import ExpenseCategory from "./ExpenseCategory";
+import AssetsCategory from "./AssetsCategory";
+import AssetsSubCategory from "./AssetsSubCategory";
 import { useTranslation } from "react-i18next";
 import WokringDays from "./WorkingDays";
+import AssetsTag from "./AssetsTag";
 
 const Settings = ({test}) => {
 
@@ -313,7 +316,43 @@ useEffect(() => {
                         {t('settings.expenseCategories')}
                       </a>
                     </li>
-                 </ul>
+                    <li className={showComponent === 'Assets Category' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Assets Category')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Assets Category');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-cubes" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
+                        Assets Category
+                      </a>
+                    </li>
+                    <li className={showComponent === 'Assets Sub-Category' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Assets Sub-Category')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Assets Sub-Category');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-cube" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
+                        Assets Sub-Category
+                      </a>
+                    </li>
+                    <li className={showComponent === 'Assets Tag' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Assets Tag')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Assets Tag');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-tags" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
+                        Assets Tag
+                      </a>
+                    </li>
+                  </ul>
                </div>
              </div>
              <div className="cardStyle col-sm-8 col-md-8 col-lg-8 col-xl-9">
@@ -330,6 +369,9 @@ useEffect(() => {
                 showComponent === 'Invoice Counter' ? <InvoiceCounter /> : 
                 showComponent === 'Bank Details' ? <BankDetails /> : 
                 showComponent === 'Expense Categories' ? <ExpenseCategory /> : 
+                showComponent === 'Assets Category' ? <AssetsCategory /> : 
+                showComponent === 'Assets Sub-Category' ? <AssetsSubCategory /> : 
+                showComponent === 'Assets Tag' ? <AssetsTag /> : 
                 <WokringDays />
               }
              </div>

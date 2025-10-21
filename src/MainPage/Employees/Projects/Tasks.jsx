@@ -61,10 +61,12 @@ const Tasks = () => {
     getAllTasks();
     getAllProjects();
     getAllTaskBoards();
-    apiServices("GET", `user/all-employees`, null, user_state)
+    if(role !== 'client' && role !== 'focalperson') {
+      apiServices("GET", `user/all-employees`, null, user_state)
       .then(res => {
         if (res?.data?.success) setAllEmployees(res.data.User || []);
       });
+    }
   }, [])
 
   // Set/reset description value when modal opens/closes

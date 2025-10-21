@@ -97,6 +97,8 @@ const TaskDetails = React.lazy(() => import("../MainPage/Employees/Projects/task
 const PaymentSetup = React.lazy(() => import("../MainPage/Pages/Payment/PaymentSetup"));
 const Billing = React.lazy(() => import("../MainPage/Pages/Billing/Billing.jsx"));
 const BillingHistory = React.lazy(() => import("../MainPage/Pages/Billing/BillingHistory.jsx"));
+const Assets = React.lazy(() => import("../MainPage/Administration/assets"));
+const AssetDetails = React.lazy(() => import("../MainPage/Administration/AssetDetails"));
 
 const AppRoutes = () => {
   const loginState = useSelector((state) => state.user.loginvalue);
@@ -426,6 +428,18 @@ const AppRoutes = () => {
           <Route path="/invoice-history" element={
             <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <BillingHistory />
+            </Suspense>
+          } />
+
+          <Route path="/assets" element={
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
+              <Assets />
+            </Suspense>
+          } />
+          
+          <Route path="/assets/:id" element={
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
+              <AssetDetails />
             </Suspense>
           } />
 
