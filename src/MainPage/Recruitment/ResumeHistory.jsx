@@ -27,6 +27,7 @@ import { Helmet } from "react-helmet";
 import { apiServices } from "../../Services/apiServices";
 import { BASE_URL } from "../../config/apiConfig";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
 import rightPageIcon from "../../assets/iconsRecruitment/fi_chevrons-right.svg";
@@ -298,6 +299,21 @@ const ResumeHistory = () => {
     };
   }, [pdfUrl]);
 
+
+// Inside component:
+const navigate = useNavigate();
+
+const handleRowClick = (record) => {
+  // Serialize JSON to pass via route state
+  navigate("/recruitment/resume-converter", {
+    state: {
+      parsedData: record,  // 👈 pass the JSON
+      autoPreview: true,   // 👈 flag to auto-generate PDF
+    },
+  });
+};
+
+
   // ----------------------------
   // Render
   // ----------------------------
@@ -349,7 +365,7 @@ const ResumeHistory = () => {
                     />
                   </Form.Item>
                 </Col>
-                <Col xs={24} sm={12} md={8}>
+                {/* <Col xs={24} sm={12} md={8}>
                   <Form.Item name="appliedPosition" className="mb-0">
                     <Input
                       style={{ borderRadius: "8px", height: "40px" }}
@@ -357,7 +373,7 @@ const ResumeHistory = () => {
                       allowClear
                     />
                   </Form.Item>
-                </Col>
+                </Col> */}
               </Row>
             </Col>
 
@@ -368,6 +384,7 @@ const ResumeHistory = () => {
                   htmlType="submit"
                   className="search-btn"
                   block
+                  style={{marginBottom: '2px', paddingBottom:'2px'}}
                 >
                   Search
                 </Button>
@@ -384,6 +401,11 @@ const ResumeHistory = () => {
               dataSource={resumeHistory}
               rowKey="_id"
               pagination={false}
+              onRow={(record) => ({
+                onDoubleClick: () => {
+                  console.log(record)
+                  handleRowClick(record)},
+              })}
               locale={{
                 emptyText: (
                   <div style={{ textAlign: "center", padding: "40px" }}>
@@ -482,11 +504,11 @@ const ResumeHistory = () => {
             </div>
           ) : pdfUrl ? (
             <iframe
-              src={pdfUrl}
+              src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
               width="100%"
               height="100%"
               title="Resume Preview"
-              style={{ border: "none" }}
+              style={{ border: "none", backgroundColor: "#FFF1E5" }}
             />
           ) : (
             <div
