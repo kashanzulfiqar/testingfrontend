@@ -15,6 +15,7 @@ import {
 } from "antd";
 import {
   MoreOutlined,
+  FileOutlined,
   EyeOutlined,
   DownloadOutlined,
   DeleteOutlined,
@@ -32,6 +33,7 @@ import axios from "axios";
 import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
 import rightPageIcon from "../../assets/iconsRecruitment/fi_chevrons-right.svg";
 import more from "../../assets/iconsRecruitment/vertical.svg";
+import { MenuItem } from "@mui/material";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -153,6 +155,12 @@ const ResumeHistory = () => {
     }
   };
 
+  
+  // ----------------------------
+  // Edit PDF new window
+  // ----------------------------
+  const handleEdit = async (record) => {}
+
   // ----------------------------
   // Download PDF
   // ----------------------------
@@ -251,7 +259,7 @@ const ResumeHistory = () => {
             <Menu.Item
               key="view"
               icon={<EyeOutlined />}
-              onClick={() => handleView(record)}
+              onClick={() => handleRowClick(record)}
             >
               View
             </Menu.Item>
@@ -279,6 +287,13 @@ const ResumeHistory = () => {
             >
               Delete
             </Menu.Item>
+            {/* <Menu.Item
+              key="edit"
+              icon={<FileOutlined />}
+              onClick={() => handleEdit(record)}
+            >
+              Edit
+            </Menu.Item> */}
           </Menu>
         );
         return (
