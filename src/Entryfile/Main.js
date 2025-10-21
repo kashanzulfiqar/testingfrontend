@@ -5,13 +5,13 @@ import config from 'config';
 import { ConfigProvider, Spin } from 'antd';
 
 // Lazy load heavy dependencies only when needed
-const LandingApp = React.lazy(() => import('./LandingApp'));
-const AppRoutes = React.lazy(() => import('./AppRoutes'));
+const LandingApp = React.lazy(() => import('./LandingApp.jsx'));
+const AppRoutes = React.lazy(() => import('./AppRoutes.jsx'));
 
 // Lazy load Redux store and providers to reduce initial bundle
-const ReduxProvider = React.lazy(() => import('./ReduxProvider'));
+const ReduxProvider = React.lazy(() => import('./ReduxProvider.jsx'));
 const StripeWrapper = React.lazy(() => import('../Components/StripeWrapper.jsx'));
-const I18nProvider = React.lazy(() => import('./I18nProvider'));
+const I18nProvider = React.lazy(() => import('./I18nProvider.jsx'));
 
 
 // Store setup moved to ReduxProvider.jsx for lazy loading

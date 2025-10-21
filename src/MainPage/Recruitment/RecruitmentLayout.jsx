@@ -23,6 +23,7 @@ import candidateIcon from '../../assets/iconsRecruitment/candidate.svg';
 import jobsIcon from '../../assets/iconsRecruitment/jobsIcon.svg';
 import taskIcon from '../../assets/iconsRecruitment/taskIcon.svg';
 import ResumeConverter from './ResumeConverter';
+import ResumeHistory from './ResumeHistory';
 
 const RecruitmentLayout = () => {
   const location = useLocation();
@@ -235,8 +236,14 @@ const RecruitmentLayout = () => {
                   </li>
 
                   <li className={pathname.includes("/recruitment/resume-converter") ? "active" : ""}>
-                    <Link to="/recruitment/resume-converter" onClick={closeSidebarOnMobile} target="_blank" rel="noopener noreferrer">
+                    <Link to="/recruitment/resume-converter" onClick={closeSidebarOnMobile}>
                       <span>Resume Converter</span>
+                    </Link>
+                  </li>
+
+                  <li className={pathname.includes("/recruitment/resume-history") ? "active" : ""}>
+                    <Link to="/recruitment/resume-history" onClick={closeSidebarOnMobile}>
+                      <span>Resume History</span>
                     </Link>
                   </li>
                 </ul>
@@ -266,6 +273,7 @@ const RecruitmentLayout = () => {
           <Route path="tasks" element={<Tasks />} />
           <Route path="tasks/:id" element={<TaskDetails />} />
           <Route path="resume-converter" element={<ResumeConverter />} />
+          <Route path="resume-history" element={<ResumeHistory />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </div>
