@@ -82,7 +82,7 @@ const AdminForgot = React.lazy(() => import("../initialpage/Forgot-Admin"));
 const DisabledCompanies = React.lazy(() => import("../MainPage/SuperAdmin/disbaledCompanies"));
 const LeadsDetails = React.lazy(() => import("../MainPage/Employees/leadsDetails"));
 const LeadReport = React.lazy(() => import("../MainPage/HR/Reports/leadreport"));
-const ClientReport = React.lazy(() => import("../MainPage/HR/Reports/clientreport"));
+// const ClientReport = React.lazy(() => import("../MainPage/HR/Reports/clientreport"));
 const ClientForgotPassword = React.lazy(() => import("../initialpage/ClientForgotPassword"));
 const ClientResetPassword = React.lazy(() => import("../initialpage/ClientResetPassword"));
 const Recruitment = React.lazy(() => import("../MainPage/Recruitment"));
