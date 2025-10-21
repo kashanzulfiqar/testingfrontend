@@ -82,7 +82,7 @@ const AdminForgot = React.lazy(() => import("../initialpage/Forgot-Admin"));
 const DisabledCompanies = React.lazy(() => import("../MainPage/SuperAdmin/disbaledCompanies"));
 const LeadsDetails = React.lazy(() => import("../MainPage/Employees/leadsDetails"));
 const LeadReport = React.lazy(() => import("../MainPage/HR/Reports/leadreport"));
-const ClientReport = React.lazy(() => import("../MainPage/HR/Reports/clientreport"));
+// const ClientReport = React.lazy(() => import("../MainPage/HR/Reports/clientreport"));
 const ClientForgotPassword = React.lazy(() => import("../initialpage/ClientForgotPassword"));
 const ClientResetPassword = React.lazy(() => import("../initialpage/ClientResetPassword"));
 const Recruitment = React.lazy(() => import("../MainPage/Recruitment"));
@@ -97,6 +97,8 @@ const TaskDetails = React.lazy(() => import("../MainPage/Employees/Projects/task
 const PaymentSetup = React.lazy(() => import("../MainPage/Pages/Payment/PaymentSetup"));
 const Billing = React.lazy(() => import("../MainPage/Pages/Billing/Billing.jsx"));
 const BillingHistory = React.lazy(() => import("../MainPage/Pages/Billing/BillingHistory.jsx"));
+const Assets = React.lazy(() => import("../MainPage/Administration/assets"));
+const AssetDetails = React.lazy(() => import("../MainPage/Administration/AssetDetails"));
 
 const AppRoutes = () => {
   const loginState = useSelector((state) => state.user.loginvalue);
@@ -426,6 +428,18 @@ const AppRoutes = () => {
           <Route path="/invoice-history" element={
             <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <BillingHistory />
+            </Suspense>
+          } />
+
+          <Route path="/assets" element={
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
+              <Assets />
+            </Suspense>
+          } />
+          
+          <Route path="/assets/:id" element={
+            <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
+              <AssetDetails />
             </Suspense>
           } />
 
