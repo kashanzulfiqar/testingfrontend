@@ -13099,7 +13099,7 @@ padding-right: unset;
 }
 
 .landingClass {
-  margin: -2px 0 0 0 !important;
+  margin: -30px 0 0 0 !important;
 }
 
 .LandingHeader {
@@ -14096,4 +14096,8 @@ ul.nav.landingNav li.nav-item {
   color: grey !important;
   pointer-events: none !important; /* Prevent clicking */
   cursor: not-allowed !important; /* Show a "no entry" cursor */
+}
+
+.ant-spin-dot-item {
+  background-color: #FF9B44 !important;
 }

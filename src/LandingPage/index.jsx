@@ -300,7 +300,7 @@ const LandingPage = () => {
             </section>
 
             <section className="gallery-section" style={{ marginTop: "4%" }}>
-              <ImageGallery
+            <ImageGallery
                 items={images}
                 autoPlay={true}
                 slideInterval={3000}
@@ -313,7 +313,7 @@ const LandingPage = () => {
 
             <section id="features" className="features-section">
               <Element name="features">
-                <Features />
+              <Features />
               </Element>
             </section>
 
@@ -323,7 +323,7 @@ const LandingPage = () => {
 
             <section id="pricing" className="pricing-section">
               <Element name="pricing">
-                <PlanCards />
+              <PlanCards />
               </Element>
             </section>
 
