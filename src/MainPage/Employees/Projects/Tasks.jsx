@@ -388,7 +388,7 @@ const onFinishAdd = (values) => {
     ...payloadData,
     assignee: values.assignee === '' ? null : values.assignee,
     priority: values.priority || null,
-    dueDate: values.dueDate || null,
+    dueDate: values.dueDate ? moment(values.dueDate).format('YYYY-MM-DD') : null,
     labels: values.labels || [],
     // Add other necessary fields
   };
@@ -421,7 +421,7 @@ const onFinishEdit = (values) => {
         ...payloadData,
         assignee: values.assignee === '' ? null : values.assignee,
         priority: values.priority || null,
-        dueDate: values.dueDate || null,
+        dueDate: values.dueDate ? moment(values.dueDate).format('YYYY-MM-DD') : null,
         labels: values.labels || [],
         _id: open?.data?._id
     }
@@ -646,7 +646,8 @@ const onFinishEdit = (values) => {
                   ...record,
                   projectId: record?.projectId?._id,
                   boardId: record?.boardId?._id,
-                  associateWith: record?.projectId ? 'project' : 'taskboard'
+                  associateWith: record?.projectId ? 'project' : 'taskboard',
+                  dueDate: record?.dueDate ? moment(record.dueDate) : null
                 });
               }}
             >
