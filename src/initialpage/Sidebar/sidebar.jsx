@@ -2326,18 +2326,6 @@ const Sidebar = (props) => {
                               Resume Converter
                             </Link>
                           </li>
-                          <li>
-                            <Link
-                              className={
-                                pathname.includes("recruitment/resume-converter")
-                                  ? "active"
-                                  : ""
-                              }
-                              to="/recruitment/resume-converter"
-                            >
-                              Resume History
-                            </Link>
-                          </li>
                         </ul>
                       ) : (
                         ""

@@ -1,5 +1,3 @@
-// ✅ ResumeConverter.jsx — Full refactor with Ant Design Dragger + uploadFunction + full form
-
 import React, { useState, useEffect } from "react";
 import { Upload, Button, message, Modal, Spin, Collapse } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
@@ -9,46 +7,59 @@ import { uploadFunction } from "../Employees/Projects/UploadAndDeleteFunc";
 import { BASE_URL } from '../../config/apiConfig';
 import { FileTextOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
 import axios from "axios";
-
-
 const { Dragger } = Upload;
 const { Panel } = Collapse;
-
+const { Confirm } = Modal;
 
 export default function ResumeConverter() {
-  // ----------------------------
+
   // State
-  // ----------------------------
   const location = useLocation();
-  const { parsedData: stateData, autoPreview } = location.state || {};
+  const navigate = useNavigate();
+  const { parsedData: stateData, autoPreview: initialAutoPreview } = location.state || {};
+  const [autoPreview, setAutoPreview] = useState(initialAutoPreview || false);
   const [parsedData, setParsedData] = useState(stateData || null);  
   const [fileList, setFileList] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
+  const [isDuplicateModalVisible, setIsDuplicateModalVisible] = useState(false);
+  const [duplicateRecord, setDuplicateRecord] = useState(null);
 
-
-  // ----------------------------
-  // Resume History State
-  // ----------------------------
   const [resumeHistory, setResumeHistory] = useState([]);
 
   //Resume History load
   // ----------------------------
 // Auto-generate PDF preview if navigated from ResumeHistory
 // ----------------------------
+
+// 1️⃣ Load saved resume data if opened from "View Existing"
+useEffect(() => {
+  const savedState = sessionStorage.getItem("resume_preview_data");
+  if (savedState && !stateData) {
+    const { parsedData, autoPreview: shouldPreview } = JSON.parse(savedState);
+    setParsedData(parsedData);
+    if (shouldPreview) setAutoPreview(true);
+    sessionStorage.removeItem("resume_preview_data"); // cleanup
+  }
+}, []);
+
+// 2️⃣ Generate PDF preview automatically when autoPreview is enabled
 useEffect(() => {
   const autoGeneratePreview = async () => {
-    if (autoPreview && stateData) {
-      console.log("Auto preview triggered for:", stateData.full_name);
-      setParsedData(stateData);
+    // ✅ Use parsedData instead of stateData so it works for both new-tab and navigation
+    if (autoPreview && parsedData) {
+      console.log("🚀 Auto preview triggered for:", parsedData.full_name);
       setLoading(true);
       try {
         const blobRes = await axiosInstance.post(
           "resume/preview-from-json",
-          { parsed: stateData },
+          { parsed: parsedData },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -61,8 +72,10 @@ useEffect(() => {
         const blob = new Blob([blobRes.data], { type: "application/pdf" });
         const pdfBlobUrl = URL.createObjectURL(blob);
         setPdfUrl(pdfBlobUrl);
+        message.success("✅ PDF preview generated!");
       } catch (err) {
         console.error("❌ Auto PDF preview failed:", err);
+        message.error("Failed to generate PDF preview.");
       } finally {
         setLoading(false);
       }
@@ -70,13 +83,10 @@ useEffect(() => {
   };
 
   autoGeneratePreview();
-}, [autoPreview, stateData]);
+}, [autoPreview, parsedData]); // 👈 changed from stateData
 
 
-  
-  // ----------------------------
-  // Placeholder maps
-  // ----------------------------
+//placeholders
   const educationPlaceholders = {
     degree: "Enter Degree",
     institution: "Enter Institution",
@@ -238,56 +248,42 @@ useEffect(() => {
     }
   };
 
+
   const handleSaveMongo = async () => {
     if (!parsedData) return message.warning("No parsed data to save.");
-    setLoading(true);
+    setSaving(true);
   
     try {
-      // ✅ Use the backend’s expected query param: ?name=
       const existingRes = await apiServices(
         "GET",
         `resumes?name=${encodeURIComponent(parsedData.full_name || "")}`
       );
-    
-      // existingRes.data can be an array OR a paginated object; handle both
+  
       const list = Array.isArray(existingRes?.data)
         ? existingRes.data
         : Array.isArray(existingRes?.data?.docs)
         ? existingRes.data.docs
         : [];
-    
-      // normalize and check
+  
       const target = (parsedData.full_name || "").trim().toLowerCase();
       const existing = list.find(
         (r) => (r?.full_name || "").trim().toLowerCase() === target
       );
-    
+  
       if (existing) {
-        console.log("existing", existing);
-        console.log("name", existing.full_name);
-        message.info(
-          `⚠️ A record for "${parsedData.full_name}" already exists. Skipping MongoDB save.`
-        );
+        // ✅ Show custom modal instead of Modal.confirm
+        setDuplicateRecord(existing);
+        setIsDuplicateModalVisible(true);
       } else {
-        try {
-          await apiServices("POST", "resumes", parsedData);
-          message.success("✅ Resume saved to MongoDB!");
-        } catch (err) {
-          if (err.response?.status === 409) {
-            message.info(err.response.data.message || "Duplicate record. Skipping save.");
-          } else {
-            message.error("❌ Failed to save resume.");
-          }
-        }
-        
+        await apiServices("POST", "resumes", parsedData);
+        message.success("✅ Resume saved to MongoDB!");
       }
     } catch (err) {
-      console.error("❌ Duplicate check / save failed:", err);
-      message.error("Failed to save or check existing resumes.");
-    }
-  
-      // 3️⃣ Always download the PDF
+      console.error("❌ Save failed:", err);
+      message.error("Save failed. Please try again.");
+    } finally {
       try {
+        // Always generate and download PDF
         const blobRes = await axiosInstance.post(
           "resume/preview-from-json",
           { parsed: parsedData },
@@ -308,12 +304,16 @@ useEffect(() => {
         URL.revokeObjectURL(link.href);
   
         message.success("📄 PDF download started!");
-      } catch (err) {
-        console.error("❌ PDF generation failed:", err);
+      } catch (pdfErr) {
+        console.error("❌ PDF generation failed:", pdfErr);
         message.error("Failed to generate or download PDF.");
       }
-    
+  
+      setSaving(false);
+    }
   };
+  
+
   
 
   // ----------------------------
@@ -355,7 +355,7 @@ useEffect(() => {
           {/* ----------------------------- PAGE HEADER ----------------------------- */}
           <div className="page-header mb-4 d-flex justify-content-between align-items-center">
             <div>
-              <h3 className="page-title mb-1">Resume Converter</h3>
+              <h3 className="page-title mb-1">Resume   Converter</h3>
               <ul className="breadcrumb">
                 <li className="breadcrumb-item">
                   <a
@@ -383,7 +383,7 @@ useEffect(() => {
                 backgroundColor: "#FF9B44",
               }}
             >
-              <span style={{ color: "#fff" }}>Upload</span>
+              <span style={{ color: "#fff" }}><h5 style={{color: '#fff', paddingTop:'4px'}}>Upload</h5></span>
             </Button>
             )}
           </div>
@@ -456,7 +456,7 @@ useEffect(() => {
                             className="ant-upload-hint text-muted mb-0"
                             style={{ fontSize: "13px" }}
                           >
-                            Supported file types: <strong>PDF, DOC, DOCX</strong>
+                            Supported file types: <strong>PDF</strong>
                           </p>
                         </Upload.Dragger>
   
@@ -483,6 +483,41 @@ useEffect(() => {
                     </>
                   ) : (
                     <>
+                    {/* Buttons: PDF & Save */}
+                    <div className="d-flex gap-2 mb-4 ">
+                        <Button
+                          type="default"
+                          onClick={handleSave}
+                          disabled={!parsedData || loading}
+                          loading={loading}
+                          block
+                          style={{
+                            // borderRadius: "30px",
+                            borderRadius: '14px',
+                            borderColor: "#FF9B44",
+                            backgroundColor: "#FF9B44",
+                          }}
+                        >
+                          <span style={{color:'#fff', fontWeight: 550, fontFamily: 'Poppins, sans-serif'}}>Update Preview</span>
+                        </Button>
+                        <Button
+                          type="default"
+                          onClick={handleSaveMongo}
+                          disabled={!parsedData}
+                          loading={saving}
+                          block
+                          style={{
+                            backgroundColor: '#52c41a',
+                            borderColor: '#52c41a',
+                            borderRadius: '14px',
+                            color: '#fff',
+                            fontWeight: 500
+                          }}
+                        >
+                        <span style={{ color: "#fff", fontWeight: 550, fontFamily: 'Poppins, sans-serif'}}>Export Resume</span>
+
+                        </Button>
+                      </div>
                       {/* Error */}
                       {error && <div className="alert alert-danger">{error}</div>}
   
@@ -495,55 +530,100 @@ useEffect(() => {
                           backgroundColor: "#f8f9fa",
                         }}
                       >
+                        
+                        {/* ----------------- Collapsible Resume Sections ----------------- */}
+                      <Collapse
+                        defaultActiveKey={[]}
+                        expandIconPosition="end"
+                        expandIcon={({ isActive }) => (
+                          <div
+                            style={{
+                              marginTop: "2px",
+                              // marginBottom: "5px",
+                              width: "24px",
+                              height: "24px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            <img
+                              src={leftPageIcon}
+                              alt="dropdown"
+                              style={{
+                                width: "12px",
+                                height: "12px",
+                                transform: isActive ? "rotate(-90deg)" : "rotate(0deg)",
+                                transition: "transform 0.3s ease",
+                              }}
+                            />
+                          </div>
+                        )}
+                        style={{
+                          backgroundColor: "#fff",
+                          // marginBottom: '4px',
+                          border: "none",
+                          borderRadius: "8px",
+                        }}
+                      >
+
                         {/* ---------- Candidate Info ---------- */}
-                        <section>
-                          <h5 className="mb-3" style={{ color: "#042F40" }}>
-                            Candidate Details
-                          </h5>
-                          {["full_name", "title", "email", "phone", "location"].map(
-                            (field) => (
-                              <div className="form-group" key={field}>
-                                <label className="form-label text-capitalize">
-                                  {field.replace("_", " ")}
-                                </label>
-                                <input
-                                  className="form-control"
-                                  value={parsedData[field] || ""}
-                                  onChange={(e) =>
-                                    handleFieldChange(field, e.target.value)
-                                  }
-                                />
-                              </div>
-                            )
-                          )}
+                          <Panel
+                            header={<span style={{ color: "#042F40", margin: 0 , fontWeight: 550}}>Candidate Details</span>}
+                            key="1"
+                            style={{
+                              background: "#fff",
+                              borderTop: "none",
+                              borderLeft: "none",
+                              borderRight: "none",
+                              borderBottom: "1px solid #e0e0e0",
+                              borderRadius: '5px',
+                              //  marginBottom: '12px',
+                              padding: "9px 0",
+                            }}
+                          >
+                          {["full_name", "title", "email", "phone", "location"].map((field) => (
+                            <div className="form-group" key={field}>
+                              <label className="form-label text-capitalize">
+                                {field.replace("_", " ")}
+                              </label>
+                              <input
+                                className="form-control"
+                                value={parsedData[field] || ""}
+                                onChange={(e) => handleFieldChange(field, e.target.value)}
+                              />
+                            </div>
+                          ))}
                           <div className="form-group">
                             <label className="form-label">Summary</label>
                             <textarea
                               className="form-control"
                               rows="3"
                               value={parsedData.summary || ""}
-                              onChange={(e) =>
-                                handleFieldChange("summary", e.target.value)
-                              }
+                              onChange={(e) => handleFieldChange("summary", e.target.value)}
                             />
                           </div>
-                        </section>
-  
+                        </Panel>
+
                         {/* ----------------- Education ----------------- */}
-                        <section style={{ marginTop: 24 }}>
-                          <h5 style={{ color: "#042F40" }}>Education</h5>
+                          <Panel
+                            header={<span style={{ color: "#042F40", margin: 0 , fontWeight: 550}}>Education</span>}
+                            key="2"
+                            style={{
+                              background: "#fff",
+                              borderTop: "none",
+                              borderLeft: "none",
+                              borderRight: "none",
+                              borderBottom: "1px solid #e0e0e0",
+                              borderRadius: '5px',
+                              //  marginBottom: '12px',
+                              padding: "9px 0",
+                            }}
+                          >
                           {(parsedData.education || []).map((edu, i) => (
-                            <div
-                              key={i}
-                              className="card p-3 mb-2"
-                              style={{ backgroundColor: "#fff" }}
-                            >
-                              {[
-                                "degree",
-                                "institution",
-                                "start_year",
-                                "end_year",
-                              ].map((field) => (
+                            <div key={i} className="card p-3 mb-2 bg-white">
+                              {["degree", "institution", "start_year", "end_year"].map((field) => (
                                 <input
                                   key={field}
                                   className="form-control mb-2"
@@ -566,11 +646,7 @@ useEffect(() => {
                                   handleFieldChange("education", list);
                                 }}
                               />
-                              <Button
-                                danger
-                                size="small"
-                                onClick={() => removeItem("education", i)}
-                              >
+                              <Button danger size="small" onClick={() => removeItem("education", i)}>
                                 Remove
                               </Button>
                             </div>
@@ -590,19 +666,47 @@ useEffect(() => {
                           >
                             + Add Education
                           </Button>
-                        </section>
-  
+                        </Panel>
+
                         {/* ----------------- Experience ----------------- */}
-                        <section style={{ marginTop: 24 }}>
-                          <h5 style={{ color: "#042F40" }}>Experience</h5>
+                          <Panel
+                            header={<span style={{ color: "#042F40", margin: 0 , fontWeight: 550}}>Experience</span>}
+                            key="3"
+                            style={{
+                              background: "#fff",
+                              borderTop: "none",
+                              borderLeft: "none",
+                              borderRight: "none",
+                              //  marginBottom: '12px',
+                              borderBottom: "1px solid #e0e0e0",
+                              borderRadius: '5px',
+                              padding: "9px 0",
+                            }}
+                          >  
+                          <Button
+                            type="dashed"
+                            style={{ marginBottom: "8px" }}
+                            block
+                            onClick={() =>
+                              addItem(
+                                "experience",
+                                {
+                                  company: "",
+                                  title: "",
+                                  start_year: "",
+                                  end_year: "",
+                                  description: [""],
+                                },
+                                true
+                              )
+                            }
+                          >
+                            + Add Experience
+                          </Button>
+
                           {(parsedData.experience || []).map((exp, i) => (
                             <div key={i} className="card p-3 mb-2 bg-white">
-                              {[
-                                "company",
-                                "title",
-                                "start_year",
-                                "end_year",
-                              ].map((field) => (
+                              {["company", "title", "start_year", "end_year"].map((field) => (
                                 <input
                                   key={field}
                                   className="form-control mb-2"
@@ -627,56 +731,43 @@ useEffect(() => {
                                   handleFieldChange("experience", list);
                                 }}
                               />
-                              <Button
-                                danger
-                                size="small"
-                                onClick={() => removeItem("experience", i)}
-                              >
+                              <Button danger size="small" onClick={() => removeItem("experience", i)}>
                                 Remove
                               </Button>
                             </div>
                           ))}
-                          <Button
-                            type="dashed"
-                            block
-                            onClick={() =>
-                              addItem(
-                                "experience",
-                                {
-                                  company: "",
-                                  title: "",
-                                  start_year: "",
-                                  end_year: "",
-                                  description: [""],
-                                },
-                                true // add to top
-                              )
-                            }
-                          >
-                            + Add Latest Experience
-                          </Button>
-                        </section>
-  
+                        </Panel>
+
                         {/* ----------------- Projects ----------------- */}
-                        <section style={{ marginTop: 24 }}>
-                          <h5 style={{ color: "#042F40" }}>Projects</h5>
+                          <Panel
+                            header={<span style={{ color: "#042F40", margin: 0 , fontWeight: 550}}>Projects</span>}
+                            key="4"
+                            style={{
+                              background: "#fff",
+                              borderTop: "none",
+                              borderLeft: "none",
+                              //  marginBottom: '12px',
+                              borderRight: "none",
+                              borderBottom: "1px solid #e0e0e0",
+                              borderRadius: '5px',
+                              padding: "9px 0",
+                            }}
+                          >
                           {(parsedData.projects || []).map((proj, i) => (
                             <div key={i} className="card p-3 mb-2 bg-white">
-                              {["project_name", "start_year", "end_year"].map(
-                                (field) => (
-                                  <input
-                                    key={field}
-                                    className="form-control mb-2"
-                                    placeholder={projectPlaceholders[field] || field}
-                                    value={proj[field] || ""}
-                                    onChange={(e) => {
-                                      const list = [...parsedData.projects];
-                                      list[i][field] = e.target.value;
-                                      handleFieldChange("projects", list);
-                                    }}
-                                  />
-                                )
-                              )}
+                              {["project_name", "start_year", "end_year"].map((field) => (
+                                <input
+                                  key={field}
+                                  className="form-control mb-2"
+                                  placeholder={projectPlaceholders[field] || field}
+                                  value={proj[field] || ""}
+                                  onChange={(e) => {
+                                    const list = [...parsedData.projects];
+                                    list[i][field] = e.target.value;
+                                    handleFieldChange("projects", list);
+                                  }}
+                                />
+                              ))}
                               <textarea
                                 className="form-control mb-2"
                                 placeholder="Enter Project Details"
@@ -689,11 +780,7 @@ useEffect(() => {
                                   handleFieldChange("projects", list);
                                 }}
                               />
-                              <Button
-                                danger
-                                size="small"
-                                onClick={() => removeItem("projects", i)}
-                              >
+                              <Button danger size="small" onClick={() => removeItem("projects", i)}>
                                 Remove
                               </Button>
                             </div>
@@ -712,11 +799,23 @@ useEffect(() => {
                           >
                             + Add Project
                           </Button>
-                        </section>
-  
+                        </Panel>
+
                         {/* ----------------- Skills ----------------- */}
-                        <section style={{ marginTop: 24 }}>
-                          <h5 style={{ color: "#042F40" }}>Technical Skills</h5>
+                          <Panel
+                            header={<span style={{ color: "#042F40", margin: 0 , fontWeight: 550}}>Technical Skills</span>}
+                            key="5"
+                            style={{
+                              background: "#fff",
+                              borderTop: "none",
+                              borderLeft: "none",
+                              //  marginBottom: '12px',
+                              borderRight: "none",
+                              borderBottom: "1px solid #e0e0e0",
+                              borderRadius: '5px',
+                              padding: "9px 0",
+                            }}
+                          >
                           <textarea
                             className="form-control"
                             rows="3"
@@ -731,44 +830,55 @@ useEffect(() => {
                               )
                             }
                           />
-                        </section>
-  
+                        </Panel>
+
                         {/* ----------------- Certifications ----------------- */}
-                        <section style={{ marginTop: 24 }}>
-                          <Collapse
-                            defaultActiveKey={[]}
-                            expandIconPosition="end"
-                            style={{ backgroundColor: "#fff", borderRadius: "8px" }}
+                          <Panel
+                            header={<span style={{ color: "#042F40", margin: 0, fontWeight: 550 }}>Certifications</span>}
+                            key="6"
+                            style={{
+                              background: "#fff",
+                              borderTop: "none",
+                              borderLeft: "none",
+                              //  marginBottom: '12px',
+                              borderRight: "none",
+                              borderBottom: "1px solid #e0e0e0",
+                              borderRadius: '5px',
+                              padding: "9px 0",
+                            }}
                           >
-                            <Panel
-                              header={<h5 style={{ color: "#042F40", margin: 0 }}>Certifications</h5>}
-                              key="1"
-                            >
-                              <textarea
-                                className="form-control"
-                                rows="3"
-                                placeholder="Enter certifications separated by commas"
-                                value={(parsedData.certifications || []).join(", ")}
-                                onChange={(e) =>
-                                  handleFieldChange(
-                                    "certifications",
-                                    e.target.value
-                                      .split(",")
-                                      .map((s) => s.trim())
-                                      .filter(Boolean)
-                                  )
-                                }
-                              />
-                            </Panel>
-                          </Collapse>
-                        </section>
-  
+                          <textarea
+                            className="form-control"
+                            rows="3"
+                            placeholder="Enter certifications separated by commas"
+                            value={(parsedData.certifications || []).join(", ")}
+                            onChange={(e) =>
+                              handleFieldChange(
+                                "certifications",
+                                e.target.value
+                                  .split(",")
+                                  .map((s) => s.trim())
+                                  .filter(Boolean)
+                              )
+                            }
+                          />
+                        </Panel>
+
                         {/* ----------------- Languages ----------------- */}
-                        <section style={{ marginTop: 24 }}>
-                          <h5 style={{ color: "#042F40" }}>Languages</h5>
+                        <Panel
+                          header={<span style={{ color: "#042F40", margin: 0 , fontWeight: 550}}>Languages</span>}
+                          key="7"
+                          style={{
+                            background: "#fff",
+                            border: "none", // 👈 remove bottom border for final section
+                            borderRadius: '5px',
+                            padding: "12px 0",
+                          }}
+                        >
                           <textarea
                             className="form-control"
                             rows="2"
+                            placeholder="Enter languages separated by commas"
                             value={(parsedData.languages || []).join(", ")}
                             onChange={(e) =>
                               handleFieldChange(
@@ -780,27 +890,8 @@ useEffect(() => {
                               )
                             }
                           />
-                        </section>
-                      </div>
-                      {/* Buttons: PDF & Save */}
-                      <div className="d-flex gap-2 mb-4 mt-4">
-                        <Button
-                          type="default"
-                          onClick={handleSave}
-                          disabled={!parsedData || loading}
-                          loading={loading}
-                          block
-                        >
-                          Update Preview  
-                        </Button>
-                        <Button
-                          type="default"
-                          onClick={handleSaveMongo}
-                          disabled={!parsedData}
-                          block
-                        >
-                          Export Resume
-                        </Button>
+                        </Panel>
+                      </Collapse>
                       </div>
                     </>
                   )}
@@ -891,71 +982,154 @@ useEffect(() => {
         </div>
       </div>
       <Modal
-  open={isUploadModalVisible}
-  title={
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <UploadOutlined style={{ color: "#FF9B44", fontSize: 20 }} />
-      <span style={{ fontWeight: 600 }}>Upload Resume</span>
-    </div>
-  }
-  onCancel={() => setIsUploadModalVisible(false)}
-  footer={null}
-  centered
-  width={520}
->
-  <div
-    className="upload-card border rounded"
-    style={{
-      backgroundColor: "#fff",
-      border: "1.5px dashed #d9d9d9",
-      textAlign: "center",
-      padding: "40px 20px",
-    }}
-  >
-    <Upload.Dragger
-      {...uploadProps}
-      style={{ background: "transparent" }}
-    >
-      <p className="ant-upload-drag-icon">
-        <UploadOutlined style={{ color: "#FF9B44", fontSize: 32 }} />
-      </p>
-      <p
-        className="ant-upload-text"
-        style={{ fontSize: "16px", fontWeight: 500 }}
+        open={isDuplicateModalVisible}
+        onCancel={() => setIsDuplicateModalVisible(false)}
+        footer={null}
+        centered
+        width={540}
+        bodyStyle={{
+          background: "#FFFFFF",
+          borderRadius: "10px",
+          padding: "24px 24px 16px 24px",
+        }}
+        title={
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              background: "#FFF1E5",
+              borderRadius: "8px",
+              padding: "10px 14px",
+              margin: "24px -12px 12px -12px",
+            }}
+          >
+            <FileTextOutlined style={{ color: "#FF9B44", fontSize: 22 }} />
+            <span style={{ fontWeight: 600, color: "#042F40", fontSize: "16px"}}>
+              Similar Resume Found
+            </span>
+          </div>
+        }
       >
-        Drag & Drop or{" "}
-        <span style={{ color: "#FF9B44" }}>Choose file</span> to upload
-      </p>
-      <p
-        className="ant-upload-hint text-muted mb-0"
-        style={{ fontSize: "13px" }}
-      >
-        Supported file types: <strong>PDF</strong>
-      </p>
-    </Upload.Dragger>
+        {duplicateRecord && (
+          <div>
+            <p
+              style={{
+                marginBottom: "14px",
+                fontSize: "15px",
+                color: "#042F40",
+                fontWeight: 500,
+              }}
+            >
+              A resume for{" "}
+              <span style={{ color: "#FF9B44", fontWeight: 600 }}>
+                {duplicateRecord.full_name}
+              </span>{" "}
+              already exists. Save the new resume?
+            </p>
 
-    <div className="mt-4">
-      <Button
-        type="primary"
-        onClick={() => {
-          handleUpload();
-          setIsUploadModalVisible(false);
-        }}
-        loading={loading}
-        disabled={fileList.length === 0}
-        block
-        style={{
-          backgroundColor: "#FFF1E5",
-          borderColor: "#FFF1E5",
-          height: 44,
-          fontWeight: 500,
-        }}
-      >
-        <span style={{ color: "#FF9B44" }}>Upload & Parse</span>
-      </Button>
-    </div>
-  </div>
-</Modal>
+            {/* Info Box */}
+            <div
+              style={{
+                background: "#fafafa",
+                border: "1px solid #f0f0f0",
+                borderRadius: 10,
+                padding: 14,
+                marginBottom: 20,
+                fontSize: "14px",
+                lineHeight: 1.6,
+                color: "#555",
+              }}
+            >
+              <p style={{ margin: 0 }}>
+                <strong>Title:</strong> {duplicateRecord.title || "—"}
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>Email:</strong> {duplicateRecord.email || "—"}
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>Phone:</strong> {duplicateRecord.phone || "—"}
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+              }}
+            >
+              {/* Cancel */}
+              <Button
+                onClick={() => setIsDuplicateModalVisible(false)}
+                style={{
+                  background: "#f5f5f5",
+                  borderColor: "#d9d9d9",
+                  color: "#555",
+                  borderRadius: "6px",
+                  fontWeight: 500,
+                }}
+              >
+                Cancel
+              </Button>
+
+              {/* View Existing
+              <Button
+                style={{
+                  background: "#FFF1E5",
+                  borderColor: "#FF9B44",
+                  color: "#FF9B44",
+                  borderRadius: "6px",
+                  fontWeight: 550,
+                }}
+                onClick={() => {
+                  sessionStorage.setItem(
+                    "resume_preview_data",
+                    JSON.stringify({
+                      parsedData: duplicateRecord,
+                      autoPreview: true,
+                    })
+                  );
+                  window.open("/recruitment/resume-converter", "_blank");
+                  // setIsDuplicateModalVisible(false);
+                  message.info("Opening existing resume in new tab...");
+                }}
+              >
+                View Existing
+              </Button> */}
+
+              {/* Override */}
+              <Button
+                type="primary"
+                style={{
+                  background: "#FF9B44",
+                  borderColor: "#FF9B44",
+                  color: "#fff",
+                  borderRadius: "6px",
+                  fontWeight: 550,
+                }}
+                onClick={async () => {
+                  try {
+                    // await apiServices("DELETE", `resumes/${duplicateRecord._id}`);
+                    await apiServices("POST", "resumes", parsedData);
+                    message.success("Resume saved successfully!");
+                  } catch (err) {
+                    console.error(" Override failed:", err);
+                    message.error("Failed to override resume.");
+                  } finally {
+                    setIsDuplicateModalVisible(false);
+                  }
+                }}
+              >
+                Proceed
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+
 
       <style jsx>{`
         .resume-converter-page .content.container-fluid {
