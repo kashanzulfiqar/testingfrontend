@@ -82,7 +82,7 @@ const AdminForgot = React.lazy(() => import("../initialpage/Forgot-Admin"));
 const DisabledCompanies = React.lazy(() => import("../MainPage/SuperAdmin/disbaledCompanies"));
 const LeadsDetails = React.lazy(() => import("../MainPage/Employees/leadsDetails"));
 const LeadReport = React.lazy(() => import("../MainPage/HR/Reports/leadreport"));
-// const ClientReport = React.lazy(() => import("../MainPage/HR/Reports/clientreport"));
+const ClientReport = React.lazy(() => import("../MainPage/HR/Reports/clientreport"));
 const ClientForgotPassword = React.lazy(() => import("../initialpage/ClientForgotPassword"));
 const ClientResetPassword = React.lazy(() => import("../initialpage/ClientResetPassword"));
 const Recruitment = React.lazy(() => import("../MainPage/Recruitment"));
@@ -436,7 +436,7 @@ const AppRoutes = () => {
               <Assets />
             </Suspense>
           } />
-          
+
           <Route path="/assets/:id" element={
             <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <AssetDetails />
@@ -500,11 +500,11 @@ const AppRoutes = () => {
               <LeadReport />
             </Suspense>
           } />
-          {/* <Route path="/client-report" element={
+          <Route path="/client-report" element={
             <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <ClientReport />
             </Suspense>
-          } /> */}
+          } />
           <Route path="/recruitment/*" element={
             <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
               <RecruitmentLayout>
