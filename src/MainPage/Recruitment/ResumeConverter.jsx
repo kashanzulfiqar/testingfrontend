@@ -1025,8 +1025,7 @@ useEffect(() => {
               <span style={{ color: "#FF9B44", fontWeight: 600 }}>
                 {duplicateRecord.full_name}
               </span>{" "}
-              already exists. Would you like to override it or view the existing
-              version?
+              already exists. Save the new resume?
             </p>
 
             {/* Info Box */}
@@ -1075,7 +1074,7 @@ useEffect(() => {
                 Cancel
               </Button>
 
-              {/* View Existing */}
+              {/* View Existing
               <Button
                 style={{
                   background: "#FFF1E5",
@@ -1098,7 +1097,7 @@ useEffect(() => {
                 }}
               >
                 View Existing
-              </Button>
+              </Button> */}
 
               {/* Override */}
               <Button
@@ -1112,18 +1111,18 @@ useEffect(() => {
                 }}
                 onClick={async () => {
                   try {
-                    await apiServices("DELETE", `resumes/${duplicateRecord._id}`);
+                    // await apiServices("DELETE", `resumes/${duplicateRecord._id}`);
                     await apiServices("POST", "resumes", parsedData);
-                    message.success("✅ Resume overridden successfully!");
+                    message.success("Resume saved successfully!");
                   } catch (err) {
-                    console.error("❌ Override failed:", err);
+                    console.error(" Override failed:", err);
                     message.error("Failed to override resume.");
                   } finally {
                     setIsDuplicateModalVisible(false);
                   }
                 }}
               >
-                Override Resume
+                Proceed
               </Button>
             </div>
           </div>

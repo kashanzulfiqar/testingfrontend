@@ -261,7 +261,7 @@ const ResumeHistory = () => {
               icon={<EyeOutlined />}
               onClick={() => handleRowClick(record)}
             >
-              View
+              Edit
             </Menu.Item>
             <Menu.Item
               key="download"
@@ -274,7 +274,8 @@ const ResumeHistory = () => {
               key="delete"
               danger
               icon={<DeleteOutlined />}
-              onClick={() => {
+              onClick={(e) => {
+                // e.stopPropagation();
                 Modal.confirm({
                   title: "Delete Resume",
                   content: "Are you sure you want to delete this resume?",
@@ -287,21 +288,26 @@ const ResumeHistory = () => {
             >
               Delete
             </Menu.Item>
-            {/* <Menu.Item
-              key="edit"
-              icon={<FileOutlined />}
-              onClick={() => handleEdit(record)}
-            >
-              Edit
-            </Menu.Item> */}
           </Menu>
         );
         return (
-          <Dropdown overlay={menu} trigger={["click"]} placement="bottomRight">
-            <div style={{ cursor: "pointer", height: "24px", display: "inline-flex", alignItems: "center" }}>
-              <img src={more} alt="More Options" style={{ height: "24px" }} />
+            <div
+              onClick={(e) => e.stopPropagation()} // 👈 stop row click
+              style={{ display: "inline-flex", alignItems: "center" }}
+            >
+              <Dropdown overlay={menu} trigger={["click"]} placement="bottomRight">
+                <div
+                  style={{
+                    cursor: "pointer",
+                    height: "24px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <img src={more} alt="More Options" style={{ height: "24px" }} />
+                </div>
+              </Dropdown>
             </div>
-          </Dropdown>
         );
       },
     },
@@ -417,7 +423,7 @@ const handleRowClick = (record) => {
               rowKey="_id"
               pagination={false}
               onRow={(record) => ({
-                onDoubleClick: () => {
+                onClick: () => {
                   console.log(record)
                   handleRowClick(record)},
               })}
