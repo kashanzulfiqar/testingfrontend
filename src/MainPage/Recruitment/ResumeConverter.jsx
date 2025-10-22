@@ -982,6 +982,73 @@ useEffect(() => {
         </div>
       </div>
       <Modal
+          open={isUploadModalVisible}
+          title={
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <UploadOutlined style={{ color: "#FF9B44", fontSize: 20 }} />
+              <span style={{ fontWeight: 600 }}>Upload Resume</span>
+            </div>
+          }
+          onCancel={() => setIsUploadModalVisible(false)}
+          footer={null}
+          centered
+          width={520}
+        >
+          <div
+            className="upload-card border rounded"
+            style={{
+              backgroundColor: "#fff",
+              border: "1.5px dashed #d9d9d9",
+              textAlign: "center",
+              padding: "40px 20px",
+            }}
+          >
+            <Upload.Dragger
+              {...uploadProps}
+              style={{ background: "transparent" }}
+            >
+              <p className="ant-upload-drag-icon">
+                <UploadOutlined style={{ color: "#FF9B44", fontSize: 32 }} />
+              </p>
+              <p
+                className="ant-upload-text"
+                style={{ fontSize: "16px", fontWeight: 500 }}
+              >
+                Drag & Drop or{" "}
+                <span style={{ color: "#FF9B44" }}>Choose file</span> to upload
+              </p>
+              <p
+                className="ant-upload-hint text-muted mb-0"
+                style={{ fontSize: "13px" }}
+              >
+                Supported file types: <strong>PDF, DOC, DOCX</strong>
+              </p>
+            </Upload.Dragger>
+
+            <div className="mt-4">
+              <Button
+                type="primary"
+                onClick={() => {
+                  handleUpload();
+                  setIsUploadModalVisible(false);
+                }}
+                loading={loading}
+                disabled={fileList.length === 0}
+                block
+                style={{
+                  backgroundColor: "#FFF1E5",
+                  borderColor: "#FFF1E5",
+                  height: 44,
+                  fontWeight: 500,
+                }}
+              >
+                <span style={{ color: "#FF9B44" }}>Upload & Parse</span>
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+      <Modal
         open={isDuplicateModalVisible}
         onCancel={() => setIsDuplicateModalVisible(false)}
         footer={null}
