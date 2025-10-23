@@ -81,8 +81,9 @@ useEffect(() => {
       }
     }
   };
-
+  
   autoGeneratePreview();
+  setAutoPreview(false);
 }, [autoPreview, parsedData]); // 👈 changed from stateData
 
 
