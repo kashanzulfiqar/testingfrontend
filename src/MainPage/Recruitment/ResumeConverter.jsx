@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Upload, Button, message, Modal, Spin, Collapse } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Upload, Button, message, Modal, Spin, Collapse, notification, Checkbox } from "antd";
+import { UploadOutlined,  EyeOutlined } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
+import { apiUploadToS3 } from "../../Services/uploadImage";
 import { useSelector } from "react-redux";
 import { uploadFunction } from "../Employees/Projects/UploadAndDeleteFunc";
 import { BASE_URL } from '../../config/apiConfig';
@@ -19,7 +20,7 @@ export default function ResumeConverter() {
   // State
   const location = useLocation();
   const navigate = useNavigate();
-  const { parsedData: stateData, autoPreview: initialAutoPreview } = location.state || {};
+  const { parsedData: stateData, autoPreview: initialAutoPreview } = location.state || {};  
   const [autoPreview, setAutoPreview] = useState(initialAutoPreview || false);
   const [parsedData, setParsedData] = useState(stateData || null);  
   const [fileList, setFileList] = useState([]);
@@ -32,6 +33,20 @@ export default function ResumeConverter() {
   const [duplicateRecord, setDuplicateRecord] = useState(null);
 
   const [resumeHistory, setResumeHistory] = useState([]);
+  const [lastDeleted, setLastDeleted] = useState(null);
+  const [isPreviewModalVisible, setIsPreviewModalVisible] = useState(false);
+  const [pdfFocusUrl, setPdfFocusUrl] = useState(null);
+  const [loadingFocusPdf, setLoadingFocusPdf] = useState(false);
+  const [includeCompanyLogo, setIncludeCompanyLogo] = useState(false);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoUrl, setLogoUrl] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const userState = useSelector((state) => state.user.loginvalue);
+  const companyLogo = userState?.user?.companyImageUrl || "";
+
+  
+  
+
 
   //Resume History load
   // ----------------------------
@@ -47,6 +62,13 @@ useEffect(() => {
     if (shouldPreview) setAutoPreview(true);
     sessionStorage.removeItem("resume_preview_data"); // cleanup
   }
+  console.log(companyLogo);
+
+  if (parsedData?.is_company_logo_included) {
+    setIncludeCompanyLogo(true);
+    setLogoUrl(parsedData.company_logo || null);
+  }
+  console.log("check",parsedData.is_company_logo_included)
 }, []);
 
 // 2️⃣ Generate PDF preview automatically when autoPreview is enabled
@@ -85,6 +107,12 @@ useEffect(() => {
   autoGeneratePreview();
   setAutoPreview(false);
 }, [autoPreview, parsedData]); // 👈 changed from stateData
+
+
+//automatically check for company logo
+
+
+
 
 
 //placeholders
@@ -195,6 +223,35 @@ useEffect(() => {
       setLoading(false);
     }
   };
+  //Logo uploading
+  const handleLogoUpload = async (file) => {
+    console.log("🟢 Starting company logo upload...", file);
+  
+    setUploadingLogo(true);
+    try {
+      const response = await apiUploadToS3(file);
+      console.log("🟣 Raw upload response:", response);
+      console.log('image file ',response.data.result);
+      const uploadedUrl = response?.data?.result?.secure_url || response?.data?.fileUrl;
+      if (uploadedUrl) {
+        console.log("✅ Logo uploaded successfully:", uploadedUrl);
+        setLogoUrl(uploadedUrl);
+        message.success("Company logo uploaded successfully!");
+      } else {
+        console.warn("⚠️ Upload succeeded but no URL returned.");
+        message.warning("Upload completed, but no URL found in response.");
+      }
+    } catch (error) {
+      console.error("❌ Logo upload failed:", error);
+      message.error("Failed to upload company logo.");
+    } finally {
+      setUploadingLogo(false);
+    }
+  
+    // Returning false prevents AntD from auto-uploading
+    return false;
+  };
+  
   
 
   // ----------------------------
@@ -203,31 +260,133 @@ useEffect(() => {
 // ----------------------------
 // Generate PDF Preview
 // ----------------------------
-  const handleSave = async () => {
-    if (!parsedData) return;
-    setError(null);
-    setLoading(true);
+const handleSave = async () => {
+  if (!parsedData) return;
+  setError(null);
+  setLoading(true);
 
+  try {
+    console.log("🚀 Generating PDF preview:", parsedData);
+
+    // ✅ Smart logo merge logic (same as Mongo save)
+    const payload = {
+      ...parsedData,
+      company_logo: logoUrl || parsedData.company_logo || null,
+      createdAt: new Date().toISOString(),
+    };
+
+    console.log("🖼️ Using company logo for preview:", payload.company_logo);
+
+    // 🧠 Step 1: Ensure backend can generate the PDF
+    await apiServices(
+      "POST",
+      "resume/preview-from-json",
+      { parsed: payload },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // 🧾 Step 2: Retrieve binary PDF data
+    const blobRes = await axiosInstance.post(
+      "resume/preview-from-json",
+      { parsed: payload },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        responseType: "arraybuffer",
+      }
+    );
+
+    const blob = new Blob([blobRes.data], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    setPdfUrl(url);
+
+    message.success("✅ PDF preview updated successfully!");
+  } catch (err) {
+    console.error("❌ PDF Preview generation failed:", err);
+    message.error("Failed to generate preview.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+const handleSaveMongo = async () => {
+  if (!parsedData) return message.warning("No parsed data to save.");
+  setSaving(true);
+
+  try {
+    console.log("🟢 Preparing to save resume...");
+    console.log(parsedData);
+
+    // ✅ Smart merge logic
+    const payload = {
+      ...parsedData,
+      company_logo: logoUrl || parsedData.company_logo || null,
+      createdAt: new Date().toISOString(),
+    };
+
+    console.log("🖼️ Final company logo URL:", payload.company_logo);
+    console.log("📦 Payload being sent to MongoDB:", payload);
+
+    const existingRes = await apiServices(
+      "GET",
+      `resumes?name=${encodeURIComponent(parsedData.full_name || "")}`
+    );
+
+    const list = Array.isArray(existingRes?.data)
+      ? existingRes.data
+      : Array.isArray(existingRes?.data?.docs)
+      ? existingRes.data.docs
+      : [];
+
+    const target = (parsedData.full_name || "").trim().toLowerCase();
+    const existing = list.find(
+      (r) => (r?.full_name || "").trim().toLowerCase() === target
+    );
+
+    if (existing) {
+      setDuplicateRecord(existing);
+      setIsDuplicateModalVisible(true);
+    } else {
+      await apiServices("POST", "resumes", payload);
+      message.success("✅ Resume saved to MongoDB!");
+    }
+  } catch (err) {
+    console.error("❌ Save failed:", err);
+    message.error("Save failed. Please try again.");
+  } finally {
+    setSaving(false);
+  }
+};
+
+  
+
+  const handleFocusPreview = async () => {
+    if (!parsedData) return message.warning("No resume data to preview.");
+    
+    setLoadingFocusPdf(true);
+    setIsPreviewModalVisible(true);
+    setPdfFocusUrl(null);
+  
     try {
-      console.log("🚀 Generating PDF preview:", parsedData);
-
-      // 1️⃣ Confirm backend can generate PDF
-      await apiServices(
-        "POST",
-        "resume/preview-from-json",
-        { parsed: parsedData },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      // 2️⃣ Fetch binary PDF
+      message.loading({ content: `Generating ${parsedData.full_name || "resume"}...`, key: "focus-preview" });
+      const payload = {
+        ...parsedData,
+        company_logo: logoUrl || parsedData.company_logo || null,
+        createdAt: new Date().toISOString(),
+      };
+  
       const blobRes = await axiosInstance.post(
         "resume/preview-from-json",
-        { parsed: parsedData },
+        { parsed: payload },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -236,83 +395,20 @@ useEffect(() => {
           responseType: "arraybuffer",
         }
       );
-
+  
       const blob = new Blob([blobRes.data], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      setPdfUrl(url);
-      message.success("Preview updated successfully!");
+      const blobUrl = URL.createObjectURL(blob);
+      setPdfFocusUrl(blobUrl);
+      message.success({ content: "PDF ready!", key: "focus-preview", duration: 2 });
     } catch (err) {
-      console.error("❌ PDF Preview generation failed:", err);
-      message.error("Failed to generate preview.");
+      console.error("❌ Focus PDF preview failed:", err);
+      message.error("Failed to generate PDF preview.");
+      setIsPreviewModalVisible(false);
     } finally {
-      setLoading(false);
+      setLoadingFocusPdf(false);
     }
   };
-
-
-  const handleSaveMongo = async () => {
-    if (!parsedData) return message.warning("No parsed data to save.");
-    setSaving(true);
   
-    try {
-      const existingRes = await apiServices(
-        "GET",
-        `resumes?name=${encodeURIComponent(parsedData.full_name || "")}`
-      );
-  
-      const list = Array.isArray(existingRes?.data)
-        ? existingRes.data
-        : Array.isArray(existingRes?.data?.docs)
-        ? existingRes.data.docs
-        : [];
-  
-      const target = (parsedData.full_name || "").trim().toLowerCase();
-      const existing = list.find(
-        (r) => (r?.full_name || "").trim().toLowerCase() === target
-      );
-  
-      if (existing) {
-        // ✅ Show custom modal instead of Modal.confirm
-        setDuplicateRecord(existing);
-        setIsDuplicateModalVisible(true);
-      } else {
-        await apiServices("POST", "resumes", parsedData);
-        message.success("✅ Resume saved to MongoDB!");
-      }
-    } catch (err) {
-      console.error("❌ Save failed:", err);
-      message.error("Save failed. Please try again.");
-    } finally {
-      try {
-        // Always generate and download PDF
-        const blobRes = await axiosInstance.post(
-          "resume/preview-from-json",
-          { parsed: parsedData },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            responseType: "arraybuffer",
-          }
-        );
-  
-        const blob = new Blob([blobRes.data], { type: "application/pdf" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `${parsedData.full_name || "resume"}.pdf`;
-        link.click();
-        URL.revokeObjectURL(link.href);
-  
-        message.success("📄 PDF download started!");
-      } catch (pdfErr) {
-        console.error("❌ PDF generation failed:", pdfErr);
-        message.error("Failed to generate or download PDF.");
-      }
-  
-      setSaving(false);
-    }
-  };
   
 
   
@@ -339,10 +435,66 @@ useEffect(() => {
 
   const removeItem = (key, index) => {
     const updated = [...(parsedData?.[key] || [])];
-    updated.splice(index, 1);
+    const deletedItem = updated.splice(index, 1)[0];
     handleFieldChange(key, updated);
+  
+    // ✅ store only once
+    const deletedState = { key, item: deletedItem, index };
+    setLastDeleted(deletedState);
+  
+    // ✅ log the *next render's* correct value
+    console.log("🧠 Deleted item:", deletedState);
+  
+    notification.open({
+      message: `Deleted from ${key.charAt(0).toUpperCase() + key.slice(1)}`,
+      description: (
+        <Button
+          type="link"
+          size="small"
+          style={{ padding: 0 , color:'#FF9B44'}}
+          onClick={() => restoreLastDeleted(deletedState)}
+        >
+          Undo
+        </Button>
+      ),
+      placement: "bottomRight",
+      duration: 5,
+      key: "undo-delete",
+      style: {
+        borderRadius: "8px",
+        background: "#fff",
+        // border: "1px solid #ffe58f",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+      },
+    });
   };
+  
+  
 
+  const restoreLastDeleted = (lastDeleted) => {
+    console.log('asdasd',lastDeleted);
+    if (!lastDeleted) return;
+  
+    const { key, item, index } = lastDeleted;
+    const updated = [...(parsedData?.[key] || [])];
+
+    console.log(updated)
+  
+    // Reinsert at original position (if valid)
+    // if (index >= 0 && index <= updated.length) {
+    //   updated.splice(index, 0, item);
+    // } else {
+    //   updated.push(item);
+    // }
+
+    console.log(updated)
+  
+    handleFieldChange(key, updated);
+    setLastDeleted(null);
+  
+    message.success("Restored deleted item!");
+  };
+  
   // ----------------------------
   // Render
   // ----------------------------
@@ -391,7 +543,7 @@ useEffect(() => {
   
           {/* ----------------------------- MAIN GRID ----------------------------- */}
           <div
-            className="converter-grid"
+            className="converter-grid fluid-container"
             style={{
               display: "grid",
               gridTemplateColumns: "2fr 1fr",
@@ -568,7 +720,104 @@ useEffect(() => {
                           borderRadius: "8px",
                         }}
                       >
+                        {/* ----------------- Personal Branding  ----------------- */}
+                        <Panel
+                            header={<span style={{ color: "#042F40", margin: 0, fontWeight: 550 }}>Personal Branding</span>}
+                            key="6"
+                            style={{
+                              background: "#fff",
+                              borderTop: "none",
+                              borderLeft: "none",
+                              //  marginBottom: '12px',
+                              borderRight: "none",
+                              borderBottom: "1px solid #e0e0e0",
+                              borderRadius: '5px',
+                              padding: "9px 0",
+                            }}
+                          >
+                      <div style={{ marginBottom: 16 }}>
+                      <Checkbox
+                        checked={includeCompanyLogo}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setIncludeCompanyLogo(checked);
 
+                          setParsedData((prev) => ({
+                            ...prev,
+                            is_company_logo_included: checked,
+                          }));
+
+                          if (checked) {
+                            console.log("✅ Using existing company logo from database.");
+                            setLogoUrl(companyLogo); // set DB logo
+                            setLogoFile(null); // disable any uploaded file
+                          } else {
+                            console.log("🟠 Allowing user to upload new company logo.");
+                            setLogoUrl(null);
+                          }
+                        }}
+                      >
+                        <span>Include Company Logo</span>
+                      </Checkbox>
+
+                      <div style={{ marginTop: 8 }}>
+                        <Upload.Dragger
+                          accept="image/*"
+                          disabled={includeCompanyLogo} // ⛔ disable when checkbox is active
+                          beforeUpload={(file) => {
+                            if (includeCompanyLogo) {
+                              message.info("Company logo is locked — uncheck to upload a new one.");
+                              return false;
+                            }
+                            console.log("🟡 File selected for upload:", file);
+                            setLogoFile(file);
+                            handleLogoUpload(file);
+                            return false; // Stop auto upload
+                          }}
+                          fileList={!includeCompanyLogo && logoFile ? [logoFile] : []}
+                          onRemove={() => {
+                            console.log("🧹 Removing uploaded logo");
+                            setLogoFile(null);
+                            setLogoUrl(null);
+                          }}
+                          showUploadList={{ showRemoveIcon: !includeCompanyLogo }}
+                          style={{
+                            opacity: includeCompanyLogo ? 0.6 : 1,
+                            pointerEvents: includeCompanyLogo ? "none" : "auto",
+                            cursor: includeCompanyLogo ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          <p className="ant-upload-drag-icon">
+                            <UploadOutlined style={{ color: "#FF9B44", fontSize: 24 }} />
+                          </p>
+                          <p className="ant-upload-text">
+                            {includeCompanyLogo
+                              ? "Using saved company logo — uncheck to upload new one"
+                              : uploadingLogo
+                              ? "Uploading logo..."
+                              : "Click or drag image to upload"}
+                          </p>
+
+                          {/* Preview logo (DB or newly uploaded) */}
+                          {(logoUrl || companyLogo) && (
+                            <img
+                              src={includeCompanyLogo ? companyLogo : logoUrl}
+                              alt=""
+                              style={{
+                                marginTop: 8,
+                                maxHeight: 80,
+                                borderRadius: 8,
+                                border: "1px solid #ddd",
+                                objectFit: "contain",
+                              }}
+                            />
+                          )}
+                        </Upload.Dragger>
+                      </div>
+
+                      </div>
+                          
+                        </Panel>
                         {/* ---------- Candidate Info ---------- */}
                           <Panel
                             header={<span style={{ color: "#042F40", margin: 0 , fontWeight: 550}}>Candidate Details</span>}
@@ -904,12 +1153,13 @@ useEffect(() => {
             <div className="right-section">
               <div className="card shadow-sm" style={{ height: "720px" }}>
                 <div
-                  className="card-header d-flex align-items-center"
+                  className="card-header d-flex align-items-center justify-content-between mb-0"
                   style={{
                     backgroundColor: "#ffffff",
                     color: "white",
                     borderColor: "white",
                     height: "60px",
+                    width: '100%',
                   }}
                 >
                   <h5
@@ -937,6 +1187,25 @@ useEffect(() => {
                     </span>
                     <span>Resume Preview</span>
                   </h5>
+                  <Button
+                    type="default"
+                    icon={<EyeOutlined />}
+                    onClick={handleFocusPreview}
+                    style={{
+                        backgroundColor: "#FFF",  
+                        border: 'none',
+                        color: '#FF9B44',
+                        // borderRadius: "50%",
+                        marginLeft: '10px',
+                        width: "32px",
+                        height: "32px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                  >
+                    {/* <span> <img src={FilePdfOutlined}/></span> */}
+                  </Button>
                 </div>
   
                 <div
@@ -1180,7 +1449,12 @@ useEffect(() => {
                 onClick={async () => {
                   try {
                     // await apiServices("DELETE", `resumes/${duplicateRecord._id}`);
-                    await apiServices("POST", "resumes", parsedData);
+                    const payload = {
+                      ...parsedData,
+                      company_logo: logoUrl || null, // add logo URL
+                      createdAt: new Date().toISOString(), // ensure new timestamp
+                    };
+                    await apiServices("POST", "resumes", payload);
                     message.success("Resume saved successfully!");
                   } catch (err) {
                     console.error(" Override failed:", err);
@@ -1196,6 +1470,58 @@ useEffect(() => {
           </div>
         )}
       </Modal>
+      <Modal
+  open={isPreviewModalVisible}
+  onCancel={() => setIsPreviewModalVisible(false)}
+  footer={null}
+  width={1100}
+  style={{ top: 24 }}
+  bodyStyle={{ padding: 0, height: "85vh" }}
+  centered
+  title={
+    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <EyeOutlined style={{ color: "#ff9244", fontSize: 20 }} />
+      <span>{parsedData?.full_name || "Resume"} - Full PDF View</span>
+    </div>
+  }
+>
+  {loadingFocusPdf ? (
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        color: "#555",
+      }}
+    >
+      <div className="spinner-border mb-3" role="status" />
+      <p>Loading PDF preview...</p>
+    </div>
+  ) : pdfFocusUrl ? (
+    <iframe
+      src={`${pdfFocusUrl}#toolbar=0&navpanes=0`}
+      width="100%"
+      height="100%"
+      title="Resume Focus Preview"
+      style={{ border: "none", backgroundColor: "#FFF1E5" }}
+    />
+  ) : (
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#777",
+      }}
+    >
+      <p>No PDF preview available.</p>
+    </div>
+  )}
+</Modal>
+
 
 
 
