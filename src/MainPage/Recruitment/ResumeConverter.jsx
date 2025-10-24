@@ -43,7 +43,7 @@ export default function ResumeConverter() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const userState = useSelector((state) => state.user.loginvalue);
   const companyLogo = userState?.user?.companyImageUrl || "";
-
+  const [setIsCompanyLogoIncluded] = useState(null);
   
   
 
@@ -55,6 +55,7 @@ export default function ResumeConverter() {
 
 // 1️⃣ Load saved resume data if opened from "View Existing"
 useEffect(() => {
+  // 🧠 Restore state from session storage (if available)
   const savedState = sessionStorage.getItem("resume_preview_data");
   if (savedState && !stateData) {
     const { parsedData, autoPreview: shouldPreview } = JSON.parse(savedState);
@@ -62,14 +63,28 @@ useEffect(() => {
     if (shouldPreview) setAutoPreview(true);
     sessionStorage.removeItem("resume_preview_data"); // cleanup
   }
-  console.log(companyLogo);
 
-  if (parsedData?.is_company_logo_included) {
+  console.log("🖼️ Company logo from DB:", companyLogo);
+
+  // 🧩 Safely check if logo field exists or is true
+  const compLogoIncluded =
+    parsedData?.is_company_logo_included === true ||
+    parsedData?.is_company_logo_included === "true" ||
+    (parsedData?.company_logo && parsedData?.company_logo !== "");
+
+  if (compLogoIncluded) {
+    console.log("✅ Using existing company logo in resume");
     setIncludeCompanyLogo(true);
-    setLogoUrl(parsedData.company_logo || null);
+    setLogoUrl(parsedData?.company_logo || companyLogo || null);
+  } else {
+    console.log("⚪ No company logo included in record");
+    setIncludeCompanyLogo(false);
+    setLogoUrl(null);
   }
-  console.log("check",parsedData.is_company_logo_included)
+
+  console.log("🔍 Field value:", parsedData?.is_company_logo_included);
 }, []);
+
 
 // 2️⃣ Generate PDF preview automatically when autoPreview is enabled
 useEffect(() => {
@@ -1317,159 +1332,130 @@ const handleSaveMongo = async () => {
             </div>
           </div>
         </Modal>
-
-      <Modal
-        open={isDuplicateModalVisible}
-        onCancel={() => setIsDuplicateModalVisible(false)}
-        footer={null}
-        centered
-        width={540}
-        bodyStyle={{
-          background: "#FFFFFF",
-          borderRadius: "10px",
-          padding: "24px 24px 16px 24px",
-        }}
-        title={
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              background: "#FFF1E5",
-              borderRadius: "8px",
-              padding: "10px 14px",
-              margin: "24px -12px 12px -12px",
-            }}
-          >
-            <FileTextOutlined style={{ color: "#FF9B44", fontSize: 22 }} />
-            <span style={{ fontWeight: 600, color: "#042F40", fontSize: "16px"}}>
-              Similar Resume Found
-            </span>
-          </div>
-        }
-      >
-        {duplicateRecord && (
-          <div>
-            <p
-              style={{
-                marginBottom: "14px",
-                fontSize: "15px",
-                color: "#042F40",
-                fontWeight: 500,
-              }}
-            >
-              A resume for{" "}
-              <span style={{ color: "#FF9B44", fontWeight: 600 }}>
-                {duplicateRecord.full_name}
-              </span>{" "}
-              already exists. Save the new resume?
-            </p>
-
-            {/* Info Box */}
-            <div
-              style={{
-                background: "#fafafa",
-                border: "1px solid #f0f0f0",
-                borderRadius: 10,
-                padding: 14,
-                marginBottom: 20,
-                fontSize: "14px",
-                lineHeight: 1.6,
-                color: "#555",
-              }}
-            >
-              <p style={{ margin: 0 }}>
-                <strong>Title:</strong> {duplicateRecord.title || "—"}
-              </p>
-              <p style={{ margin: 0 }}>
-                <strong>Email:</strong> {duplicateRecord.email || "—"}
-              </p>
-              <p style={{ margin: 0 }}>
-                <strong>Phone:</strong> {duplicateRecord.phone || "—"}
-              </p>
-            </div>
-
-            {/* Buttons */}
+        <Modal
+          open={isDuplicateModalVisible}
+          onCancel={() => setIsDuplicateModalVisible(false)}
+          footer={null}
+          centered
+          width={540}
+          bodyStyle={{
+            background: "#FFFFFF",
+            borderRadius: "10px",
+            padding: "24px 24px 16px 24px",
+          }}
+          title={
             <div
               style={{
                 display: "flex",
-                justifyContent: "flex-end",
-                gap: "10px",
+                alignItems: "center",
+                gap: 10,
+                background: "#FFF1E5",
+                borderRadius: "8px",
+                padding: "10px 14px",
+                margin: "24px -12px 12px -12px",
               }}
             >
-              {/* Cancel */}
-              <Button
-                onClick={() => setIsDuplicateModalVisible(false)}
+              <FileTextOutlined style={{ color: "#FF9B44", fontSize: 22 }} />
+              <span style={{ fontWeight: 600, color: "#042F40", fontSize: "16px"}}>
+                Similar Resume Found
+              </span>
+            </div>
+          }
+        >
+          {duplicateRecord && (
+            <div>
+              <p
                 style={{
-                  background: "#f5f5f5",
-                  borderColor: "#d9d9d9",
-                  color: "#555",
-                  borderRadius: "6px",
+                  marginBottom: "14px",
+                  fontSize: "15px",
+                  color: "#042F40",
                   fontWeight: 500,
                 }}
               >
-                Cancel
-              </Button>
-
-              {/* View Existing
-              <Button
+                A resume for{" "}
+                <span style={{ color: "#FF9B44", fontWeight: 600 }}>
+                  {duplicateRecord.full_name}
+                </span>{" "}
+                already exists. Save the new resume?
+              </p>
+              {/* Info Box */}
+              <div
                 style={{
-                  background: "#FFF1E5",
-                  borderColor: "#FF9B44",
-                  color: "#FF9B44",
-                  borderRadius: "6px",
-                  fontWeight: 550,
-                }}
-                onClick={() => {
-                  sessionStorage.setItem(
-                    "resume_preview_data",
-                    JSON.stringify({
-                      parsedData: duplicateRecord,
-                      autoPreview: true,
-                    })
-                  );
-                  window.open("/recruitment/resume-converter", "_blank");
-                  // setIsDuplicateModalVisible(false);
-                  message.info("Opening existing resume in new tab...");
+                  background: "#fafafa",
+                  border: "1px solid #f0f0f0",
+                  borderRadius: 10,
+                  padding: 14,
+                  marginBottom: 20,
+                  fontSize: "14px",
+                  lineHeight: 1.6,
+                  color: "#555",
                 }}
               >
-                View Existing
-              </Button> */}
-
-              {/* Override */}
-              <Button
-                type="primary"
+                <p style={{ margin: 0 }}>
+                  <strong>Title:</strong> {duplicateRecord.title || "—"}
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>Email:</strong> {duplicateRecord.email || "—"}
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>Phone:</strong> {duplicateRecord.phone || "—"}
+                </p>
+              </div>
+              {/* Buttons */}
+              <div
                 style={{
-                  background: "#FF9B44",
-                  borderColor: "#FF9B44",
-                  color: "#fff",
-                  borderRadius: "6px",
-                  fontWeight: 550,
-                }}
-                onClick={async () => {
-                  try {
-                    // await apiServices("DELETE", `resumes/${duplicateRecord._id}`);
-                    const payload = {
-                      ...parsedData,
-                      company_logo: logoUrl || null, // add logo URL
-                      createdAt: new Date().toISOString(), // ensure new timestamp
-                    };
-                    await apiServices("POST", "resumes", payload);
-                    message.success("Resume saved successfully!");
-                  } catch (err) {
-                    console.error(" Override failed:", err);
-                    message.error("Failed to override resume.");
-                  } finally {
-                    setIsDuplicateModalVisible(false);
-                  }
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "10px",
                 }}
               >
-                Proceed
-              </Button>
+                {/* Cancel */}
+                <Button
+                  onClick={() => setIsDuplicateModalVisible(false)}
+                  style={{
+                    background: "#f5f5f5",
+                    borderColor: "#d9d9d9",
+                    color: "#555",
+                    borderRadius: "6px",
+                    fontWeight: 500,
+                  }}
+                >
+                  Cancel
+                </Button>
+                {/* Override */}
+                <Button
+                  type="primary"
+                  style={{
+                    background: "#FF9B44",
+                    borderColor: "#FF9B44",
+                    color: "#fff",
+                    borderRadius: "6px",
+                    fontWeight: 550,
+                  }}
+                  onClick={async () => {
+                    try {
+                      // await apiServices("DELETE", `resumes/${duplicateRecord._id}`);
+                      const payload = {
+                        ...parsedData,
+                        company_logo: logoUrl || null, // add logo URL
+                        createdAt: new Date().toISOString(), // ensure new timestamp
+                      };
+                      await apiServices("POST", "resumes", payload);
+                      message.success("Resume saved successfully!");
+                    } catch (err) {
+                      console.error(" Override failed:", err);
+                      message.error("Failed to override resume.");
+                    } finally {
+                      setIsDuplicateModalVisible(false);
+                    }
+                  }}
+                >
+                  Proceed
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
-      </Modal>
+          )}
+        </Modal>
       <Modal
   open={isPreviewModalVisible}
   onCancel={() => setIsPreviewModalVisible(false)}
@@ -1521,11 +1507,7 @@ const handleSaveMongo = async () => {
     </div>
   )}
 </Modal>
-
-
-
-
-      <style jsx>{`
+<style jsx>{`
         .resume-converter-page .content.container-fluid {
           padding-left: 0 !important;
           padding-right: 0 !important;
@@ -1541,4 +1523,4 @@ const handleSaveMongo = async () => {
     </>
     
   );
-}  
+} 
