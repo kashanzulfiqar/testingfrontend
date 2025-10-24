@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Spin } from 'antd';
 
 import { useLocation, Navigate, Outlet, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
@@ -29,8 +28,6 @@ const RequireAuth = ({Role}) => {
     const [menu, setMenu] = useState(false);
     const [barMenu, setBarMenu] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
-    const [routeLoading, setRouteLoading] = useState(false);
-    const routeLoaderTimer = useRef(null);
     const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
 
     const handleLogout = () => {
@@ -150,19 +147,6 @@ const RequireAuth = ({Role}) => {
       }
     }, [value]);
 
-    // Show a brief loader overlay on first navigation to any screen
-    useEffect(() => {
-      if (routeLoaderTimer.current) {
-        clearTimeout(routeLoaderTimer.current);
-      }
-      setRouteLoading(true);
-      // Keep loader for a short duration to cover lazy chunk mount
-      routeLoaderTimer.current = setTimeout(() => setRouteLoading(false), 700);
-      return () => {
-        if (routeLoaderTimer.current) clearTimeout(routeLoaderTimer.current);
-      };
-    }, [location.pathname]);
-
     // Early return conditions
     if (isLoading || isCheckingSubscription) {
       return null;
@@ -255,21 +239,11 @@ const RequireAuth = ({Role}) => {
       return <Navigate to='/client/focal-profile' replace={true} />;
     }
 
-    // Default redirect for admin and employee roles when visiting root path
-    if (location.pathname === '/' && (role === 'admin' || role === 'employee')) {
-      return <Navigate to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'} replace={true} />;
-    }
-
     // Only render the full layout if all checks pass
     return (
         <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}> 
             <Header onMenuClick={toggleMobileMenu} onBarToggle={toggleBar} AdminLogin={superAdmin} /> 
             <Sidebar barMenu={barMenu} /> 
-            {routeLoading && (
-              <div style={{position: 'absolute', inset: 0, background: 'rgb(247,247,247)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 7}}>
-                <Spin size="large"/>
-              </div>
-            )}
             <Outlet />
         </div>
     );
