@@ -353,6 +353,7 @@ const handleSaveMongo = async () => {
     console.log("🖼️ Final company logo URL:", payload.company_logo);
     console.log("📦 Payload being sent to MongoDB:", payload);
 
+    // 🔍 Check for existing record
     const existingRes = await apiServices(
       "GET",
       `resumes?name=${encodeURIComponent(parsedData.full_name || "")}`
@@ -369,12 +370,42 @@ const handleSaveMongo = async () => {
       (r) => (r?.full_name || "").trim().toLowerCase() === target
     );
 
+    let record = null;
+
     if (existing) {
       setDuplicateRecord(existing);
       setIsDuplicateModalVisible(true);
+      record = existing;
     } else {
-      await apiServices("POST", "resumes", payload);
+      const saveRes = await apiServices("POST", "resumes", payload);
+      record = saveRes?.data || payload;
       message.success("✅ Resume saved to MongoDB!");
+    }
+
+    // 🧾 Always download a fresh PDF after saving
+    if (record) {
+      try {
+        message.loading({ content: "Generating PDF...", key: "pdfGen" });
+
+        const blobRes = await apiServices(
+          "POST",
+          "resumes/preview-json",
+          { parsed: payload },
+          { responseType: "blob" }
+        );
+
+        const blob = new Blob([blobRes.data], { type: "application/pdf" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${record.full_name || "resume"}.pdf`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+
+        message.success({ content: "📄 Download started!", key: "pdfGen" });
+      } catch (pdfErr) {
+        console.error("❌ PDF generation failed:", pdfErr);
+        message.error("Failed to generate PDF preview.");
+      }
     }
   } catch (err) {
     console.error("❌ Save failed:", err);
@@ -383,6 +414,7 @@ const handleSaveMongo = async () => {
     setSaving(false);
   }
 };
+
 
   
 
@@ -706,18 +738,19 @@ const handleSaveMongo = async () => {
                         defaultActiveKey={[]}
                         expandIconPosition="end"
                         expandIcon={({ isActive }) => (
-                          <div
-                            style={{
-                              marginTop: "2px",
-                              // marginBottom: "5px",
-                              width: "24px",
-                              height: "24px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              borderRadius: "4px",
-                            }}
-                          >
+                          // <div
+                          //   style={{
+                          //     marginTop: "2px",
+                          //     // marginBottom: "5px",
+                          //     width: "24px",
+                          //     height: "24px",
+                          //     display: "flex",
+                          //     alignItems: "center",
+                          //     justifyContent: "center",
+                          //     borderRadius: "4px",
+                          //   }}
+                          // >
+                          // </div>
                             <img
                               src={leftPageIcon}
                               alt="dropdown"
@@ -728,7 +761,6 @@ const handleSaveMongo = async () => {
                                 transition: "transform 0.3s ease",
                               }}
                             />
-                          </div>
                         )}
                         style={{
                           backgroundColor: "#fff",
@@ -740,7 +772,7 @@ const handleSaveMongo = async () => {
                         {/* ----------------- Personal Branding  ----------------- */}
                         <Panel
                             header={<span style={{ color: "#042F40", margin: 0, fontWeight: 550 }}>Personal Branding</span>}
-                            key="0"
+                            key="personalBranding"
                             style={{
                               background: "#fff",
                               borderTop: "none",
