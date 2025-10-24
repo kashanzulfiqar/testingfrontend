@@ -43,7 +43,8 @@ export default function ResumeConverter() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const userState = useSelector((state) => state.user.loginvalue);
   const companyLogo = userState?.user?.companyImageUrl || "";
-  const [setIsCompanyLogoIncluded] = useState(null);
+  const [isTwoColumnSkills, setIsTwoColumnSkills] = useState(false);
+
   
   
 
@@ -287,6 +288,7 @@ const handleSave = async () => {
     const payload = {
       ...parsedData,
       company_logo: logoUrl || parsedData.company_logo || null,
+      isTwoColumnSkills,
       createdAt: new Date().toISOString(),
     };
 
@@ -738,7 +740,7 @@ const handleSaveMongo = async () => {
                         {/* ----------------- Personal Branding  ----------------- */}
                         <Panel
                             header={<span style={{ color: "#042F40", margin: 0, fontWeight: 550 }}>Personal Branding</span>}
-                            key="6"
+                            key="0"
                             style={{
                               background: "#fff",
                               borderTop: "none",
@@ -1081,21 +1083,37 @@ const handleSaveMongo = async () => {
                               padding: "9px 0",
                             }}
                           >
-                          <textarea
-                            className="form-control"
-                            rows="3"
-                            value={(parsedData.technical_skills || []).join(", ")}
-                            onChange={(e) =>
-                              handleFieldChange(
-                                "technical_skills",
-                                e.target.value
-                                  .split(",")
-                                  .map((s) => s.trim())
-                                  .filter(Boolean)
-                              )
-                            }
-                          />
-                        </Panel>
+                            <div style={{marginBottom: '5px'}}>
+
+                              <Checkbox
+                                checked={isTwoColumnSkills}
+                                onChange={(e) => {
+                                  setIsTwoColumnSkills(e.target.checked);
+                                  message.info(
+                                    e.target.checked
+                                    ? "Technical skills will be shown in 2 columns."
+                                    : "Technical skills will be shown in a single column."
+                                  );
+                                }}
+                                >
+                                <span>Column View</span>
+                              </Checkbox>
+                            </div>
+                            <textarea
+                              className="form-control"
+                              rows="3"
+                              value={(parsedData.technical_skills || []).join(", ")}
+                              onChange={(e) =>
+                                handleFieldChange(
+                                  "technical_skills",
+                                  e.target.value
+                                    .split(",")
+                                    .map((s) => s.trim())
+                                    .filter(Boolean)
+                                )
+                              }
+                            />
+                          </Panel>
 
                         {/* ----------------- Certifications ----------------- */}
                           <Panel
