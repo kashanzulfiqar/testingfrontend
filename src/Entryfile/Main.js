@@ -2,7 +2,6 @@ import React, { Suspense, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom';
 import config from 'config';
-import { ConfigProvider, Spin } from 'antd';
 
 // Lazy load heavy dependencies only when needed
 const LandingApp = React.lazy(() => import('./LandingApp.jsx'));
@@ -139,27 +138,25 @@ const MainApp = () => {
   }, []);
 
   return (
-    <ConfigProvider theme={{ components: { Spin: { colorPrimary: '#FF9B44' } } }}>
-      <Router basename={`${config.publicPath}`}>
-        <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Spin size="large" /></div>}>
-          {shouldLoadFullApp ? (
-            <ReduxProvider>
-              <I18nProvider>
-                <StripeWrapper>
-                  <AppRoutes key="full-app" />
-                </StripeWrapper>
-              </I18nProvider>
-            </ReduxProvider>
-          ) : (
-            <ReduxProvider>
-              <I18nProvider>
-                <LandingApp key="landing-app" />
-              </I18nProvider>
-            </ReduxProvider>
-          )}
-        </Suspense>
-      </Router>
-    </ConfigProvider>
+    <Router basename={`${config.publicPath}`}>
+      <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Loading...</div>}>
+        {shouldLoadFullApp ? (
+          <ReduxProvider>
+            <I18nProvider>
+              <StripeWrapper>
+                <AppRoutes key="full-app" />
+              </StripeWrapper>
+            </I18nProvider>
+          </ReduxProvider>
+        ) : (
+          <ReduxProvider>
+            <I18nProvider>
+              <LandingApp key="landing-app" />
+            </I18nProvider>
+          </ReduxProvider>
+        )}
+      </Suspense>
+    </Router>
   );
 };
 
