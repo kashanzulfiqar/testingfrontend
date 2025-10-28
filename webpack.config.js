@@ -21,7 +21,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const publicPath = '/';
 
 module.exports = {
-  mode: "development",
+  mode: "production",
   entry: path.join(__dirname, "src", "index.js"),
   output: {
     path:path.resolve(__dirname, "dist"),
