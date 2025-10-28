@@ -388,24 +388,28 @@ const handleSaveMongo = async () => {
       try {
         message.loading({ content: "Generating PDF...", key: "pdfGen" });
 
-        const blobRes = await apiServices(
-          "POST",
-          "resumes/preview-json",
-          { parsed: payload },
-          { responseType: "blob" }
+        const blobRes = await axiosInstance.post(
+          "resume/preview-from-json",
+          { parsed: record },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            responseType: "arraybuffer",
+          }
         );
-
+  
         const blob = new Blob([blobRes.data], { type: "application/pdf" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = `${record.full_name || "resume"}.pdf`;
         link.click();
         URL.revokeObjectURL(link.href);
-
-        message.success({ content: "📄 Download started!", key: "pdfGen" });
-      } catch (pdfErr) {
-        console.error("❌ PDF generation failed:", pdfErr);
-        message.error("Failed to generate PDF preview.");
+        message.success("Download started!");
+      } catch (err) {
+        console.error("❌ Download failed:", err);
+        message.error("Failed to download PDF.");
       }
     }
   } catch (err) {
@@ -737,38 +741,25 @@ const handleSaveMongo = async () => {
                         {/* ----------------- Collapsible Resume Sections ----------------- */}
                       <Collapse
                         defaultActiveKey={[]}
-                        expandIconPosition="end"
-                        expandIcon={({ isActive }) => (
-                          // <div
-                          //   style={{
-                          //     marginTop: "2px",
-                          //     // marginBottom: "5px",
-                          //     width: "24px",
-                          //     height: "24px",
-                          //     display: "flex",
-                          //     alignItems: "center",
-                          //     justifyContent: "center",
-                          //     borderRadius: "4px",
-                          //   }}
-                          // >
-                          // </div>
-                            <img
-                              src={leftPageIcon}
-                              alt="dropdown"
-                              style={{
-                                width: "12px",
-                                height: "12px",
-                                transform: isActive ? "rotate(-90deg)" : "rotate(0deg)",
-                                transition: "transform 0.3s ease",
-                              }}
-                            />
-                        )}
-                        style={{
-                          backgroundColor: "#fff",
-                          // marginBottom: '4px',
-                          border: "none",
-                          borderRadius: "8px",
-                        }}
+                        // expandIconPosition="end"
+                        // expandIcon={({ isActive }) => (
+                        //     <img
+                        //       src={leftPageIcon}
+                        //       alt="dropdown"
+                        //       style={{
+                        //         width: "12px",
+                        //         height: "12px",
+                        //         transform: isActive ? "rotate(-90deg)" : "rotate(0deg)",
+                        //         transition: "transform 0.3s ease",
+                        //       }}
+                        //     />
+                        // )}
+                        // style={{
+                        //   backgroundColor: "#fff",
+                        //   marginBottom: '4px',
+                        //   border: "none",
+                        //   borderRadius: "8px",
+                        // }}
                       >
                         {/* ----------------- Personal Branding  ----------------- */}
                         <Panel
