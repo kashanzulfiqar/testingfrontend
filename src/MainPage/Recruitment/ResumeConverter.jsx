@@ -42,6 +42,7 @@ export default function ResumeConverter() {
   const [logoUrl, setLogoUrl] = useState(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const userState = useSelector((state) => state.user.loginvalue);
+  const test = userState?.user?.companyImageUrl;
   const companyLogo = userState?.user?.companyImageUrl || "";
   const [isTwoColumnSkills, setIsTwoColumnSkills] = useState(false);
 
@@ -790,7 +791,7 @@ const handleSaveMongo = async () => {
                         onChange={(e) => {
                           const checked = e.target.checked;
                           setIncludeCompanyLogo(checked);
-
+                          console.log('company logo found',test);
                           setParsedData((prev) => ({
                             ...prev,
                             is_company_logo_included: checked,
