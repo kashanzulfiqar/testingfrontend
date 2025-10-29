@@ -15,6 +15,7 @@ import {
 } from "antd";
 import {
   MoreOutlined,
+  FileOutlined,
   EyeOutlined,
   DownloadOutlined,
   DeleteOutlined,
@@ -32,6 +33,7 @@ import axios from "axios";
 import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
 import rightPageIcon from "../../assets/iconsRecruitment/fi_chevrons-right.svg";
 import more from "../../assets/iconsRecruitment/vertical.svg";
+import { MenuItem } from "@mui/material";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -153,6 +155,12 @@ const ResumeHistory = () => {
     }
   };
 
+  
+  // ----------------------------
+  // Edit PDF new window
+  // ----------------------------
+  const handleEdit = async (record) => {}
+
   // ----------------------------
   // Download PDF
   // ----------------------------
@@ -251,9 +259,9 @@ const ResumeHistory = () => {
             <Menu.Item
               key="view"
               icon={<EyeOutlined />}
-              onClick={() => handleView(record)}
+              onClick={() => handleRowClick(record)}
             >
-              View
+              Edit
             </Menu.Item>
             <Menu.Item
               key="download"
@@ -266,7 +274,8 @@ const ResumeHistory = () => {
               key="delete"
               danger
               icon={<DeleteOutlined />}
-              onClick={() => {
+              onClick={(e) => {
+                // e.stopPropagation();
                 Modal.confirm({
                   title: "Delete Resume",
                   content: "Are you sure you want to delete this resume?",
@@ -282,11 +291,23 @@ const ResumeHistory = () => {
           </Menu>
         );
         return (
-          <Dropdown overlay={menu} trigger={["click"]} placement="bottomRight">
-            <div style={{ cursor: "pointer", height: "24px", display: "inline-flex", alignItems: "center" }}>
-              <img src={more} alt="More Options" style={{ height: "24px" }} />
+            <div
+              onClick={(e) => e.stopPropagation()} // 👈 stop row click
+              style={{ display: "inline-flex", alignItems: "center" }}
+            >
+              <Dropdown overlay={menu} trigger={["click"]} placement="bottomRight">
+                <div
+                  style={{
+                    cursor: "pointer",
+                    height: "24px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <img src={more} alt="More Options" style={{ height: "24px" }} />
+                </div>
+              </Dropdown>
             </div>
-          </Dropdown>
         );
       },
     },
@@ -402,7 +423,7 @@ const handleRowClick = (record) => {
               rowKey="_id"
               pagination={false}
               onRow={(record) => ({
-                onDoubleClick: () => {
+                onClick: () => {
                   console.log(record)
                   handleRowClick(record)},
               })}
