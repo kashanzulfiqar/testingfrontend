@@ -19,6 +19,7 @@ import OfferedCandidates from './OfferedCandidates';
 import ScreenedCandidates from './ScreenedCandidates';
 import ResumeConverter from './ResumeConverter';
 import ResumeHistory from './ResumeHistory';
+import ResumeSettings from './ResumeSettings';
 import dashboard from '../../assets/iconsRecruitment/DashBoard.svg';
 import filecheck from '../../assets/iconsRecruitment/fileCheck.svg';
 import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
@@ -285,6 +286,24 @@ const RecruitmentLayout = () => {
                           <span>Resume History</span>
                         </Link>
                       </li>
+
+                      <li className={pathname.includes("/recruitment/resume-settings") ? "active" : ""}>
+                        <Link
+                          to="/recruitment/resume-settings"
+                          onClick={closeSidebarOnMobile}
+                          style={{ display: "flex", alignItems: "center" }}
+                        >
+                          <div
+                            style={{
+                              background: "#ff9244",
+                              height: "4px",
+                              width: "4px",
+                              borderRadius: "50%",
+                            }}
+                          ></div>
+                          <span>Resume Settings</span>
+                        </Link>
+                      </li>
                     </ul>
                   </li>
                 </ul>
@@ -315,6 +334,7 @@ const RecruitmentLayout = () => {
           <Route path="tasks/:id" element={<TaskDetails />} />
           <Route path="resume-converter" element={<ResumeConverter />} />
           <Route path="resume-history" element={<ResumeHistory />} />
+          <Route path="resume-settings" element={<ResumeSettings />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </div>

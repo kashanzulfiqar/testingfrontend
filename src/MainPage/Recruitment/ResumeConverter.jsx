@@ -435,6 +435,7 @@ const handleSaveMongo = async () => {
       const payload = {
         ...parsedData,
         company_logo: logoUrl || parsedData.company_logo || null,
+        isTwoColumnSkills,
         createdAt: new Date().toISOString(),
       };
   
@@ -1305,6 +1306,26 @@ const handleSaveMongo = async () => {
                 </div>
               </div>
             </div>
+            <style jsx>{`
+            @media (max-width: 992px) {
+              .converter-grid {
+                grid-template-columns: 1fr !important;
+              }
+              .right-section {
+                margin-top: 24px;
+              }
+            }
+            /* For small phones */
+            @media (max-width: 600px) {
+              .converter-grid {
+                gap: 16px !important;
+                padding: 0 8px;
+              }
+              .right-section {
+                margin-top: 16px;
+              }
+            }
+          `}</style>
           </div>
         </div>
       </div>
@@ -1498,14 +1519,16 @@ const handleSaveMongo = async () => {
             </div>
           )}
         </Modal>
-      <Modal
+        <Modal
   open={isPreviewModalVisible}
   onCancel={() => setIsPreviewModalVisible(false)}
   footer={null}
   width={1100}
-  style={{ top: 24 }}
-  bodyStyle={{ padding: 0, height: "85vh" }}
+  className="pdf-preview-modal"
   centered
+  style={{ zIndex: 3000 }}
+  maskStyle={{ zIndex: 2999, background: "rgba(0, 0, 0, 0.5)" }}
+  bodyStyle={{ padding: 0, height: "85vh" }}
   title={
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
       <EyeOutlined style={{ color: "#ff9244", fontSize: 20 }} />
@@ -1533,7 +1556,10 @@ const handleSaveMongo = async () => {
       width="100%"
       height="100%"
       title="Resume Focus Preview"
-      style={{ border: "none", backgroundColor: "#FFF1E5" }}
+      style={{
+        border: "none",
+        backgroundColor: "#FFF1E5",
+      }}
     />
   ) : (
     <div
@@ -1548,7 +1574,80 @@ const handleSaveMongo = async () => {
       <p>No PDF preview available.</p>
     </div>
   )}
+
+  <style jsx>{`
+    /* --- Core Modal Styling --- */
+    .pdf-preview-modal .ant-modal-content {
+      border-radius: 10px;
+      border: 1px solid transparent;
+      overflow: hidden;
+    }
+    .pdf-preview-modal .ant-modal-header {
+      border-bottom: none;
+      padding: 15px 18px 0 24px;
+      border-radius: 10px;
+      margin-bottom: 10px
+    }
+    .pdf-preview-modal .ant-modal-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .pdf-preview-modal .ant-modal-close {
+      background-color: #f8f9fa;
+      border-radius: 50%;
+      margin: 16px 16px 0 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* --- Z-Index Fix to Ensure It's Above Sidebar --- */
+    .ant-modal,
+    .ant-modal-wrap,
+    .ant-modal-mask {
+      z-index: 3000 !important;
+    }
+
+    /* --- Responsiveness --- */
+    @media (max-width: 1200px) {
+      .pdf-preview-modal .ant-modal-content {
+        width: 95% !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .pdf-preview-modal .ant-modal-body {
+        height: 70vh !important;
+      }
+      .pdf-preview-modal .ant-modal-title {
+        font-size: 16px;
+      }
+      .pdf-preview-modal .ant-modal-header {
+        padding: 8px 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .pdf-preview-modal .ant-modal-body {
+        height: 65vh !important;
+      }
+    }
+
+    /* --- Scroll + Focus Handling --- */
+    .pdf-preview-modal .ant-modal-body {
+      overflow: hidden;
+      background: #fff;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+  `}</style>
 </Modal>
+
+
 <style jsx>{`
         .resume-converter-page .content.container-fluid {
           padding-left: 0 !important;
@@ -1561,6 +1660,61 @@ const handleSaveMongo = async () => {
         .resume-converter-page {
           background-color: #fff;
         }
+        // .converter-grid fluid-container {
+        //   display: flex;
+        //   align-items: flex-start;
+        //   justify-content: space-between;
+        //   gap: 24px;
+        //   padding: 16px;
+        // }
+        
+        // .converter-grid {
+        //   transition: all 0.3s
+        // }
+
+        // /* Left section (form) */
+        // .left-section {
+        //   flex: 1 1 50%;
+        //   min-width: 360px;
+        // }
+
+        // /* Right section (preview) */
+        // .right-section {
+        //   flex: 1 1 50%;
+        //   background: #fff;
+        //   border: 1px solid #eaeaea;
+        //   border-radius: 10px;
+        //   overflow: hidden;
+        // }
+
+        // /* --- Responsive behavior --- */
+        // @media (max-width: 992px) {
+        //   .converter-grid fluid-container {
+        //     flex-direction: column;
+        //     align-items: stretch;
+        //   }
+
+        //   .left-section,
+        //   .right-section {
+        //     width: 100%;
+        //   }
+
+        //   .right-section {
+        //     margin-top: 24px; /* Add spacing between stacked blocks */
+        //   }
+        // }
+
+        // /* Optional: for very small phones */
+        // @media (max-width: 600px) {
+        //   .resume-converter-container {
+        //     padding: 12px;
+        //   }
+        //   .right-section {
+        //     margin-top: 16px;
+        //   }
+        // }
+
+          
       `}</style>
     </>
     
