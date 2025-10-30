@@ -9,7 +9,6 @@ import { BASE_URL } from '../../config/apiConfig';
 import { FileTextOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
 import axios from "axios";
 const { Dragger } = Upload;
 const { Panel } = Collapse;
@@ -45,8 +44,8 @@ export default function ResumeConverter() {
   const test = userState?.user?.companyImageUrl;
   const companyLogo = userState?.user?.companyImageUrl || "";
   const [isTwoColumnSkills, setIsTwoColumnSkills] = useState(false);
-
-  
+  const selectedPresetId = useSelector((state) => state.resumePreset.selectedPresetId) || "";
+  console.log(selectedPresetId)  
   
 
 
@@ -95,10 +94,14 @@ useEffect(() => {
     if (autoPreview && parsedData) {
       console.log("🚀 Auto preview triggered for:", parsedData.full_name);
       setLoading(true);
+      const payload = {
+        ...parsedData,
+        presetId: selectedPresetId,
+      }
       try {
         const blobRes = await axiosInstance.post(
           "resume/preview-from-json",
-          { parsed: parsedData },
+          { parsed: payload },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -290,8 +293,10 @@ const handleSave = async () => {
       ...parsedData,
       company_logo: logoUrl || parsedData.company_logo || null,
       isTwoColumnSkills,
+      presetId: selectedPresetId || null,
       createdAt: new Date().toISOString(),
     };
+    console.log('selected presetid, ',payload.presetId)
 
     console.log("🖼️ Using company logo for preview:", payload.company_logo);
 
@@ -436,6 +441,7 @@ const handleSaveMongo = async () => {
         ...parsedData,
         company_logo: logoUrl || parsedData.company_logo || null,
         isTwoColumnSkills,
+        presetId: selectedPresetId || null,
         createdAt: new Date().toISOString(),
       };
   

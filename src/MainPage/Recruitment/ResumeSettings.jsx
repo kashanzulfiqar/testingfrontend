@@ -27,6 +27,9 @@ import {
   ArrowRightOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedPresetId as setSelectedReduxPresetId, clearSelectedPreset } from "../../Redux/Reducer/permissions/resumePresetSlice";
+
 
 const { Text } = Typography;
 
@@ -61,6 +64,9 @@ export default function ResumeSettings() {
     logoHeight: 60,
   });
 
+const dispatch = useDispatch();
+const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetId);
+
 
 
   // ---------------------- FETCH ON LOAD ----------------------
@@ -69,6 +75,15 @@ export default function ResumeSettings() {
       setLoading(true);
       await Promise.all([fetchCurrentTheme(), fetchPresets()]);
       setLoading(false);
+
+      if (reduxPresetId) {
+        console.log("🔁 Redux preset found on load:", reduxPresetId);
+        handleSelectPreset(reduxPresetId); // visually mark selected
+        await usePreset(reduxPresetId); // load its config from DB
+        setIsLocked(true);
+        setIsPresetSelected(true);
+        setSelectedPresetId(reduxPresetId);
+      }
     };
     loadData();
   }, []);
@@ -156,32 +171,44 @@ export default function ResumeSettings() {
       },
     });
   };
-    const usePreset = async (presetId) => {
-      try {
-        if(presetId){console.log('preset id found:', presetId)}
-        // 🧠 Use GET to fetch preset config directly
-        const res = await apiServices("GET", `resume-presets/${presetId}`);
-        if (res?.data?.config) {
-          setCurrentConfig(res.data.config);
-          message.success(`Preset "${res.data.name}" loaded successfully!`);
-        } else {
-          message.warning("Preset not found or missing config.");
-          setSelectedPresetId(null);
-          setIsPresetSelected(false);
-          setIsLocked(false);
-        }
-      } catch (err) {
-        console.error("❌ Failed to load preset:", err);
-        if (err.response?.status === 404) {
-          message.warning("Preset not found (possibly deleted).");
-          setSelectedPresetId(null);
-          setIsPresetSelected(false);
-          setIsLocked(false);
-        } else {
-          message.error("Failed to fetch preset from server.");
-        }
+  const usePreset = async (presetId) => {
+    try {
+      if (presetId) {
+        console.log("preset id found:", presetId);
       }
-    };
+  
+      // 🧠 Fetch preset config
+      const res = await apiServices("GET", `resume-presets/${presetId}`);
+  
+      // 🧩 Update Redux state (no await!)
+      console.log('dispatching presetID', dispatch(setSelectedReduxPresetId(presetId)));
+      
+  
+      if (res?.data?.config) {
+        setCurrentConfig(res.data.config);
+        message.success(`Preset "${res.data.name}" loaded successfully!`);
+      } else {
+        message.warning("Preset not found or missing config.");
+        dispatch(clearSelectedPreset());
+        setIsPresetSelected(false);
+        setIsLocked(false);
+      }
+    } catch (err) {
+      console.error("❌ Failed to load preset:", err);
+      if (err.response?.status === 404) {
+        message.warning("Preset not found (possibly deleted).");
+      } else {
+        message.error("Failed to fetch preset from server.");
+      }
+  
+      // Reset local + global state
+      dispatch(clearSelectedPreset());
+      setSelectedPresetId(null);
+      setIsPresetSelected(false);
+      setIsLocked(false);
+    }
+  };
+  
   // ---------------------- LOGIC ----------------------
   const handleSelectPreset = (presetId) => {
     const preset = presets.find((p) => p._id === presetId);
