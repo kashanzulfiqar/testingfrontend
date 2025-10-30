@@ -50,6 +50,10 @@ jobs:
             echo "Cleaning up old dependencies and build files..."
             rm -rf node_modules dist
 
+            echo "Bumping node version"
+            nvm use 22
+
+            
             echo "Installing dependencies..."
             yarn install --frozen-lockfile || { echo "Dependency installation failed"; exit 1; }
 
