@@ -48,6 +48,20 @@ export default function ResumeSettings() {
   const [isLocked, setIsLocked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isPresetSelected, setIsPresetSelected] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    fontFamily: "Helvetica",
+    headingFontSize: 18,
+    subHeadingFontSize: 13,
+    textFontSize: 11,
+    textColor: "#000000",
+    headingColor: "#000000",
+    accentColor: "#E85C41",
+    logoWidth: 100,
+    logoHeight: 60,
+  });
+
+
 
   // ---------------------- FETCH ON LOAD ----------------------
   useEffect(() => {
@@ -95,23 +109,33 @@ export default function ResumeSettings() {
     }
   };
 
-  const savePresetToDB = async () => {
-    if (!newPresetName.trim()) return;
+  const handleSaveModalPreset = async () => {
+    if (!newPresetName.trim()) {
+      return message.warning("Please enter a preset name.");
+    }
+  
     try {
       const res = await apiServices("POST", "resume-presets", {
         name: newPresetName,
-        config: currentConfig,
+        config: modalConfig,
       });
-      if (res?.data) {
-        message.success("Preset saved successfully!");
+  
+      if (res?.data?.preset) {
+        message.success(`Preset "${res.data.preset.name}" saved successfully!`);
+        setPresets((prev) => [...prev, res.data.preset]);
+        setShowCreateModal(false);
         setNewPresetName("");
-        fetchPresets();
       }
     } catch (err) {
       console.error("❌ Failed to save preset:", err);
-      message.error("Failed to save preset.");
+      if (err.response?.status === 409) {
+        message.warning("A preset with that name already exists.");
+      } else {
+        message.error("Failed to save preset. Please try again.");
+      }
     }
   };
+  
 
   const deletePresetFromDB = async (id) => {
     Modal.confirm({
@@ -134,6 +158,7 @@ export default function ResumeSettings() {
   };
     const usePreset = async (presetId) => {
       try {
+        if(presetId){console.log('preset id found:', presetId)}
         // 🧠 Use GET to fetch preset config directly
         const res = await apiServices("GET", `resume-presets/${presetId}`);
         if (res?.data?.config) {
@@ -161,6 +186,8 @@ export default function ResumeSettings() {
   const handleSelectPreset = (presetId) => {
     const preset = presets.find((p) => p._id === presetId);
     if (preset) {
+      console.log('preset id', preset._id);
+      console.log('parameter id', presetId);
       setCurrentConfig(preset.config);
       setSelectedPresetId(presetId);
       setIsPresetSelected(true);
@@ -478,27 +505,181 @@ export default function ResumeSettings() {
             </Card>
 
             {/* Create Preset */}
-            <Card title="Create Preset">
-              <Space direction="vertical" style={{ width: "100%" }}>
-                <Input
-                  placeholder="e.g., My Custom Style"
-                  value={newPresetName}
-                  onChange={(e) => setNewPresetName(e.target.value)}
-                />
-                <Button
-                  type="primary"
-                  block
-                  icon={<SaveOutlined />}
-                  onClick={savePresetToDB}
-                  disabled={!newPresetName.trim()}
-                >
-                  Save as Preset
-                </Button>
-              </Space>
-            </Card>
+            <Button
+              type="primary"
+              shape="round"
+              block
+              icon={<SaveOutlined />}
+              style={{
+                backgroundColor: "#FF9B44",
+                border: "none",
+                fontWeight: 600,
+              }}
+              onClick={() => {
+                setModalConfig(currentConfig);
+                setShowCreateModal(true)}}  
+            >
+              Create Preset
+            </Button>
+
+
           </Space>
         </Col>
       </Row>
+      <Modal
+        title="Create New Preset"
+        open={showCreateModal}
+        onCancel={() => setShowCreateModal(false)}
+        footer={null}
+        width={800}
+        centered
+        zIndex={2000}
+        bodyStyle={{
+          maxHeight: "75vh",
+          overflowY: "auto",
+          padding: "24px 32px",
+        }}
+        destroyOnClose
+      >
+        <Space direction="vertical" style={{ width: "100%" }} size="large">
+          <Input
+            placeholder="Preset Name (e.g., Modern Orange)"
+            value={newPresetName}
+            onChange={(e) => setNewPresetName(e.target.value)}
+            style={{ marginBottom: 8 }}
+          />
+
+          {/* Font Family */}
+          <div>
+            <Text strong>Font Family</Text>
+            <Select
+              value={modalConfig.fontFamily}
+              onChange={(value) =>
+                setModalConfig((prev) => ({ ...prev, fontFamily: value }))
+              }
+              style={{ width: "100%", marginTop: 6 }}
+              options={FONT_OPTIONS}
+            />
+          </div>
+
+          {/* Font Sizes */}
+          {[
+            { key: "headingFontSize", label: "Heading Font Size", min: 12, max: 28 },
+            { key: "subHeadingFontSize", label: "Subheading Font Size", min: 10, max: 20 },
+            { key: "textFontSize", label: "Text Font Size", min: 8, max: 16 },
+          ].map(({ key, label, min, max }) => (
+            <div key={key}>
+              <Text strong>{label}</Text>
+              <Slider
+                value={modalConfig[key]}
+                onChange={(value) =>
+                  setModalConfig((prev) => ({ ...prev, [key]: value }))
+                }
+                min={min}
+                max={max}
+                step={1}
+              />
+            </div>
+          ))}
+
+          {/* Logo Dimensions */}
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Text strong>Logo Width (px)</Text>
+              <Input
+                type="number"
+                min={20}
+                max={400}
+                value={modalConfig.logoWidth || ""}
+                onChange={(e) =>
+                  setModalConfig((prev) => ({
+                    ...prev,
+                    logoWidth: Number(e.target.value),
+                  }))
+                }
+                placeholder="e.g., 100"
+                style={{ width: "100%" }}
+              />
+            </Col>
+            <Col xs={24} sm={12}>
+              <Text strong>Logo Height (px)</Text>
+              <Input
+                type="number"
+                min={20}
+                max={400}
+                value={modalConfig.logoHeight || ""}
+                onChange={(e) =>
+                  setModalConfig((prev) => ({
+                    ...prev,
+                    logoHeight: Number(e.target.value),
+                  }))
+                }
+                placeholder="e.g., 60"
+                style={{ width: "100%" }}
+              />
+            </Col>
+          </Row>
+
+          {/* Colors */}
+          <Divider />
+          <Text strong>Colors</Text>
+          <Row gutter={16}>
+            {["textColor", "headingColor", "accentColor"].map((key, index) => (
+              <Col xs={24} sm={index < 2 ? 12 : 24} key={key}>
+                <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
+                  {key === "textColor"
+                    ? "Text Color"
+                    : key === "headingColor"
+                    ? "Heading Color"
+                    : "Accent Color"}
+                </Text>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    type="color"
+                    value={modalConfig[key]}
+                    onChange={(e) =>
+                      setModalConfig((prev) => ({
+                        ...prev,
+                        [key]: e.target.value,
+                      }))
+                    }
+                    style={{
+                      width: "40px",
+                      height: "30px",
+                      border: "none",
+                      background: "none",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <Input
+                    value={modalConfig[key]}
+                    onChange={(e) =>
+                      setModalConfig((prev) => ({
+                        ...prev,
+                        [key]: e.target.value,
+                      }))
+                    }
+                    style={{ fontFamily: "monospace", fontSize: 12 }}
+                  />
+                </div>
+              </Col>
+            ))}
+          </Row>
+
+          {/* Save Button */}
+          <Button
+            type="primary"
+            block
+            icon={<SaveOutlined />}
+            onClick={handleSaveModalPreset}
+            style={{ backgroundColor: "#FF9B44", border: "none", marginTop: 16 }}
+            disabled={!newPresetName.trim()}
+          >
+            Save Preset
+          </Button>
+        </Space>
+      </Modal>
+
     </div>
   );
 }
