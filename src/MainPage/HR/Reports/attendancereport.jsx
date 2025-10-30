@@ -421,17 +421,17 @@ const AttendanceReport = () => {
     // Body rows with conditional formatting
     data.forEach((record, index) => {
       const totalAbsents = record?.totalAbsents || 0;
-      const totalLeaves = record?.totalLeaves || 0;
-      const absentStyle = totalAbsents ? 'background:#ffcccc;' : '';
-      const leaveStyle = totalLeaves > 3 ? 'background:#ffcccc;' : '';
+      const totalLates = record?.totalLates || 0;
+      const absentStyle = totalAbsents > 0 ? 'background:#ffcccc;' : '';
+      const lateStyle = totalLates > 3 ? 'background:#ffcccc;' : '';
       html += '<tr>' +
         `<td>${index + 1}.</td>` +
         `<td>${record?.employeeName || ''}</td>` +
         `<td>${totalWorkingDays ?? ''}</td>` +
         `<td>${record?.totalPresents ?? ''}</td>` +
         `<td style="${absentStyle}">${totalAbsents}</td>` +
-        `<td style="${leaveStyle}">${totalLeaves}</td>` +
-        `<td>${record?.totalLates ?? ''}</td>` +
+        `<td>${record?.totalLeaves ?? ''}</td>` +
+        `<td style="${lateStyle}">${totalLates}</td>` +
         `<td>${record?.totalWFH ?? ''}</td>` +
       '</tr>';
     });
@@ -448,7 +448,7 @@ const AttendanceReport = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    message.success(t('reports.Attendance.reportExportedExcelSuccessfully') || 'Excel exported successfully');
+    message.success('Excel exported successfully');
   };
 
   
@@ -641,13 +641,13 @@ const AttendanceReport = () => {
                       </button>
                     </div> :
                     <div className="btn-group btn-group-sm">
-                      <button className="btn btn-white" style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop', width: '46px'}}>CSV</button>
+                      <button className="btn btn-white" style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop', width: '46px'}}>PDF</button>
                       <button
                         className="btn btn-white"
                         style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop', width: '46px'}}
                       >
                         {/* <i className="fa fa-download fa-lg m-r-5" /> */}
-                        PDF
+                        Excel
                       </button>
                       <button className="btn btn-white" style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop'}}><i className="fa fa-print fa-lg" /> Print</button>
                     </div>
