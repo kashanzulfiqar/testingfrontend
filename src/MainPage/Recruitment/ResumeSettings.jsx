@@ -47,6 +47,7 @@ export default function ResumeSettings() {
   const [newPresetName, setNewPresetName] = useState("");
   const [isLocked, setIsLocked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isPresetSelected, setIsPresetSelected] = useState(false);
 
   // ---------------------- FETCH ON LOAD ----------------------
   useEffect(() => {
@@ -131,13 +132,38 @@ export default function ResumeSettings() {
       },
     });
   };
-
+    const usePreset = async (presetId) => {
+      try {
+        // 🧠 Use GET to fetch preset config directly
+        const res = await apiServices("GET", `resume-presets/${presetId}`);
+        if (res?.data?.config) {
+          setCurrentConfig(res.data.config);
+          message.success(`Preset "${res.data.name}" loaded successfully!`);
+        } else {
+          message.warning("Preset not found or missing config.");
+          setSelectedPresetId(null);
+          setIsPresetSelected(false);
+          setIsLocked(false);
+        }
+      } catch (err) {
+        console.error("❌ Failed to load preset:", err);
+        if (err.response?.status === 404) {
+          message.warning("Preset not found (possibly deleted).");
+          setSelectedPresetId(null);
+          setIsPresetSelected(false);
+          setIsLocked(false);
+        } else {
+          message.error("Failed to fetch preset from server.");
+        }
+      }
+    };
   // ---------------------- LOGIC ----------------------
   const handleSelectPreset = (presetId) => {
     const preset = presets.find((p) => p._id === presetId);
     if (preset) {
       setCurrentConfig(preset.config);
       setSelectedPresetId(presetId);
+      setIsPresetSelected(true);
       setIsLocked(true);
     }
   };
@@ -151,6 +177,7 @@ export default function ResumeSettings() {
   const handleResetConfig = () => {
     setCurrentConfig(defaultConfig);
     setSelectedPresetId(null);
+    setIsPresetSelected(false);
     setIsLocked(false);
   };
 
@@ -233,6 +260,40 @@ export default function ResumeSettings() {
                     />
                   </div>
                 ))}
+                {/* Logo Dimensions */}
+                <Row gutter={16}>
+                  <Col xs={24} sm={12}>
+                    <Text strong style={{ display: "block", marginBottom: 8 }}>
+                      Logo Width (px)
+                    </Text>
+                    <Input
+                      type="number"
+                      min={20}
+                      max={400}
+                      value={currentConfig.logoWidth || ""}
+                      onChange={(e) => handleConfigChange("logoWidth", Number(e.target.value))}
+                      disabled={isLocked}
+                      placeholder="e.g., 100"
+                      style={{ width: "100%" }}
+                    />
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Text strong style={{ display: "block", marginBottom: 8 }}>
+                      Logo Height (px)
+                    </Text>
+                    <Input
+                      type="number"
+                      min={20}
+                      max={400}
+                      value={currentConfig.logoHeight || ""}
+                      onChange={(e) => handleConfigChange("logoHeight", Number(e.target.value))}
+                      disabled={isLocked}
+                      placeholder="e.g., 60"
+                      style={{ width: "100%" }}
+                    />
+                  </Col>
+                </Row>
+
 
                 <Divider />
 
@@ -291,12 +352,21 @@ export default function ResumeSettings() {
                     <UnlockOutlined /> Unlock & Reset
                   </Button>
                 )}
-
                 <Button
                   type="primary"
                   block
                   style={{ backgroundColor: "#FF9B44", border: "none" }}
-                  onClick={updateCurrentTheme}
+                  onClick={async () => {
+                    try {
+                      if (isPresetSelected && selectedPresetId) {
+                        await usePreset(selectedPresetId);
+                      } else {
+                        await updateCurrentTheme();
+                      }
+                    } catch (err) {
+                      console.error("❌ Failed to apply settings:", err);
+                    }
+                  }}
                 >
                   <ArrowRightOutlined /> Use Settings
                 </Button>
@@ -315,6 +385,18 @@ export default function ResumeSettings() {
                   color: currentConfig.textColor,
                 }}
               >
+                {/*Logo preview*/}
+                <div style={{ marginBottom: 16 }}>
+                <div
+                  style={{
+                    width: currentConfig.logoWidth,
+                    height: currentConfig.logoHeight,
+                    backgroundColor: currentConfig.accentColor,
+                    display: "inline-block",
+                    borderRadius: 4,
+                  }}
+                />
+              </div>
                 <h4
                   style={{
                     color: currentConfig.headingColor,
