@@ -12,10 +12,12 @@ import {
   Col,
   Typography,
   Divider,
+  Dropdown,
   Space,
   Empty,
   Breadcrumb,
   Modal,
+  Menu,
   Skeleton,
   message,
 } from "antd";
@@ -25,8 +27,10 @@ import {
   LockOutlined,
   UnlockOutlined,
   ArrowRightOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
+import more from "../../assets/iconsRecruitment/vertical.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedPresetId as setSelectedReduxPresetId, clearSelectedPreset } from "../../Redux/Reducer/permissions/resumePresetSlice";
 
@@ -52,6 +56,7 @@ export default function ResumeSettings() {
   const [loading, setLoading] = useState(true);
   const [isPresetSelected, setIsPresetSelected] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isEditingPreset, setIsEditingPreset] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     fontFamily: "Helvetica",
     headingFontSize: 18,
@@ -66,7 +71,6 @@ export default function ResumeSettings() {
 
 const dispatch = useDispatch();
 const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetId);
-
 
 
   // ---------------------- FETCH ON LOAD ----------------------
@@ -150,6 +154,30 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       }
     }
   };
+
+  const handleUpdateModalPreset = async () => {
+    if (!newPresetName.trim()) {
+      return message.warning("Please enter a preset name.");
+    }
+  
+    try {
+      const res = await apiServices("PATCH", `resume-presets/${selectedPresetId}`, {
+        name: newPresetName,
+        config: modalConfig,
+      });
+  
+      if (res?.data?.preset) {
+        message.success(`Preset "${res.data.preset.name}" updated successfully!`);
+        fetchPresets();
+        setShowCreateModal(false);
+        setIsEditingPreset(false);
+      }
+    } catch (err) {
+      console.error("❌ Failed to update preset:", err);
+      message.error("Failed to update preset. Please try again.");
+    }
+  };
+  
   
 
   const deletePresetFromDB = async (id) => {
@@ -518,13 +546,52 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
                       }}
                     >
                       <Text strong>{preset.name}</Text>
-                      <DeleteOutlined
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deletePresetFromDB(preset._id);
+                      <div
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ display: "inline-flex", alignItems: "center" }}
+                      >
+                      <Dropdown
+                        menu={{
+                          items: [
+                            {
+                              key: "edit",
+                              icon: <EyeOutlined />,
+                              label: "Edit Preset",
+                              onClick: () => {
+                                setIsEditingPreset(true);
+                                setModalConfig(preset.config);
+                                setNewPresetName(preset.name);
+                                setShowCreateModal(true);
+                              },
+                            },
+                            {
+                              key: "delete",
+                              danger: true,
+                              icon: <DeleteOutlined />,
+                              label: "Delete Preset",
+                              onClick: (e) => {
+                                e.domEvent.stopPropagation(); // prevent triggering preset select
+                                deletePresetFromDB(preset._id);
+                              },
+                            },
+                          ],
                         }}
-                        style={{ color: "red", cursor: "pointer" }}
-                      />
+                        trigger={["click"]}
+                        placement="topRight"
+                      >
+                        <div
+                          style={{
+                            cursor: "pointer",
+                            height: "24px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <img src={more} alt="More Options" style={{ height: "24px" }} />
+                        </div>
+                      </Dropdown>
+
+                        </div>
                     </div>
                   ))}
                 </Space>
@@ -554,7 +621,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
         </Col>
       </Row>
       <Modal
-        title="Create New Preset"
+        title= {isEditingPreset? "Edit Preset": "Create New Preset"}
         open={showCreateModal}
         onCancel={() => setShowCreateModal(false)}
         footer={null}
@@ -698,11 +765,11 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
             type="primary"
             block
             icon={<SaveOutlined />}
-            onClick={handleSaveModalPreset}
-            style={{ backgroundColor: "#FF9B44", border: "none", marginTop: 16 }}
+            onClick={isEditingPreset? handleUpdateModalPreset :handleSaveModalPreset}
+            style={{ backgroundColor: "#FF9B44", border: "none", marginTop: 16, borderRadius: 10 }}
             disabled={!newPresetName.trim()}
           >
-            Save Preset
+            {isEditingPreset? 'Update Preset': 'Save Preset' }
           </Button>
         </Space>
       </Modal>
