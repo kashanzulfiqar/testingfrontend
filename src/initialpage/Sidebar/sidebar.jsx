@@ -2314,6 +2314,18 @@ const Sidebar = (props) => {
                               Interviews
                             </Link>
                           </li>
+                          <li>
+                            <Link
+                              className={
+                                pathname.includes("recruitment/resume-converter")
+                                  ? "active"
+                                  : ""
+                              }
+                              to="/recruitment/resume-converter"
+                            >
+                              Resume Converter
+                            </Link>
+                          </li>
                         </ul>
                       ) : (
                         ""
@@ -2722,14 +2734,14 @@ const Sidebar = (props) => {
                   <li className="menu-title">
                     <span>{t("sideBar.administration")}</span>
                   </li>
-                  {/* <li className={pathname.includes('assets') ? "active" : ""}>
+                  <li className={pathname.includes('assets') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </a>
                   :
-                  <Link to="/app/administrator/assets"><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </Link>
+                  <Link to="/assets"><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </Link>
                 }
-                </li> */}
+                </li>
                   <li className="submenu">
                     {user_state?.role === "client" ||
                     user_state?.role === "focalperson" ? (

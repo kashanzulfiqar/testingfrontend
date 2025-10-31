@@ -103,6 +103,8 @@ import TaskDetails from "../MainPage/Employees/Projects/taskDetail.jsx";
 import PaymentSetup from "../MainPage/Pages/Payment/PaymentSetup";
 import Billing from "../MainPage/Pages/Billing/Billing.jsx";
 import BillingHistory from "../MainPage/Pages/Billing/BillingHistory.jsx";
+import Assets from "../MainPage/Administration/assets";
+import AssetDetails from "../MainPage/Administration/AssetDetails";
 
 const App = () => {
   const loginState = useSelector((state) => state.user.loginvalue);
@@ -319,6 +321,8 @@ const App = () => {
           <Route path="/attendance-report" element={<AttendanceReport />} />
           <Route path="/lead-report" element={<LeadReport />} />
           <Route path="/client-report" element={<ClientReport />} />
+          <Route path="/assets" element={<Assets />} />
+          <Route path="/assets/:id" element={<AssetDetails />} />
           <Route path="/recruitment/*" element={
             <RecruitmentLayout>
               <Routes>
