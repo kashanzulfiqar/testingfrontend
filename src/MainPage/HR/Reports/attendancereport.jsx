@@ -39,6 +39,7 @@ import { EditOutlined } from "@mui/icons-material";
 import { LoadingOutlined } from "@ant-design/icons";
 import { itemRender } from "../../paginationfunction";
 import jsPDF from 'jspdf';
+import ExcelJS from 'exceljs';
 import 'jspdf-autotable';
  
 import { useTranslation } from "react-i18next";
@@ -395,8 +396,27 @@ const AttendanceReport = () => {
       });
   };
 
-  const downloadExcel_File = (data, dateFrom, dateTo, totalWorkingDays) => {
-    // Build HTML table to export as .xls (Excel-compatible)
+  const downloadExcel_File = async (data, dateFrom, dateTo, totalWorkingDays) => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Attendance');
+
+    sheet.mergeCells(1, 1, 1, 8);
+    sheet.getCell(1, 1).value = 'Attendance Report';
+    sheet.getCell(1, 1).font = { size: 16, bold: true };
+    sheet.getCell(1, 1).alignment = { horizontal: 'center' };
+
+    let metaRow = 2;
+    if (filters?.name) {
+      sheet.mergeCells(metaRow, 1, metaRow, 8);
+      sheet.getCell(metaRow, 1).value = `Employee Name: ${filters?.name}`;
+      metaRow++;
+    }
+    if (dateFrom || dateTo) {
+      sheet.mergeCells(metaRow, 1, metaRow, 8);
+      sheet.getCell(metaRow, 1).value = `From: ${dateFrom || ''}   To: ${dateTo || ''}`;
+      metaRow++;
+    }
+
     const headers = [
       'Sr.',
       'Employee Name',
@@ -407,43 +427,49 @@ const AttendanceReport = () => {
       'Late Arrivals',
       'Total WFH',
     ];
+    const headerRowIdx = metaRow;
+    sheet.getRow(headerRowIdx).values = headers;
+    sheet.getRow(headerRowIdx).font = { bold: true };
+    sheet.getRow(headerRowIdx).alignment = { horizontal: 'center' };
 
-    let html = '<table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:12px;">';
-    // Title
-    html += `<tr><th colspan="${headers.length}" style="text-align:center;font-size:16px;">Attendance Report</th></tr>`;
-    if (filters?.name) html += `<tr><td colspan="${headers.length}" style="font-weight:bold;">Employee Name:</td></tr><tr><td colspan="${headers.length}">${filters?.name}</td></tr>`;
-    if (dateFrom || dateTo) {
-      html += `<tr><td colspan="${headers.length}">From: ${dateFrom || ''} &nbsp;&nbsp; To: ${dateTo || ''}</td></tr>`;
-    }
-    // Header row
-    html += '<tr>' + headers.map(h => `<th style="background:#f6f6f6;">${h}</th>`).join('') + '</tr>';
-
-    // Body rows with conditional formatting
-    data.forEach((record, index) => {
+    const startDataRow = headerRowIdx + 1;
+    data.forEach((record, i) => {
+      const rowIdx = startDataRow + i;
       const totalAbsents = record?.totalAbsents || 0;
       const totalLates = record?.totalLates || 0;
-      const absentStyle = totalAbsents > 0 ? 'background:#ffcccc;' : '';
-      const lateStyle = totalLates > 3 ? 'background:#ffcccc;' : '';
-      html += '<tr>' +
-        `<td>${index + 1}.</td>` +
-        `<td>${record?.employeeName || ''}</td>` +
-        `<td>${totalWorkingDays ?? ''}</td>` +
-        `<td>${record?.totalPresents ?? ''}</td>` +
-        `<td style="${absentStyle}">${totalAbsents}</td>` +
-        `<td>${record?.totalLeaves ?? ''}</td>` +
-        `<td style="${lateStyle}">${totalLates}</td>` +
-        `<td>${record?.totalWFH ?? ''}</td>` +
-      '</tr>';
+      sheet.getRow(rowIdx).values = [
+        `${i + 1}.`,
+        record?.employeeName || '',
+        totalWorkingDays ?? '',
+        record?.totalPresents ?? '',
+        totalAbsents,
+        record?.totalLeaves ?? '',
+        totalLates,
+        record?.totalWFH ?? '',
+      ];
+      if (totalAbsents > 0) {
+        sheet.getCell(rowIdx, 5).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFCCCC' } };
+      }
+      if (totalLates > 3) {
+        sheet.getCell(rowIdx, 7).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFCCCC' } };
+      }
     });
 
-    html += '</table>';
+    sheet.columns.forEach((col) => {
+      let maxLen = 12;
+      col.eachCell({ includeEmpty: true }, (cell) => {
+        const v = cell.value ? cell.value.toString() : '';
+        maxLen = Math.max(maxLen, v.length + 2);
+      });
+      col.width = Math.min(Math.max(maxLen, 12), 40);
+    });
 
-    // Export
-    const blob = new Blob([`\ufeff${html}`], { type: 'application/vnd.ms-excel' });
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'attendance_report.xls';
+    a.download = 'attendance_report.xlsx';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
