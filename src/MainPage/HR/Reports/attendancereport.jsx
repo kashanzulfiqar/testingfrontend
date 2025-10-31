@@ -39,8 +39,9 @@ import { EditOutlined } from "@mui/icons-material";
 import { LoadingOutlined } from "@ant-design/icons";
 import { itemRender } from "../../paginationfunction";
 import jsPDF from 'jspdf';
+import ExcelJS from 'exceljs';
 import 'jspdf-autotable';
-import { CSVLink } from 'react-csv';
+ 
 import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
@@ -50,7 +51,7 @@ const AttendanceReport = () => {
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const user_name = useSelector((state) => state?.user?.loginvalue?.user?.fullName);
   const navigate = useNavigate();
-  const csvLinkEl = useRef();
+  
 
   const [form] = Form.useForm();
   const [menu, setMenu] = useState(false);
@@ -85,9 +86,9 @@ const AttendanceReport = () => {
   const role = user_state?.user?.role;
 
   const [loader, setLoader] = useState(false);
-  const [csvData, setCSVData] = useState([]);
-  const [csvLoader, setCsvLoader] = useState(false);
+  
   const [pdfLoader, setPdfLoader] = useState(false);
+  const [excelLoader, setExcelLoader] = useState(false);
   const [printLoader, setPrintLoader] = useState(false);
 
   const [open, setOpen] = useState({
@@ -122,11 +123,7 @@ const AttendanceReport = () => {
     setIsStatLoading(true);
   }, []);
   
-  useEffect(() => {
-    if(csvData?.length > 0){
-      csvLinkEl.current.link.click();
-    }
-  }, [csvData]);
+  
 
   useEffect(() => {
     if (role === "admin" || permissions?.reportManagement) {
@@ -335,7 +332,7 @@ const AttendanceReport = () => {
     let name = filters.name || '';
     let dateFrom = filters.dateFrom
     let dateTo = filters.dateTo
-    type === 'csv' ? setCsvLoader(true) : type === 'pdf' ? setPdfLoader(true) : setPrintLoader(true)
+    type === 'pdf' ? setPdfLoader(true) : setPrintLoader(true)
 
     apiServices(
       "GET",
@@ -347,11 +344,11 @@ const AttendanceReport = () => {
         if (res.data.success === true) {
           // console.log(res?.data?.Attendance);
           downloadPDF_File(res?.data?.Attendance, dateFrom, dateTo, type)
-          type === 'csv' ? setCsvLoader(false) : type === 'pdf' ? setPdfLoader(false) : setPrintLoader(false)
+          type === 'pdf' ? setPdfLoader(false) : setPrintLoader(false)
         }
       })
       .catch((err) => {
-        type === 'csv' ? setCsvLoader(false) : type === 'pdf' ? setPdfLoader(false) : setPrintLoader(false)
+        type === 'pdf' ? setPdfLoader(false) : setPrintLoader(false)
         message.error(
           `${
             err?.response?.data?.msg
@@ -364,15 +361,123 @@ const AttendanceReport = () => {
       })
   }
 
-  const csvHeaders = [
-    { label: "Sr#", key: "srNum", },
-    { label: "Employee Name", key: "employeeName"},
-    { label: "Total Presents", key: "totalPresents"},
-    { label: "Total Absents", key: "totalAbsents"},
-    { label: "Total Leaves", key: "totalLeaves"},
-    { label: "Late Arrivals", key: "totalLates"},
-    { label: "Total WFH", key: "totalWFH"}
-  ];
+  
+
+  const downloadExcel = () => {
+    let name = filters.name || '';
+    let dateFrom = filters.dateFrom;
+    let dateTo = filters.dateTo;
+    setExcelLoader(true);
+
+    apiServices(
+      "GET",
+      `report/attendance?employeeName=${name}&dateFrom=${dateFrom}&dateTo=${dateTo}&page=${1}&limit=${99999}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          const totalWorkingDays = res?.data?.totalWorkingDays;
+          downloadExcel_File(res?.data?.Attendance, dateFrom, dateTo, totalWorkingDays);
+          setExcelLoader(false);
+        }
+      })
+      .catch((err) => {
+        setExcelLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t('reports.Attendance.errorDownloadingAttendanceReports')
+          }`
+        );
+      });
+  };
+
+  const downloadExcel_File = async (data, dateFrom, dateTo, totalWorkingDays) => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Attendance');
+
+    sheet.mergeCells(1, 1, 1, 8);
+    sheet.getCell(1, 1).value = 'Attendance Report';
+    sheet.getCell(1, 1).font = { size: 16, bold: true };
+    sheet.getCell(1, 1).alignment = { horizontal: 'center' };
+
+    let metaRow = 2;
+    if (filters?.name) {
+      sheet.mergeCells(metaRow, 1, metaRow, 8);
+      sheet.getCell(metaRow, 1).value = `Employee Name: ${filters?.name}`;
+      metaRow++;
+    }
+    if (dateFrom || dateTo) {
+      sheet.mergeCells(metaRow, 1, metaRow, 8);
+      sheet.getCell(metaRow, 1).value = `From: ${dateFrom || ''}   To: ${dateTo || ''}`;
+      metaRow++;
+    }
+
+    const headers = [
+      'Sr.',
+      'Employee Name',
+      'Total Working Days',
+      'Total Presents',
+      'Total Absents',
+      'Total Leaves',
+      'Late Arrivals',
+      'Total WFH',
+    ];
+    const headerRowIdx = metaRow;
+    sheet.getRow(headerRowIdx).values = headers;
+    sheet.getRow(headerRowIdx).font = { bold: true };
+    sheet.getRow(headerRowIdx).alignment = { horizontal: 'center' };
+
+    const startDataRow = headerRowIdx + 1;
+    data.forEach((record, i) => {
+      const rowIdx = startDataRow + i;
+      const totalAbsents = record?.totalAbsents || 0;
+      const totalLates = record?.totalLates || 0;
+      sheet.getRow(rowIdx).values = [
+        `${i + 1}.`,
+        record?.employeeName || '',
+        totalWorkingDays ?? '',
+        record?.totalPresents ?? '',
+        totalAbsents,
+        record?.totalLeaves ?? '',
+        totalLates,
+        record?.totalWFH ?? '',
+      ];
+      if (totalAbsents > 0) {
+        sheet.getCell(rowIdx, 5).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFCCCC' } };
+      }
+      if (totalLates > 3) {
+        sheet.getCell(rowIdx, 7).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFCCCC' } };
+      }
+    });
+
+    sheet.columns.forEach((col) => {
+      let maxLen = 12;
+      col.eachCell({ includeEmpty: true }, (cell) => {
+        const v = cell.value ? cell.value.toString() : '';
+        maxLen = Math.max(maxLen, v.length + 2);
+      });
+      col.width = Math.min(Math.max(maxLen, 12), 40);
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'attendance_report.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    message.success('Excel exported successfully');
+  };
+
+  
 
   const downloadPDF_File = (data, dateFrom, dateTo, type) => {
 
@@ -481,13 +586,6 @@ const AttendanceReport = () => {
           printWindow.close();
         };
       };
-    }else if(type === 'csv'){
-      const dataForCSV = data.map((record, index) => ({
-        ...record,
-        srNum: `${index+1}.`,
-      }));
-      setCSVData(dataForCSV);
-      message.success(t('reports.Attendance.reportExportedCSVSuccessfully'));
     }
 
   };
@@ -532,24 +630,6 @@ const AttendanceReport = () => {
                   {
                     attendancerecords?.length > 0 ?
                     <div className="btn-group btn-group-sm">
-                      <CSVLink
-                        headers={csvHeaders}
-                        filename="attendance_report.csv"
-                        data={csvData}
-                        ref={csvLinkEl}
-                      />
-                      <button
-                        className="btn btn-white"
-                        onClick={() => {
-                          downloadPDF(attendancerecords, 'csv');
-                        }}
-                        style={{width: '46px', borderColor: '#cccccc', backgroundColor: '#fff'}}
-                        disabled={csvLoader}
-                      >
-                        {
-                          csvLoader ? <Spin size="small" indicator={antIconDownload} /> : 'CSV'
-                        }
-                      </button>
                       <button
                         className="btn btn-white"
                         onClick={() => {
@@ -566,6 +646,14 @@ const AttendanceReport = () => {
                       </button>
                       <button
                         className="btn btn-white"
+                        onClick={downloadExcel}
+                        style={{width: '64px', borderColor: '#cccccc', backgroundColor: '#fff'}}
+                        disabled={excelLoader}
+                      >
+                        {excelLoader ? <Spin size="small" indicator={antIconDownload} /> : 'Excel'}
+                      </button>
+                      <button
+                        className="btn btn-white"
                         onClick={() => {
                           downloadPDF(attendancerecords, 'print');
                         }}
@@ -579,13 +667,13 @@ const AttendanceReport = () => {
                       </button>
                     </div> :
                     <div className="btn-group btn-group-sm">
-                      <button className="btn btn-white" style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop', width: '46px'}}>CSV</button>
+                      <button className="btn btn-white" style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop', width: '46px'}}>PDF</button>
                       <button
                         className="btn btn-white"
                         style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop', width: '46px'}}
                       >
                         {/* <i className="fa fa-download fa-lg m-r-5" /> */}
-                        PDF
+                        Excel
                       </button>
                       <button className="btn btn-white" style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop'}}><i className="fa fa-print fa-lg" /> Print</button>
                     </div>

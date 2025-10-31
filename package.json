@@ -59,6 +59,7 @@
     "chart.js": "^3.7.0",
     "countries-list": "^3.1.0",
     "emoji-picker-react": "^4.13.2",
+    "exceljs": "^4.4.0",
     "faker": "^5.5.3",
     "feather-icons-react": "^0.5.0",
     "font-awesome": "^4.7.0",
