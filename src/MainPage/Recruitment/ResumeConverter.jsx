@@ -9,7 +9,6 @@ import { BASE_URL } from '../../config/apiConfig';
 import { FileTextOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
 import axios from "axios";
 const { Dragger } = Upload;
 const { Panel } = Collapse;
@@ -45,8 +44,8 @@ export default function ResumeConverter() {
   const test = userState?.user?.companyImageUrl;
   const companyLogo = userState?.user?.companyImageUrl || "";
   const [isTwoColumnSkills, setIsTwoColumnSkills] = useState(false);
-
-  
+  const selectedPresetId = useSelector((state) => state.resumePreset.selectedPresetId) || "";
+  console.log(selectedPresetId)  
   
 
 
@@ -95,10 +94,14 @@ useEffect(() => {
     if (autoPreview && parsedData) {
       console.log("🚀 Auto preview triggered for:", parsedData.full_name);
       setLoading(true);
+      const payload = {
+        ...parsedData,
+        presetId: selectedPresetId,
+      }
       try {
         const blobRes = await axiosInstance.post(
           "resume/preview-from-json",
-          { parsed: parsedData },
+          { parsed: payload },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -290,8 +293,10 @@ const handleSave = async () => {
       ...parsedData,
       company_logo: logoUrl || parsedData.company_logo || null,
       isTwoColumnSkills,
+      presetId: selectedPresetId || null,
       createdAt: new Date().toISOString(),
     };
+    console.log('selected presetid, ',payload.presetId)
 
     console.log("🖼️ Using company logo for preview:", payload.company_logo);
 
@@ -388,24 +393,28 @@ const handleSaveMongo = async () => {
       try {
         message.loading({ content: "Generating PDF...", key: "pdfGen" });
 
-        const blobRes = await apiServices(
-          "POST",
-          "resumes/preview-json",
-          { parsed: payload },
-          { responseType: "blob" }
+        const blobRes = await axiosInstance.post(
+          "resume/preview-from-json",
+          { parsed: record },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            responseType: "arraybuffer",
+          }
         );
-
+  
         const blob = new Blob([blobRes.data], { type: "application/pdf" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = `${record.full_name || "resume"}.pdf`;
         link.click();
         URL.revokeObjectURL(link.href);
-
-        message.success({ content: "📄 Download started!", key: "pdfGen" });
-      } catch (pdfErr) {
-        console.error("❌ PDF generation failed:", pdfErr);
-        message.error("Failed to generate PDF preview.");
+        message.success("Download started!");
+      } catch (err) {
+        console.error("❌ Download failed:", err);
+        message.error("Failed to download PDF.");
       }
     }
   } catch (err) {
@@ -431,6 +440,8 @@ const handleSaveMongo = async () => {
       const payload = {
         ...parsedData,
         company_logo: logoUrl || parsedData.company_logo || null,
+        isTwoColumnSkills,
+        presetId: selectedPresetId || null,
         createdAt: new Date().toISOString(),
       };
   
@@ -737,38 +748,25 @@ const handleSaveMongo = async () => {
                         {/* ----------------- Collapsible Resume Sections ----------------- */}
                       <Collapse
                         defaultActiveKey={[]}
-                        expandIconPosition="end"
-                        expandIcon={({ isActive }) => (
-                          // <div
-                          //   style={{
-                          //     marginTop: "2px",
-                          //     // marginBottom: "5px",
-                          //     width: "24px",
-                          //     height: "24px",
-                          //     display: "flex",
-                          //     alignItems: "center",
-                          //     justifyContent: "center",
-                          //     borderRadius: "4px",
-                          //   }}
-                          // >
-                          // </div>
-                            <img
-                              src={leftPageIcon}
-                              alt="dropdown"
-                              style={{
-                                width: "12px",
-                                height: "12px",
-                                transform: isActive ? "rotate(-90deg)" : "rotate(0deg)",
-                                transition: "transform 0.3s ease",
-                              }}
-                            />
-                        )}
-                        style={{
-                          backgroundColor: "#fff",
-                          // marginBottom: '4px',
-                          border: "none",
-                          borderRadius: "8px",
-                        }}
+                        // expandIconPosition="end"
+                        // expandIcon={({ isActive }) => (
+                        //     <img
+                        //       src={leftPageIcon}
+                        //       alt="dropdown"
+                        //       style={{
+                        //         width: "12px",
+                        //         height: "12px",
+                        //         transform: isActive ? "rotate(-90deg)" : "rotate(0deg)",
+                        //         transition: "transform 0.3s ease",
+                        //       }}
+                        //     />
+                        // )}
+                        // style={{
+                        //   backgroundColor: "#fff",
+                        //   marginBottom: '4px',
+                        //   border: "none",
+                        //   borderRadius: "8px",
+                        // }}
                       >
                         {/* ----------------- Personal Branding  ----------------- */}
                         <Panel
@@ -1314,6 +1312,26 @@ const handleSaveMongo = async () => {
                 </div>
               </div>
             </div>
+            <style jsx>{`
+            @media (max-width: 992px) {
+              .converter-grid {
+                grid-template-columns: 1fr !important;
+              }
+              .right-section {
+                margin-top: 24px;
+              }
+            }
+            /* For small phones */
+            @media (max-width: 600px) {
+              .converter-grid {
+                gap: 16px !important;
+                padding: 0 8px;
+              }
+              .right-section {
+                margin-top: 16px;
+              }
+            }
+          `}</style>
           </div>
         </div>
       </div>
@@ -1507,14 +1525,16 @@ const handleSaveMongo = async () => {
             </div>
           )}
         </Modal>
-      <Modal
+        <Modal
   open={isPreviewModalVisible}
   onCancel={() => setIsPreviewModalVisible(false)}
   footer={null}
   width={1100}
-  style={{ top: 24 }}
-  bodyStyle={{ padding: 0, height: "85vh" }}
+  className="pdf-preview-modal"
   centered
+  style={{ zIndex: 3000 }}
+  maskStyle={{ zIndex: 2999, background: "rgba(0, 0, 0, 0.5)" }}
+  bodyStyle={{ padding: 0, height: "85vh" }}
   title={
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
       <EyeOutlined style={{ color: "#ff9244", fontSize: 20 }} />
@@ -1542,7 +1562,10 @@ const handleSaveMongo = async () => {
       width="100%"
       height="100%"
       title="Resume Focus Preview"
-      style={{ border: "none", backgroundColor: "#FFF1E5" }}
+      style={{
+        border: "none",
+        backgroundColor: "#FFF1E5",
+      }}
     />
   ) : (
     <div
@@ -1557,7 +1580,80 @@ const handleSaveMongo = async () => {
       <p>No PDF preview available.</p>
     </div>
   )}
+
+  <style jsx>{`
+    /* --- Core Modal Styling --- */
+    .pdf-preview-modal .ant-modal-content {
+      border-radius: 10px;
+      border: 1px solid transparent;
+      overflow: hidden;
+    }
+    .pdf-preview-modal .ant-modal-header {
+      border-bottom: none;
+      padding: 15px 18px 0 24px;
+      border-radius: 10px;
+      margin-bottom: 10px
+    }
+    .pdf-preview-modal .ant-modal-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .pdf-preview-modal .ant-modal-close {
+      background-color: #f8f9fa;
+      border-radius: 50%;
+      margin: 16px 16px 0 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* --- Z-Index Fix to Ensure It's Above Sidebar --- */
+    .ant-modal,
+    .ant-modal-wrap,
+    .ant-modal-mask {
+      z-index: 3000 !important;
+    }
+
+    /* --- Responsiveness --- */
+    @media (max-width: 1200px) {
+      .pdf-preview-modal .ant-modal-content {
+        width: 95% !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .pdf-preview-modal .ant-modal-body {
+        height: 70vh !important;
+      }
+      .pdf-preview-modal .ant-modal-title {
+        font-size: 16px;
+      }
+      .pdf-preview-modal .ant-modal-header {
+        padding: 8px 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .pdf-preview-modal .ant-modal-body {
+        height: 65vh !important;
+      }
+    }
+
+    /* --- Scroll + Focus Handling --- */
+    .pdf-preview-modal .ant-modal-body {
+      overflow: hidden;
+      background: #fff;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+  `}</style>
 </Modal>
+
+
 <style jsx>{`
         .resume-converter-page .content.container-fluid {
           padding-left: 0 !important;
@@ -1570,6 +1666,61 @@ const handleSaveMongo = async () => {
         .resume-converter-page {
           background-color: #fff;
         }
+        // .converter-grid fluid-container {
+        //   display: flex;
+        //   align-items: flex-start;
+        //   justify-content: space-between;
+        //   gap: 24px;
+        //   padding: 16px;
+        // }
+        
+        // .converter-grid {
+        //   transition: all 0.3s
+        // }
+
+        // /* Left section (form) */
+        // .left-section {
+        //   flex: 1 1 50%;
+        //   min-width: 360px;
+        // }
+
+        // /* Right section (preview) */
+        // .right-section {
+        //   flex: 1 1 50%;
+        //   background: #fff;
+        //   border: 1px solid #eaeaea;
+        //   border-radius: 10px;
+        //   overflow: hidden;
+        // }
+
+        // /* --- Responsive behavior --- */
+        // @media (max-width: 992px) {
+        //   .converter-grid fluid-container {
+        //     flex-direction: column;
+        //     align-items: stretch;
+        //   }
+
+        //   .left-section,
+        //   .right-section {
+        //     width: 100%;
+        //   }
+
+        //   .right-section {
+        //     margin-top: 24px; /* Add spacing between stacked blocks */
+        //   }
+        // }
+
+        // /* Optional: for very small phones */
+        // @media (max-width: 600px) {
+        //   .resume-converter-container {
+        //     padding: 12px;
+        //   }
+        //   .right-section {
+        //     margin-top: 16px;
+        //   }
+        // }
+
+          
       `}</style>
     </>
     
