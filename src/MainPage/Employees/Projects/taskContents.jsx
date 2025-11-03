@@ -188,6 +188,8 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
 
   // Add user state from Redux
   const user_state = useSelector((state) => state?.user?.loginvalue);
+  const userRole = user_state?.user?.role;
+  const isReadOnly = userRole === 'client' || userRole === 'focalperson';
 
   // Add editing states at the top of the component
   const [editingAssignee, setEditingAssignee] = useState(false);
@@ -1144,6 +1146,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       wordBreak: 'break-word'
                     }}
                     onClick={() => {
+                      if (isReadOnly) return;
                       setTaskNameValue(taskData?.title || "");
                       setEditingTaskName(true);
                     }}
@@ -1235,6 +1238,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       __html: taskData?.description || "Enter task description..." 
                     }}
                     onClick={() => {
+                      if (isReadOnly) return;
                       setDescriptionValue(taskData?.description || "");
                       setIsEditing(true);
                     }}
@@ -1243,7 +1247,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                 </div>
               
               {/* Action Buttons - Outside the card */}
-              {isEditing && (
+              {isEditing && !isReadOnly && (
                 <div style={{
                   display: 'flex',
                   justifyContent: 'flex-start',
@@ -1316,6 +1320,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         onChange={handleAttachmentUpload}
                         disabled={uploading}
                       />
+                      { !isReadOnly && (
                       <Button
                     icon={<PlusOutlined />}
                         loading={uploading}
@@ -1338,6 +1343,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       >
                         Upload
                       </Button>
+                      )}
                     </div>
                     {uploading && (
                       <div style={{ marginBottom: 8 }}>
@@ -1491,6 +1497,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
         <DownloadOutlined style={{ fontSize: 16, color: "#1890ff" }} />
       </div>
     </Tooltip>
+                                      {!isReadOnly && (
                                       <Dropdown overlay={menu} trigger={['click']}>
                                       <div
                                           style={{
@@ -1515,6 +1522,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                         <EllipsisOutlined style={{ fontSize: 16, color: '#666' }} />
                                       </div>
                                       </Dropdown>
+                                      )}
                                     </div>
                                   </div>
                                 
@@ -1812,17 +1820,18 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                               style={{ 
                                                 width: '16px', 
                                                 height: '16px', 
-                                                cursor: 'pointer',
-                                                opacity: 0.7
+                                                cursor: isReadOnly ? 'default' : 'pointer',
+                                                opacity: isReadOnly ? 0.4 : 0.7
                                               }}
                                               onClick={(e) => {
+                                                if (isReadOnly) return;
                                                 e.stopPropagation();
                                                 toggleReactionPicker(c._id);
                                               }}
                                             />
                                             
                                             {/* Emoji Picker */}
-                                            {showReactionPicker === c._id && (
+                                            {showReactionPicker === c._id && !isReadOnly && (
                                               <div 
                                                 className="reaction-picker"
                                                 style={{
@@ -1872,7 +1881,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                             )}
                                           </div>
                                           
-                                          {c.userId === user_state?.user?._id && (
+                                          {c.userId === user_state?.user?._id && !isReadOnly && (
                                             <img 
                                               src={EditIcon} 
                                               alt="Edit" 
@@ -1896,6 +1905,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         </div>
                         
                         {/* Comment Input Section */}
+                        {!isReadOnly && (
                         <div style={{
                           marginTop: 24,
                     
@@ -1973,6 +1983,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                   </div>
                           </div>
                         </div>
+                        )}
                       </div>
                     )}
                     {activityTab === 'history' && (
@@ -2048,6 +2059,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <span style={{ fontWeight: 600, fontSize: 16 }}>Task Status</span>
+                    {!isReadOnly ? (
                     <Dropdown
                       menu={{
                         items: statusOptions.map(option => ({
@@ -2094,6 +2106,16 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         {taskData?.lane || "Backlog"}
                       </Button>
                     </Dropdown>
+                    ) : (
+                      <Button
+                        size="small"
+                        icon={<i className={`fa fa-dot-circle-o text-${taskData?.columnColor}`} />}
+                        style={{ borderRadius: 20, background: '#f6f6fa', border: 'none', display: 'flex', gap:"5px",alignItems:"center", opacity: 0.6, cursor: 'not-allowed' }}
+                        disabled
+                      >
+                        {taskData?.lane || "Backlog"}
+                      </Button>
+                    )}
         </div>
                   <div style={{ borderTop: '1px solid #eee', margin: '16px 0' }} />
                   <div>
@@ -2157,7 +2179,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       ))}
                     </Select>
                           ) : (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer' }} onClick={() => setEditingAssignee(true)}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: isReadOnly ? 'default' : 'pointer' }} onClick={() => { if (!isReadOnly) setEditingAssignee(true); }}>
                               <span style={{ 
                                 fontWeight: 500, 
                                 color: assignee ? '#222' : '#bbb',
@@ -2186,7 +2208,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             </div>
                           )}
                         </div>
-                        {(!assignee || assignee?._id !== user_state?.user?._id) && !editingAssignee && (
+                        {(!assignee || assignee?._id !== user_state?.user?._id) && !editingAssignee && !isReadOnly && (
                           <div style={{ marginTop: 2 }}>
                             <a style={{ color: '#ff9800', fontSize: 12, cursor: 'pointer' }} onClick={handleAssignToMe} disabled={assigneeLoading}>
                           Assign to me
@@ -2229,8 +2251,8 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         </Select>
                       ) : (
                         <div
-                          style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer' }}
-                          onClick={() => setEditingType(true)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: isReadOnly ? 'default' : 'pointer' }}
+                          onClick={() => { if (!isReadOnly) setEditingType(true); }}
                         >
                           {taskTypes.find(t => t.value === taskType)?.icon || taskTypes[0].icon}
                           <span>{taskType || 'Task'}</span>
@@ -2275,7 +2297,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       ))}
                     </Select>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer', fontWeight: 500 }} onClick={() => setEditingPriority(true)}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: isReadOnly ? 'default' : 'pointer', fontWeight: 500 }} onClick={() => { if (!isReadOnly) setEditingPriority(true); }}>
                             {priority && (
                               <>
                                 {priority === 'Highest' || priority === 'High' ? (
@@ -2346,7 +2368,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             <CloseOutlined style={{ color: '#f5222d', cursor: 'pointer' }} onClick={() => { setEditingDueDate(false); setDueDateValue(taskData.dueDate ? moment(taskData.dueDate) : null); }} />
                         </span>
                       ) : (
-                          <span style={{ cursor: 'pointer', color: taskData.dueDate ? '#222' : '#bbb' }} onClick={() => setEditingDueDate(true)}>
+                          <span style={{ cursor: isReadOnly ? 'default' : 'pointer', color: taskData.dueDate ? '#222' : '#bbb' }} onClick={() => { if (!isReadOnly) setEditingDueDate(true); }}>
                             {taskData.dueDate ? moment(taskData.dueDate).format('DD/MM/YYYY') : 'None'}
                         </span>
                       )}
@@ -2403,7 +2425,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       ))}
                     </Select>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer' }} onClick={() => setEditingReporter(true)}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: isReadOnly ? 'default' : 'pointer' }} onClick={() => { if (!isReadOnly) setEditingReporter(true); }}>
                             {reporter ? (
                               <Avatar size={24} src={reporter.imageUrl} style={{ background: '#ffe082', color: '#333', fontWeight: 600 }}>
                                 {reporter.fullName?.split(' ').map(n => n[0]).join('').toUpperCase()}
@@ -2480,10 +2502,10 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             gap: 8, 
                             flexWrap: 'wrap', 
                             minHeight: 32, 
-                            cursor: 'pointer',
+                            cursor: isReadOnly ? 'default' : 'pointer',
                             maxWidth: '100%',
                             width: '100%'
-                          }} onClick={() => { setLabelsValue(taskData.tags || []); setEditingTags(true); }}>
+                          }} onClick={() => { if (!isReadOnly) { setLabelsValue(taskData.tags || []); setEditingTags(true); } }}>
                             {taskData.tags && taskData.tags.length > 0 ? (
                               taskData.tags.map((label, idx) => (
                                 <span

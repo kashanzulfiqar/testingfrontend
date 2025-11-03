@@ -76,13 +76,13 @@ optimization: {
        apiUrl: '',
        publicPath : '/'            
    })
- },
- resolve: {
+},
+resolve: {
    extensions: ['.tsx', '.ts', '.js', '.jsx'],
    alias: {
           Assets: path.resolve(__dirname, 'src/assets/'),
        },
- },
+},
   module: {
     rules: [
            {
@@ -124,7 +124,6 @@ optimization: {
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-
     new HtmlWebpackPlugin({
       template: path.join(__dirname, "public", "index.html"),
       filename: "./index.html",

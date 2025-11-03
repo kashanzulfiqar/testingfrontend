@@ -58,17 +58,14 @@ const Tasks = () => {
   const [originalDueDate, setOriginalDueDate] = useState(null);
 
   useEffect(() => {
+    getAllTasks();
+    getAllProjects();
+    getAllTaskBoards();
     if(role !== 'client' && role !== 'focalperson') {
-      console.log("here")
-      getAllTasks();
-      getAllProjects()
-      getAllTaskBoards()
       apiServices("GET", `user/all-employees`, null, user_state)
-        .then(res => {
-          if (res?.data?.success) setAllEmployees(res.data.User || []);
-        });
-    }else{
-      nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
+      .then(res => {
+        if (res?.data?.success) setAllEmployees(res.data.User || []);
+      });
     }
   }, [])
 
@@ -113,10 +110,54 @@ useEffect(() => {
 
   const getAllTasks = (values, current_page, page_size, archivedStatus = isArchived) => {
     setTableLoader(true);
-    apiServices("GET", `tasks?${values === '' ? '' : values?.projectId === '' ? '' : values?.projectId ? `&projectId=${values?.projectId}` : filterValues?.projectId ? `&projectId=${filterValues?.projectId}` : ''}${values === '' ? '' : values?.boardId === '' ? '' : values?.boardId ? `&boardId=${values?.boardId}` : filterValues?.boardId ? `&boardId=${filterValues?.boardId}` : ''}${values === '' ? '' : values?.title === '' ? '' : values?.title ? `&title=${values?.title}` : filterValues?.title ? `&title=${filterValues?.title}` : ''}${values === '' ? '' : values?.tag === '' ? '' : values?.tag ? `&tag=${values?.tag}` : filterValues?.tag ? `&tag=${filterValues?.tag}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}&isArchived=${archivedStatus}`, null, user_state)
+
+    console.log("values", values);
+    const pageParam = current_page ? current_page : currentPage ? currentPage : 1;
+    const limitParam = page_size ? page_size : pageSize ? pageSize : 20;
+
+    // If user is client or focalperson, fetch tasks via role-specific endpoint and pass filters
+    if (role === 'client' || role === 'focalperson') {
+      const qProjectId = values === '' ? '' : values?.projectId === '' ? '' : values?.projectId ? `&projectId=${values?.projectId}` : filterValues?.projectId ? `&projectId=${filterValues?.projectId}` : '';
+      const qBoardId = values === '' ? '' : values?.boardId === '' ? '' : values?.boardId ? `&boardId=${values?.boardId}` : filterValues?.boardId ? `&boardId=${filterValues?.boardId}` : '';
+      const qTitle = values === '' ? '' : values?.title === '' ? '' : values?.title ? `&title=${values?.title}` : filterValues?.title ? `&title=${filterValues?.title}` : '';
+      const qTag = values === '' ? '' : values?.tag === '' ? '' : values?.tag ? `&tag=${values?.tag}` : filterValues?.tag ? `&tag=${filterValues?.tag}` : '';
+
+      apiServices(
+        "GET",
+        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&page=${pageParam}&limit=${limitParam}&isArchived=${archivedStatus}${qProjectId}${qBoardId}${qTitle}${qTag}`,
+        null,
+        user_state
+      )
       .then((res) => {
           if (res?.data?.success === true) {
-              console.log("res", res?.data?.Task);
+            setAllTasks(res?.data?.Task?.docs);
+            setPaginationDetail(res?.data?.Task);
+            setTableLoader(false);
+          }
+        })
+        .catch((err) => {
+          setTableLoader(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t('Timesheetemployee.getAllTasksError')
+            }!`
+          );
+        });
+      return;
+    }
+
+    apiServices(
+      "GET",
+      `tasks?${values === '' ? '' : values?.projectId === '' ? '' : values?.projectId ? `&projectId=${values?.projectId}` : filterValues?.projectId ? `&projectId=${filterValues?.projectId}` : ''}${values === '' ? '' : values?.boardId === '' ? '' : values?.boardId ? `&boardId=${values?.boardId}` : filterValues?.boardId ? `&boardId=${filterValues?.boardId}` : ''}${values === '' ? '' : values?.title === '' ? '' : values?.title ? `&title=${values?.title}` : filterValues?.title ? `&title=${filterValues?.title}` : ''}${values === '' ? '' : values?.tag === '' ? '' : values?.tag ? `&tag=${values?.tag}` : filterValues?.tag ? `&tag=${filterValues?.tag}` : ''}&page=${pageParam}&limit=${limitParam}&isArchived=${archivedStatus}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res?.data?.success === true) {
               setAllTasks(res?.data?.Task?.docs);
               setPaginationDetail(res?.data?.Task)
               setTableLoader(false);
@@ -138,10 +179,16 @@ useEffect(() => {
 
   const getAllProjects = () => {
     setTableLoader(true);
-    apiServices("GET", `project-management?employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${1}&limit=${99999}` , null, user_state)
+    // If client, use client-specific projects endpoint; else default
+    const endpoint = role === 'client' || role === 'focalperson'
+      ? `project-management/project-by-id?role=${role}&id=${user_state?.user?._id}&page=1&limit=99999`
+      : `project-management?employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=1&limit=99999`;
+
+    apiServices("GET", endpoint , null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
-                const sortedData = res?.data?.projects?.docs?.slice().sort((a, b) => a.projectName.localeCompare(b.projectName));
+          const docs = res?.data?.projects?.docs || [];
+          const sortedData = docs.slice().sort((a, b) => a.projectName.localeCompare(b.projectName));
               setAllProjects(sortedData);
             }
           })
@@ -160,15 +207,40 @@ useEffect(() => {
   }
 
   const getAllTaskBoards = () => {
-    //setLoader(true);
+    // If role is client or focalperson, fetch taskboards by user/company id
+    if (role === 'client' || role === 'focalperson') {
+      apiServices(
+        "GET",
+        `taskBoard/taskboard-by-id?role=${role}&id=${user_state?.user?._id}&page=${1}&limit=${99999}`,
+        null,
+        user_state
+      )
+        .then((res) => {
+          if (res.data.success === true) {
+            const boards = res?.data?.taskBoards?.docs || res?.data?.taskBoards || [];
+            setAllTaskboards(boards);
+          }
+        })
+        .catch((err) => {
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t('projectScreen.errors.getEmployeeProjectsError')
+            }`
+          );
+        });
+      return;
+    }
 
+    // Default: fetch all taskboards and filter out project-linked for generic view
     apiServices("GET", `taskBoard/view-taskBoard/?page=${1}&limit=${99999}`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
-          console.log("taskboards", res?.data?.taskBoards);
           const taskBoards = res?.data?.taskBoards.filter((taskBoard) => !taskBoard.project) || [];
           setAllTaskboards(taskBoards);
-          
       }
       })
       .catch((err) => {
@@ -181,7 +253,6 @@ useEffect(() => {
               : t('projectScreen.errors.getEmployeeProjectsError')
           }`
         );
-        setIsLoading(false);
       })
   };
 
@@ -317,7 +388,7 @@ const onFinishAdd = (values) => {
     ...payloadData,
     assignee: values.assignee === '' ? null : values.assignee,
     priority: values.priority || null,
-    dueDate: values.dueDate || null,
+    dueDate: values.dueDate ? moment(values.dueDate).format('YYYY-MM-DD') : null,
     labels: values.labels || [],
     // Add other necessary fields
   };
@@ -350,7 +421,7 @@ const onFinishEdit = (values) => {
         ...payloadData,
         assignee: values.assignee === '' ? null : values.assignee,
         priority: values.priority || null,
-        dueDate: values.dueDate || null,
+        dueDate: values.dueDate ? moment(values.dueDate).format('YYYY-MM-DD') : null,
         labels: values.labels || [],
         _id: open?.data?._id
     }
@@ -575,7 +646,8 @@ const onFinishEdit = (values) => {
                   ...record,
                   projectId: record?.projectId?._id,
                   boardId: record?.boardId?._id,
-                  associateWith: record?.projectId ? 'project' : 'taskboard'
+                  associateWith: record?.projectId ? 'project' : 'taskboard',
+                  dueDate: record?.dueDate ? moment(record.dueDate) : null
                 });
               }}
             >
@@ -597,6 +669,10 @@ const onFinishEdit = (values) => {
       ),
     },
   ]
+
+  const filteredColumns = (role === 'client' || role === 'focalperson')
+    ? columns.filter(col => col.title !== t('allEmp.action') && col.title !== t('sideBar.taskBoard'))
+    : columns;
 
   const customEmptyText = (
     <Empty
@@ -686,7 +762,9 @@ const onFinishEdit = (values) => {
                 style={{ width: '100%' }}
                 />
               </div>
+                {!(role === 'client' || role === 'focalperson') && (
                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); }}><i className="fa fa-plus" /> {t('Tasks.addtask')}</a>
+                )}
               </div>
               </div>
             </div>
@@ -699,7 +777,7 @@ const onFinishEdit = (values) => {
             autoComplete='off'
           >
           <div className="row filter-row">
-          <div className="col-sm-6 col-md-2">  
+          <div className={`col-sm-6 ${role === 'client' || role === 'focalperson' ? 'col-md-3' : 'col-md-2'}`}>  
               <div className=' form-groupfilterDateMonth'>
                   <Form.Item
                     name="title"
@@ -719,7 +797,7 @@ const onFinishEdit = (values) => {
                   </Form.Item>
               </div>
             </div>
-            <div className="col-sm-6 col-md-2">  
+            <div className={`col-sm-6 ${role === 'client' || role === 'focalperson' ? 'col-md-3' : 'col-md-2'}`}>  
               <div style={{ position: 'relative' }} id='area11'>
                 <Form.Item
                   name="projectId"
@@ -757,6 +835,7 @@ const onFinishEdit = (values) => {
                 </Form.Item>
               </div>
             </div>
+            {!(role === 'client' || role === 'focalperson') && (
             <div className="col-sm-6 col-md-2">  
               <div style={{ position: 'relative' }} id='area11'>
                 <Form.Item
@@ -795,7 +874,8 @@ const onFinishEdit = (values) => {
                 </Form.Item>
               </div>
             </div>
-            <div className="col-sm-6 col-md-2">  
+            )}
+            <div className={`col-sm-6 ${role === 'client' || role === 'focalperson' ? 'col-md-3' : 'col-md-2'}`}>  
               <div className=' form-groupfilterDateMonth'>
                   <Form.Item
                     name="tag"
@@ -815,10 +895,10 @@ const onFinishEdit = (values) => {
                   </Form.Item>
               </div>
             </div>
-            <div className="col-sm-12 col-md-4" style={{
+            <div className={`col-sm-12 ${role === 'client' || role === 'focalperson' ? 'col-md-3' : 'col-md-4'}`} style={{
                     display: "flex",
                     alignItems: "flex-start",
-                    gap: "24px",
+                    gap: "12px",
                   }}>  
               <button 
                 href="javascript:void(0)"
@@ -857,7 +937,7 @@ const onFinishEdit = (values) => {
                   }}
                   pagination={false}
                   style = {{overflowX : 'auto'}}
-                  columns={columns}                 
+                  columns={filteredColumns}                 
                   dataSource={allTasks}
                   rowKey={record => record.id}
                   components={i18n.dir()==="rtl" ?

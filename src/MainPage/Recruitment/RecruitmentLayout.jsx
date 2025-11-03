@@ -17,11 +17,16 @@ import HiredCandidates from './HiredCandidates';
 import BlacklistedCandidates from './BlacklistedCandidates';
 import OfferedCandidates from './OfferedCandidates';
 import ScreenedCandidates from './ScreenedCandidates';
+import ResumeConverter from './ResumeConverter';
+import ResumeHistory from './ResumeHistory';
+import ResumeSettings from './ResumeSettings';
 import dashboard from '../../assets/iconsRecruitment/DashBoard.svg';
+import filecheck from '../../assets/iconsRecruitment/fileCheck.svg';
 import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
 import candidateIcon from '../../assets/iconsRecruitment/candidate.svg';
 import jobsIcon from '../../assets/iconsRecruitment/jobsIcon.svg';
 import taskIcon from '../../assets/iconsRecruitment/taskIcon.svg';
+
 
 const RecruitmentLayout = () => {
   const location = useLocation();
@@ -232,6 +237,75 @@ const RecruitmentLayout = () => {
                       <img src={taskIcon} style={{ minHeight: "20px", minWidth: "20px" }} /> <span>Tasks</span>
                     </Link>
                   </li>
+                  <li className={`submenu ${isSideMenu === "resumes" ? "active subdrop" : ""}`}>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleSidebar("resumes");
+                      }}
+                    >
+                      <img src={filecheck} style={{ fontSize: "20px", minWidth: "20px", color:'#8B96A2  ' }} />
+                      <span>Resumes</span>
+                      <span className="menu-arrow" />
+                    </a>
+
+                    <ul style={{ display: isSideMenu === "resumes" ? "block" : "none" }}>
+                      <li className={pathname.includes("/recruitment/resume-converter") ? "active" : ""}>
+                        <Link
+                          to="/recruitment/resume-converter"
+                          onClick={closeSidebarOnMobile}
+                          style={{ display: "flex", alignItems: "center" }}
+                        >
+                          <div
+                            style={{
+                              background: "#ff9244",
+                              height: "4px",
+                              width: "4px",
+                              borderRadius: "50%",
+                            }}
+                          ></div>
+                          <span>Resume Converter</span>
+                        </Link>
+                      </li>
+
+                      <li className={pathname.includes("/recruitment/resume-history") ? "active" : ""}>
+                        <Link
+                          to="/recruitment/resume-history"
+                          onClick={closeSidebarOnMobile}
+                          style={{ display: "flex", alignItems: "center" }}
+                        >
+                          <div
+                            style={{
+                              background: "#ff9244",
+                              height: "4px",
+                              width: "4px",
+                              borderRadius: "50%",
+                            }}
+                          ></div>
+                          <span>Resume History</span>
+                        </Link>
+                      </li>
+
+                      <li className={pathname.includes("/recruitment/resume-settings") ? "active" : ""}>
+                        <Link
+                          to="/recruitment/resume-settings"
+                          onClick={closeSidebarOnMobile}
+                          style={{ display: "flex", alignItems: "center" }}
+                        >
+                          <div
+                            style={{
+                              background: "#ff9244",
+                              height: "4px",
+                              width: "4px",
+                              borderRadius: "50%",
+                            }}
+                          ></div>
+                          <span>Resume Settings</span>
+                        </Link>
+                      </li>
+                    </ul>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -258,6 +332,9 @@ const RecruitmentLayout = () => {
           <Route path="interviews/:id" element={<InterviewDetails />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="tasks/:id" element={<TaskDetails />} />
+          <Route path="resume-converter" element={<ResumeConverter />} />
+          <Route path="resume-history" element={<ResumeHistory />} />
+          <Route path="resume-settings" element={<ResumeSettings />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </div>

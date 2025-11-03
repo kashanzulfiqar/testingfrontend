@@ -161,7 +161,9 @@ const TaskBoardList = () => {
   // Initial load effect
   useEffect(() => {
     setIsLoading(true);
-    fetchEmployees();
+    if(role !== 'client' && role !== 'focalperson') {
+      fetchEmployees();
+    }
     GetListTaskBoards();
   }, []); // Only run on mount
 
@@ -274,23 +276,24 @@ const TaskBoardList = () => {
   const getProjects = (page, pageSize) => {
     //setLoader(true);
 
+    const endpoint = role === 'client'
+      ? `project-management/project-by-id?role=client&id=${user_state?.user?._id}&page=1&limit=999999`
+      : `project-management/?taskBoard=false&employeeId=${
+        role === "" && !permissions?.projectManagement ? employee_id : ""
+      }&page=1&limit=999999`;
+
     apiServices(
       "GET",
-      // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
-      `project-management/?taskBoard=false&employeeId=${
-        role === "" && !permissions?.projectManagement ? employee_id : ""
-      }&page=1&limit=999999`,
+      endpoint,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
-          //setCategoryObj(res?.data?.projects);
-          const sortedData = res?.data?.projects?.docs
+          const docs = res?.data?.projects?.docs || res?.data?.projects || [];
+          const sortedData = docs
             ?.slice()
             .sort((a, b) => a.projectName.localeCompare(b.projectName));
-          console.log("project in taskboard dropdown:", sortedData);
-
           setAllProjects(sortedData);
           setIsLoading(false);
         }
@@ -317,6 +320,43 @@ const TaskBoardList = () => {
       limit: pageSize || pagination.pageSize,
     };
 
+    // If client, fetch only taskboards of client's projects
+    if (role === 'client' || role === 'focalperson') {
+      apiServices(
+        "GET",
+        `taskBoard/taskboard-by-id?role=${role}&id=${user_state?.user?._id}&page=${params.page}&limit=${params.limit}&isArchived=${archivedStatus}`,
+        null,
+        user_state
+      )
+        .then((res) => {
+          if (res.data.success === true) {
+            const boards = res?.data?.taskBoards?.docs || res?.data?.taskBoards || [];
+            setCategoryObj(boards);
+            setTableData(boards);
+            setPagination({
+              ...pagination,
+              current: parseInt(params.page, 10),
+              pageSize: parseInt(params.limit, 10),
+              total: res?.data?.taskBoards?.totalDocs || res?.data?.totalItems,
+            });
+          }
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t("projectScreen.errors.getEmployeeProjectsError")
+            }`
+          );
+          setIsLoading(false);
+        });
+      return;
+    }
+
     apiServices(
       "GET",
       `taskBoard/view-taskBoard/?page=${params.page}&limit=${params.limit}&isArchived=${archivedStatus}`,
@@ -325,10 +365,9 @@ const TaskBoardList = () => {
     )
       .then((res) => {
         if (res.data.success === true) {
-          console.log("taskboards", res?.data?.taskBoards);
-          const taskBoards = res?.data?.taskBoards || [];
-          setCategoryObj(taskBoards);
-          setTableData(taskBoards);
+          const boards = res?.data?.taskBoards || [];
+          setCategoryObj(boards);
+          setTableData(boards);
           setPagination({
             ...pagination,
             current: parseInt(params.page, 10),
@@ -576,6 +615,10 @@ const TaskBoardList = () => {
     },
   ];
 
+  const filteredColumns = (role === 'client' || role === 'focalperson')
+    ? columns.filter(col => col.title !== t("Actions"))
+    : columns;
+
   const onHandleDelete = (id, isDelete = false) => {
     setLoader(true);
     const endpoint = isDelete
@@ -787,7 +830,7 @@ const TaskBoardList = () => {
                     //   itemRender: itemRender,
                     // }}
                     style={{ overflowX: "auto" }}
-                    columns={columns}
+                    columns={filteredColumns}
                     bordered
                     dataSource={tableData}
                     rowKey={(record) => record.id}

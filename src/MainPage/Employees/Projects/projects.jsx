@@ -244,9 +244,11 @@ const Projects = () => {
 
   };
 
-  // useEffect(() => {
-  //   getAllDomain();
-  // }, []);
+  useEffect(() => {
+    if(role !== 'client' && role !== 'focalperson') {
+      getAllDomain();
+    }
+  }, []);
 
   useEffect(() => {
     //if(role === 'admin' || permissions?.projectManagement ) { 
@@ -335,19 +337,17 @@ const Projects = () => {
   // };
 
   const GetListProjects = (page, pageSize) => {
-    //setLoader(true);
-    
     setIsLoading(true);
     const params = {
-      ...filters,
       page: page || pagination.current,
       limit: pageSize ? pageSize : pagination.pageSize,
     };
 
+    // If user is a client, fetch only that client's projects using project-by-id API
+    if (role === 'client' || role === 'focalperson') {
     apiServices(
       "GET",
-      // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
-      `project-management/?status=${filters.status}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&costType=${filters.costType}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
+        `project-management/project-by-id?role=${role}&id=${user_state?.user?._id}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -355,16 +355,51 @@ const Projects = () => {
         if (res.data.success === true) {
           setCategoryObj(res?.data?.projects);
           setTableData(res?.data?.projects?.docs);
- 
+            setIsLoading(false);
+            setFlag(true);
+            setPagination({
+              ...pagination,
+              current: res.data.projects.pages,
+              total: res.data.projects.total,
+            });
+          }
+        })
+        .catch((err) => {
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t('projectScreen.errors.getEmployeeProjectsError')
+            }`
+          );
           setIsLoading(false);
-          // setPagination({
-          //   ...pagination,
-          //   total: res.data.projects.totalDocs,
-          // });
+        })
+        .then(() => {
+          setFlag(false);
+        });
+      return;
+    }
+
+    // Default behavior for admin/employee views
+    const query = `project-management/?status=${filters.status}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&costType=${filters.costType}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`;
+
+    apiServices(
+      "GET",
+      query,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          setCategoryObj(res?.data?.projects);
+          setTableData(res?.data?.projects?.docs);
+          setIsLoading(false);
           setFlag(true);
           setPagination({
             ...pagination,
-            current : res.data.projects.page,
+            current: res.data.projects.page,
             total: res.data.projects.totalDocs,
           });
       }
@@ -380,7 +415,8 @@ const Projects = () => {
           }`
         );
         setIsLoading(false);
-      }).then(()=>{
+      })
+      .then(() => {
         setFlag(false);
       });
   };
@@ -1496,6 +1532,67 @@ const filteredColumns = columns.filter(column => {
                             </Select>
                           </Form.Item>
                         </div>
+                      </div>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <button
+                        type="primary"
+                        htmlType="submit"
+                        className="btn btn-success btn-block w-100"
+                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                        style={{marginBottom: '24px'}}
+                      >
+                        <span className="d-flex justify-content-center">{t('search')}</span>
+                      </button>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <button
+                        htmlType="button"
+                        className="btn btn-success btn-block w-100"
+                        onClick={handleReset}
+                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                        style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
+                      >
+                        <span className="d-flex justify-content-center">{t('reset')}</span>
+                      </button>
+                    </div>
+                  </div>
+                : (role === 'client' || role === 'focalperson') ?
+                <div className="row filter-row">
+                    <div className="col-sm-6 col-md-3">
+                      <div className="form-group">
+                        <Form.Item name="projectName" className="custom-border">
+                          <Input
+                            className="form-control"
+                            allowClear={false}
+                            placeholder={t('projectScreen.Modal.projectName')}
+                            style={{height:'50px'}}
+                            onChange={(e) =>
+                              handleFilterChange(e.target.value, "projectName")
+                            }
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <div className="form-group">
+                        <Form.Item name="status" className="custom-border">
+                          <Select
+                              className="custom-select searchCenter"
+                              placeholder={t('projectScreen.Modal.projectStatus')}
+                              style={{height:'50px'}}
+                              dropdownStyle={{ zIndex: 1 }}
+                              onChange={(value) => {
+                                handleFilterChange(value, "status");
+                              }}
+                            >
+                              <Select.Option value="On-Going">{t('projectScreen.Modal.onGoing')}</Select.Option>
+                              <Select.Option value="Completed">{t('projectScreen.Modal.completed')}</Select.Option>
+                              <Select.Option value="Paused">{t('projectScreen.Modal.paused')}</Select.Option>
+                              <Select.Option value="Scheduled">{t('projectScreen.Modal.scheduled')}</Select.Option>
+                              <Select.Option value="Archived">{t('projectScreen.Modal.archived')}</Select.Option>
+                            </Select>
+                        </Form.Item>
                       </div>
                     </div>
                     <div className="col-sm-6 col-md-3">

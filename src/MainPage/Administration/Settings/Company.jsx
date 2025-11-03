@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
 import PhoneNoInput from "../../../Components/PhoneNoInput/index.jsx";
-import { Button, Form, Input, Spin, Upload, message, Select, Empty, Tooltip } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Spin,
+  Upload,
+  message,
+  Select,
+  Empty,
+  Tooltip,
+} from "antd";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices.js";
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined } from "@ant-design/icons";
 import ImgCrop from "antd-img-crop";
 import { apiUploadToS3 } from "../../../Services/uploadImage.js";
 import { user_icon } from "../../../Entryfile/imagepath.jsx";
-import { getAllISOCodes } from 'iso-country-currency';
+import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
 
 const Company = () => {
@@ -16,9 +26,9 @@ const Company = () => {
   const [form] = Form.useForm();
   const [allValues, setAllValues] = useState({});
   const [data, setData] = useState({});
-  const [loader, setLoader] = useState(false)
-  const [imageLoader, setImageLoader] = useState(false)
-  const [image, setImage] = useState('')
+  const [loader, setLoader] = useState(false);
+  const [imageLoader, setImageLoader] = useState(false);
+  const [image, setImage] = useState("");
   const [allCurrencies, setAllCurrencies] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [absentDeduction, setAbsentDeduction] = useState();
@@ -56,7 +66,7 @@ const Company = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : t('settings.companySettings.companyInfoError')
+              : t("settings.companySettings.companyInfoError")
           }`
         );
       });
@@ -67,7 +77,9 @@ const Company = () => {
       .then((res) => {
         if (res.data.success === true) {
           const emps = res?.data?.User;
-          const sortedData = emps?.slice().sort((a, b) => a.fullName.localeCompare(b.fullName));
+          const sortedData = emps
+            ?.slice()
+            .sort((a, b) => a.fullName.localeCompare(b.fullName));
           setEmployees(sortedData);
         }
       })
@@ -78,7 +90,7 @@ const Company = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : t('aAttend.errors.getEmployeesError')
+              : t("aAttend.errors.getEmployeesError")
           }`
         );
       });
@@ -93,7 +105,11 @@ const Company = () => {
   };
 
   const onHandleChange = (type, value) => {
-    if (type === "companyPhoneNo" || type === "mobileNumber" || type === "fax") {
+    if (
+      type === "companyPhoneNo" ||
+      type === "mobileNumber" ||
+      type === "fax"
+    ) {
       let newvalue = value ? "+" + value : "";
 
       const updatedValues = {
@@ -119,41 +135,41 @@ const Company = () => {
   };
 
   const onFinish = (values) => {
-    setLoader(true)
+    setLoader(true);
     let new_data = {
       ...values,
       _id: data?._id,
       agreeTermsAndConditions: true,
-      absentDeduction : absentDeduction
+      absentDeduction: absentDeduction,
     };
 
     apiServices("PUT", "company/updatecompany", new_data, user_state)
-    .then((res) => {
-      if (res?.data?.success === true) {
-        setLoader(false)
-        message.success(t('settings.companySettings.companySettingsUpdated'));
-      }
-    })
-    .catch((err) => {
-      // console.log(err);
-      setLoader(false)
-      message.error(
-        `${
-          err?.response?.data?.msg
-            ? err?.response?.data?.msg
-            : err?.response?.data?.validation?.body?.message
-            ? err?.response?.data?.validation?.body?.message
-            : t('settings.companySettings.updateCompanyInfoError')
-        }`
-      );
-    });
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setLoader(false);
+          message.success(t("settings.companySettings.companySettingsUpdated"));
+        }
+      })
+      .catch((err) => {
+        // console.log(err);
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t("settings.companySettings.updateCompanyInfoError")
+          }`
+        );
+      });
   };
 
   const antIcon = (
     <LoadingOutlined
       style={{
         fontSize: 24,
-        color: '#fff'
+        color: "#fff",
       }}
       spin
     />
@@ -165,14 +181,14 @@ const Company = () => {
     // Regular expression to validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  }
+  };
 
-  const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+  const allowedFileTypes = ["image/png", "image/jpeg", "image/jpg"];
   const beforeUpload = (file) => {
     const isFileTypeAllowed = allowedFileTypes.includes(file.type);
 
     if (!isFileTypeAllowed) {
-      message.error(t('allEmp.errors.fileTypeNotAllowed'));
+      message.error(t("allEmp.errors.fileTypeNotAllowed"));
       return false;
     }
 
@@ -180,7 +196,7 @@ const Company = () => {
     const isSizeAllowed = file.size <= maxSizeInBytes;
 
     if (!isSizeAllowed) {
-      message.error(t('allEmp.errors.fileSizeTooLarge'));
+      message.error(t("allEmp.errors.fileSizeTooLarge"));
       return false;
     }
 
@@ -194,59 +210,66 @@ const Company = () => {
   };
 
   const onImageUpload = (imagedata) => {
-    setImageLoader(true)
-    apiUploadToS3(imagedata).then((res) => {
+    setImageLoader(true);
+    apiUploadToS3(imagedata)
+      .then((res) => {
         console.log(res?.data?.result);
-        form.setFieldsValue({imageUrl: res?.data?.result?.secure_url})
-        setImage(res?.data?.result?.secure_url)
-        setImageLoader(false)
-      }
-      ).catch((err)=>{
-        setImageLoader(false)
-        message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : t('allEmp.errors.uploadImageError')
-            }!`
-          );
+        form.setFieldsValue({ imageUrl: res?.data?.result?.secure_url });
+        setImage(res?.data?.result?.secure_url);
+        setImageLoader(false);
       })
-  }
+      .catch((err) => {
+        setImageLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t("allEmp.errors.uploadImageError")
+          }!`
+        );
+      });
+  };
 
   const getAllCurrencies = () => {
     const isoCodes = getAllISOCodes();
     const uniqueCurrencies = new Set();
-    isoCodes.forEach(isoCode => {
-        // const currency = isoCode.currency;
-        const currency = {
-          currency: isoCode?.currency,
-          symbol: isoCode?.symbol
-        };
-        // uniqueCurrencies.add(currency);
-        uniqueCurrencies.add(JSON.stringify(currency));
+    isoCodes.forEach((isoCode) => {
+      // const currency = isoCode.currency;
+      const currency = {
+        currency: isoCode?.currency,
+        symbol: isoCode?.symbol,
+      };
+      // uniqueCurrencies.add(currency);
+      uniqueCurrencies.add(JSON.stringify(currency));
     });
-    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
-    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
+    const currency_d = [...uniqueCurrencies].map((currency) =>
+      JSON.parse(currency)
+    );
+    const sorted_data = currency_d.sort((a, b) =>
+      a.currency.localeCompare(b.currency)
+    );
     // setAllCurrencies([...uniqueCurrencies])
-    setAllCurrencies(sorted_data)
+    setAllCurrencies(sorted_data);
   };
 
   const fetchCountries = async () => {
     setLoadingLocations(true);
     try {
-      const response = await fetch('https://countriesnow.space/api/v0.1/countries');
+      const response = await fetch(
+        "https://countriesnow.space/api/v0.1/countries"
+      );
       const data = await response.json();
       if (data.data) {
-        const formattedCountries = data.data.map(country => ({
+        const formattedCountries = data.data.map((country) => ({
           value: country.country,
-          label: country.country
+          label: country.country,
         }));
         setCountries(formattedCountries);
       }
     } catch (error) {
-      message.error(t('settings.companySettings.errorFetchingCountries'));
+      message.error(t("settings.companySettings.errorFetchingCountries"));
     }
     setLoadingLocations(false);
   };
@@ -254,23 +277,26 @@ const Company = () => {
   const fetchStates = async (country) => {
     setLoadingLocations(true);
     try {
-      const response = await fetch('https://countriesnow.space/api/v0.1/countries/states', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ country }),
-      });
+      const response = await fetch(
+        "https://countriesnow.space/api/v0.1/countries/states",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ country }),
+        }
+      );
       const data = await response.json();
       if (data.data?.states) {
-        const formattedStates = data.data.states.map(state => ({
+        const formattedStates = data.data.states.map((state) => ({
           value: state.name,
-          label: state.name
+          label: state.name,
         }));
         setStates(formattedStates);
       }
     } catch (error) {
-      message.error(t('settings.companySettings.errorFetchingStates'));
+      message.error(t("settings.companySettings.errorFetchingStates"));
     }
     setLoadingLocations(false);
   };
@@ -278,23 +304,26 @@ const Company = () => {
   const fetchCities = async (country, state) => {
     setLoadingLocations(true);
     try {
-      const response = await fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ country, state }),
-      });
+      const response = await fetch(
+        "https://countriesnow.space/api/v0.1/countries/state/cities",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ country, state }),
+        }
+      );
       const data = await response.json();
       if (data.data) {
-        const formattedCities = data.data.map(city => ({
+        const formattedCities = data.data.map((city) => ({
           value: city,
-          label: city
+          label: city,
         }));
         setCities(formattedCities);
       }
     } catch (error) {
-      message.error(t('settings.companySettings.errorFetchingCities'));
+      message.error(t("settings.companySettings.errorFetchingCities"));
     }
     setLoadingLocations(false);
   };
@@ -340,7 +369,9 @@ const Company = () => {
         <div className="page-header">
           <div className="row pt-3 pb-3">
             <div className="col-sm-12">
-              <h3 className="page-title">{t('settings.companySettings.companySettings')}</h3>
+              <h3 className="page-title">
+                {t("settings.companySettings.companySettings")}
+              </h3>
             </div>
           </div>
         </div>
@@ -348,54 +379,73 @@ const Company = () => {
           form={form}
           name="control-hooks"
           onFinish={onFinish}
-          onFinishFailed={({errorFields}) => {
-            const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
-            if(consecutiveSpacesError){
-              message.error(t('allEmp.errors.removeConsecutiveSpaces'))
-           }else{
-              message.error(t('allEmp.errors.fillRequiredFields'))
-            } 
+          onFinishFailed={({ errorFields }) => {
+            const consecutiveSpacesError = errorFields.find((field) =>
+              field.errors.toString().includes("consecutive spaces")
+            );
+            if (consecutiveSpacesError) {
+              message.error(t("allEmp.errors.removeConsecutiveSpaces"));
+            } else {
+              message.error(t("allEmp.errors.fillRequiredFields"));
+            }
           }}
         >
           <div className="row">
-          <Form.Item
-                        name='imageUrl'
-                        className='custom-border'
-                    >   
-                        <div className="profile-img-wrap edit-img">
-                            {
-                                imageLoader ? <div className="uploadImgSpinContainer"> <Spin /> </div> :
-                                <>
-                                    <img className="inline-block" src={image ? image : data?.imageUrl ? data?.imageUrl : user_icon} alt="user" />
-                                    <div className="fileupload btn">
-                                    <ImgCrop
-                                        cropShape='round'
-                                        quality={1}
-                                        modalTitle='Crop Image'
-                                        modalOk='Apply'
-                                        modalClassName='CropImageModalStyle'
-                                        beforeCrop={beforeUpload}
-                                    >
-                                        <Upload
-                                            // action={(image) => onImageUpload(image)}
-                                            customRequest={({ file, onSuccess, onError }) => {
-                                              onImageUpload(file)
-                                            }}
-                                            fileList={null}
-                                            maxCount={1}
-                                        >
-                                            <div className="btn-text" style={{width: '80px', padding: '4px'}}>{t('edit1')}</div>
-                                        </Upload>
-                                    </ImgCrop>
-                                    </div>
-                                </>
-                            }
-                        </div>
-                    </Form.Item>
+            <Form.Item name="imageUrl" className="custom-border">
+              <div className="profile-img-wrap edit-img">
+                {imageLoader ? (
+                  <div className="uploadImgSpinContainer">
+                    {" "}
+                    <Spin />{" "}
+                  </div>
+                ) : (
+                  <>
+                    <img
+                      className="inline-block"
+                      src={
+                        image
+                          ? image
+                          : data?.imageUrl
+                          ? data?.imageUrl
+                          : user_icon
+                      }
+                      alt="user"
+                    />
+                    <div className="fileupload btn">
+                      <ImgCrop
+                        cropShape="round"
+                        quality={1}
+                        modalTitle="Crop Image"
+                        modalOk="Apply"
+                        modalClassName="CropImageModalStyle"
+                        beforeCrop={beforeUpload}
+                      >
+                        <Upload
+                          // action={(image) => onImageUpload(image)}
+                          customRequest={({ file, onSuccess, onError }) => {
+                            onImageUpload(file);
+                          }}
+                          fileList={null}
+                          maxCount={1}
+                        >
+                          <div
+                            className="btn-text"
+                            style={{ width: "80px", padding: "4px" }}
+                          >
+                            {t("edit1")}
+                          </div>
+                        </Upload>
+                      </ImgCrop>
+                    </div>
+                  </>
+                )}
+              </div>
+            </Form.Item>
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.companyName')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.companyName")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyName"
@@ -404,12 +454,20 @@ const Company = () => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if (value.trim() === '') {
-                          return Promise.reject(t('settings.companySettings.pleaseEnterCompanyName'));
+                        if (value.trim() === "") {
+                          return Promise.reject(
+                            t("settings.companySettings.pleaseEnterCompanyName")
+                          );
                         } else if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                          return Promise.reject(
+                            t("allEmp.errors.removeConsecutiveSpaces2")
+                          );
                         } else if (value.length < 3) {
-                          return Promise.reject(t('settings.minLength', { name: t('settings.companySettings.companyName') }));
+                          return Promise.reject(
+                            t("settings.minLength", {
+                              name: t("settings.companySettings.companyName"),
+                            })
+                          );
                         }
                         return Promise.resolve();
                       },
@@ -434,7 +492,8 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.legalName')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.legalName")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="legalName"
@@ -443,18 +502,23 @@ const Company = () => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(value.trim() === ''){
-                          return Promise.reject(t('settings.companySettings.pleaseEnterLegalName'));
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                        if (value.trim() === "") {
+                          return Promise.reject(
+                            t("settings.companySettings.pleaseEnterLegalName")
+                          );
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            t("allEmp.errors.removeConsecutiveSpaces2")
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: t('settings.minLength2', { name: t('settings.companySettings.legalName') }),
+                      message: t("settings.minLength2", {
+                        name: t("settings.companySettings.legalName"),
+                      }),
                     },
                   ]}
                 >
@@ -476,7 +540,8 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.contactPerson')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.contactPerson")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="contactPerson"
@@ -485,18 +550,23 @@ const Company = () => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(value.trim() === ''){
-                          return Promise.reject(t('settings.companySettings.pleaseEnterContactName'));
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                        if (value.trim() === "") {
+                          return Promise.reject(
+                            t("settings.companySettings.pleaseEnterContactName")
+                          );
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            t("allEmp.errors.removeConsecutiveSpaces2")
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: t('settings.minLength2', { name: t('settings.companySettings.contactPerson') }),
+                      message: t("settings.minLength2", {
+                        name: t("settings.companySettings.contactPerson"),
+                      }),
                     },
                   ]}
                 >
@@ -518,59 +588,73 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.finance')} <span className="text-danger">*</span>
-                  <Tooltip className="custom-tooltip" placement="rightBottom" title={(
-                      <label>{t('settings.companySettings.financeInstruction')}</label>
-                  )}>
-                      <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
-                      {t('Tasks.Qmark')}
-                      </span>
+                  {t("settings.companySettings.finance")}{" "}
+                  <span className="text-danger">*</span>
+                  <Tooltip
+                    className="custom-tooltip"
+                    placement="rightBottom"
+                    title={
+                      <label>
+                        {t("settings.companySettings.financeInstruction")}
+                      </label>
+                    }
+                  >
+                    <span
+                      style={{
+                        border: "1px solid grey",
+                        color: "grey",
+                        fontSize: "12px",
+                        borderRadius: "50%",
+                        padding: "1.5px 4px 1px",
+                        margin: "5px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {t("Tasks.Qmark")}
+                    </span>
                   </Tooltip>
                 </label>
                 <div style={{ position: "relative" }} id="area">
-                      <Form.Item
-                        name="financeHead"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: t('finance.expenses.pleaseSelectFinanceHead'),
-                          },
-                        ]}
-                      >
-                        <Select
-                          showSearch
-                          // onSearch={(val) => {
-                          //   showTeamSearch(val, 'Team')
-                          //   // onTeamChange(val)
-                          // }}
-                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                          optionFilterProp="children"
-                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                          dropdownRender={(menu) => (
-                            <>
-                              {menu}
-                            </>
-                          )}
-
-                          getPopupContainer={() =>
-                            document.getElementById("area")
-                          }
-                          className="custom-select custom-normal"
-                          placeholder={t('selectFinanceHead')}
-                          //onChange={(values) => setSelectedTeamMembers(values)}
-                        >
-                          {getTeamMemberOptions()}
-                        </Select>
-                      </Form.Item>
-                    </div>
+                  <Form.Item
+                    name="financeHead"
+                    className="custom-border"
+                    rules={[
+                      {
+                        required: true,
+                        message: t("finance.expenses.pleaseSelectFinanceHead"),
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      // onSearch={(val) => {
+                      //   showTeamSearch(val, 'Team')
+                      //   // onTeamChange(val)
+                      // }}
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      optionFilterProp="children"
+                      notFoundContent={
+                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                      }
+                      dropdownRender={(menu) => <>{menu}</>}
+                      getPopupContainer={() => document.getElementById("area")}
+                      className="custom-select custom-normal"
+                      placeholder={t("selectFinanceHead")}
+                      //onChange={(values) => setSelectedTeamMembers(values)}
+                    >
+                      {getTeamMemberOptions()}
+                    </Select>
+                  </Form.Item>
+                </div>
               </div>
             </div>
             <div className="col-sm-6">
               <div className="form-group">
-                <label className="col-form-label">
-                STRN/TRN/NTN
-                </label>
+                <label className="col-form-label">STRN/TRN/NTN</label>
                 <Form.Item
                   name="taxRegNo"
                   rules={[
@@ -579,14 +663,16 @@ const Company = () => {
                       required: false,
                       validator: (_, value) => {
                         if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                          return Promise.reject(
+                            t("allEmp.errors.removeConsecutiveSpaces2")
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 2,
-                      message: 'STRN/TRN must be atleast 2 characters long',
+                      message: "STRN/TRN must be atleast 2 characters long",
                     },
                   ]}
                 >
@@ -608,7 +694,8 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.address')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.address")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyAddress"
@@ -617,18 +704,23 @@ const Company = () => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(value.trim() === ''){
-                          return Promise.reject(t('settings.companySettings.pleaseEnterAddress'));
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                        if (value.trim() === "") {
+                          return Promise.reject(
+                            t("settings.companySettings.pleaseEnterAddress")
+                          );
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            t("allEmp.errors.removeConsecutiveSpaces2")
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 5,
-                      message: t('settings.minLength3', { name: t('settings.companySettings.address') }),
+                      message: t("settings.minLength3", {
+                        name: t("settings.companySettings.address"),
+                      }),
                     },
                   ]}
                 >
@@ -650,43 +742,41 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.preferredCurrency')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.preferredCurrency")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <div style={{ position: "relative" }} id="area">
-                      <Form.Item
-                        name="preferredCurrency"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: t('finance.expenses.pleaseSelectCurrency'),
-                          },
-                        ]}
-                      >
-                        <Select
-                          showSearch
-                          className="custom-select custom-normal"
-                          getPopupContainer={() =>
-                            document.getElementById("area")
-                          }
-                          placeholder={t('projectScreen.Modal.selectCurrency')}
-                        >
-                          {
-                            allCurrencies.map((currency, index) => (
-                              <Select.Option key={index} value={currency?.currency}>
-                                {currency?.currency}
-                              </Select.Option>
-                            ))
-                          }
-                        </Select>
-                      </Form.Item>
-                    </div>
+                  <Form.Item
+                    name="preferredCurrency"
+                    className="custom-border"
+                    rules={[
+                      {
+                        required: true,
+                        message: t("finance.expenses.pleaseSelectCurrency"),
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      className="custom-select custom-normal"
+                      getPopupContainer={() => document.getElementById("area")}
+                      placeholder={t("projectScreen.Modal.selectCurrency")}
+                    >
+                      {allCurrencies.map((currency, index) => (
+                        <Select.Option key={index} value={currency?.currency}>
+                          {currency?.currency}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
               </div>
             </div>
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.postalCode')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.postalCode")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="postalCode"
@@ -694,7 +784,9 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: t('settings.companySettings.pleaseEnterPostalCode'),
+                      message: t(
+                        "settings.companySettings.pleaseEnterPostalCode"
+                      ),
                     },
                     // ({ getFieldValue }) => ({
                     //   validator(rule, value) {
@@ -717,7 +809,9 @@ const Company = () => {
                     // }),
                     {
                       min: 3,
-                      message: t('settings.digitLength', { name: t('settings.companySettings.postalCode') }),
+                      message: t("settings.digitLength", {
+                        name: t("settings.companySettings.postalCode"),
+                      }),
                     },
                   ]}
                 >
@@ -732,7 +826,7 @@ const Company = () => {
                       onHandleChange("postalCode", e.target.value);
                     }}
                     onKeyPress={(e) => {
-                      if ( ((e.which < 48 || e.which > 57)) ) {
+                      if (e.which < 48 || e.which > 57) {
                         e.preventDefault();
                       }
                     }}
@@ -744,114 +838,272 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.country')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.country")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <div style={{ position: "relative" }} id="area">
-                <Form.Item
-                  name="country"
-                  className="custom-border"
-                  rules={[
-                    {
-                      required: true,
-                      message: t('settings.companySettings.pleaseSelectCountry')
-                    }
-                  ]}
-                >
-                  <Select
-                    showSearch
-                    placeholder={t('settings.companySettings.selectCountry')}
-                    loading={loadingLocations}
-                    onChange={handleCountryChange}
-                    filterOption={(input, option) =>
-                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    options={countries}
-                    style={{ width: '100%' }}
-                    className="custom-select custom-normal"
-                  />
-                </Form.Item>
-                </div>
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label className="col-form-label">
-                {t('settings.companySettings.state')} <span className="text-danger">*</span>
-                </label>
-                <div style={{ position: "relative" }} id="area">
-                <Form.Item
-                  name="state"
-                  className="custom-border"
-                  rules={[
-                    {
-                      required: true,
-                      message: t('settings.companySettings.pleaseSelectState')
-                    }
-                  ]}
-                >
-                  <Select
-                    showSearch
-                    placeholder={t('settings.companySettings.selectState')}
-                    loading={loadingLocations}
-                    onChange={handleStateChange}
-                    filterOption={(input, option) =>
-                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    options={states}
-                    disabled={!selectedCountry}
-                    style={{ width: '100%' }}
-                    className="custom-select custom-normal"
-                    onFocus={() => {
-                      if (selectedCountry && states.length === 0) {
-                        fetchStates(selectedCountry);
+                  <Form.Item
+                    name="country"
+                    className="custom-border"
+                    rules={[
+                      {
+                        required: true,
+                        message: t(
+                          "settings.companySettings.pleaseSelectCountry"
+                        ),
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder={t("settings.companySettings.selectCountry")}
+                      loading={loadingLocations}
+                      onChange={handleCountryChange}
+                      filterOption={(input, option) =>
+                        option.label
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
                       }
-                    }}
-                  />
-                </Form.Item>
+                      options={countries}
+                      style={{ width: "100%" }}
+                      className="custom-select custom-normal"
+                    />
+                  </Form.Item>
                 </div>
               </div>
             </div>
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.city')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.state")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <div style={{ position: "relative" }} id="area">
+                  <Form.Item
+                    name="state"
+                    className="custom-border"
+                    rules={[
+                      {
+                        required: true,
+                        message: t(
+                          "settings.companySettings.pleaseSelectState"
+                        ),
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder={t("settings.companySettings.selectState")}
+                      loading={loadingLocations}
+                      onChange={handleStateChange}
+                      filterOption={(input, option) =>
+                        option.label
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      options={states}
+                      disabled={!selectedCountry}
+                      style={{ width: "100%" }}
+                      className="custom-select custom-normal"
+                      onFocus={() => {
+                        if (selectedCountry && states.length === 0) {
+                          fetchStates(selectedCountry);
+                        }
+                      }}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  {t("settings.companySettings.city")}{" "}
+                  <span className="text-danger">*</span>
+                </label>
+                <div style={{ position: "relative" }} id="area">
+                  <Form.Item
+                    name="city"
+                    className="custom-border"
+                    rules={[
+                      {
+                        required: true,
+                        message: t("settings.companySettings.pleaseSelectCity"),
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder={t("settings.companySettings.selectCity")}
+                      loading={loadingLocations}
+                      filterOption={(input, option) =>
+                        option.label
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      options={cities}
+                      disabled={!selectedState}
+                      style={{ width: "100%" }}
+                      className="custom-select custom-normal"
+                      onFocus={() => {
+                        if (
+                          selectedCountry &&
+                          selectedState &&
+                          cities.length === 0
+                        ) {
+                          fetchCities(selectedCountry, selectedState);
+                        }
+                      }}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Longitude <span className="text-danger">*</span>
+                </label>
                 <Form.Item
-                  name="city"
-                  className="custom-border"
+                  name="longitude"
                   rules={[
                     {
                       required: true,
-                      message: t('settings.companySettings.pleaseSelectCity')
-                    }
+                      validator: (_, value) => {
+                        if (
+                          value === undefined ||
+                          value === null ||
+                          String(value).trim() === ""
+                        ) {
+                          return Promise.reject("please enter longitude");
+                        }
+                        const num = parseFloat(String(value).trim());
+                        if (Number.isNaN(num)) {
+                          return Promise.reject("please enter a valid number");
+                        }
+                        if (num < -180 || num > 180) {
+                          return Promise.reject(
+                            "longitude must be between -180 and 180"
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                 >
-                  <Select
-                    showSearch
-                    placeholder={t('settings.companySettings.selectCity')}
-                    loading={loadingLocations}
-                    filterOption={(input, option) =>
-                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    options={cities}
-                    disabled={!selectedState}
-                    style={{ width: '100%' }}
-                    className="custom-select custom-normal"
-                    onFocus={() => {
-                      if (selectedCountry && selectedState && cities.length === 0) {
-                        fetchCities(selectedCountry, selectedState);
-                      }
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.longitude}
+                  />
+                  <input
+                    className="form-control inputWordSpacing"
+                    defaultValue={data ? data?.longitude : ""}
+                    onInput={(e) => {
+                      onHandleChange("longitude", e.target.value);
                     }}
+                    maxLength={15}
                   />
                 </Form.Item>
-                </div>
               </div>
             </div>
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.companyEmail')} <span className="text-danger">*</span>
+                  Latitude <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="latitude"
+                  rules={[
+                    {
+                      required: true,
+                      validator: (_, value) => {
+                        if (
+                          value === undefined ||
+                          value === null ||
+                          String(value).trim() === ""
+                        ) {
+                          return Promise.reject("please enter latitude");
+                        }
+                        const num = parseFloat(String(value).trim());
+                        if (Number.isNaN(num)) {
+                          return Promise.reject("please enter a valid number");
+                        }
+                        if (num < -90 || num > 90) {
+                          return Promise.reject(
+                            "latitude must be between -90 and 90"
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.latitude}
+                  />
+                  <input
+                    className="form-control inputWordSpacing"
+                    defaultValue={data ? data?.latitude : ""}
+                    onInput={(e) => {
+                      onHandleChange("latitude", e.target.value);
+                    }}
+                    maxLength={15}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Radius (meters) <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="radius_meter"
+                  rules={[
+                    {
+                      required: true,
+                      validator: (_, value) => {
+                        const str = String(value ?? "").trim();
+                        if (!str) {
+                          return Promise.reject(
+                            "please enter radius in meters"
+                          );
+                        }
+                        if (!/^\d+$/.test(str)) {
+                          return Promise.reject("please enter only digits");
+                        }
+                        const num = parseInt(str, 10);
+                        if (num <= 0) {
+                          return Promise.reject(
+                            "radius must be greater than 0"
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.radius_meter}
+                  />
+                  <input
+                    className="form-control inputWordSpacing"
+                    defaultValue={data ? data?.radius_meter : ""}
+                    onInput={(e) => {
+                      onHandleChange("radius_meter", e.target.value);
+                    }}
+                    maxLength={9}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  {t("settings.companySettings.companyEmail")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyEmail"
@@ -860,12 +1112,20 @@ const Company = () => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if (value.trim() === '') {
-                          return Promise.reject(t('settings.companySettings.pleaseEnterCompanyEmail'));
+                        if (value.trim() === "") {
+                          return Promise.reject(
+                            t(
+                              "settings.companySettings.pleaseEnterCompanyEmail"
+                            )
+                          );
                         } else if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                          return Promise.reject(
+                            t("allEmp.errors.removeConsecutiveSpaces2")
+                          );
                         } else if (!isValidEmail(value)) {
-                          return Promise.reject(t('settings.companySettings.validEmail'));
+                          return Promise.reject(
+                            t("settings.companySettings.validEmail")
+                          );
                         }
                         return Promise.resolve();
                       },
@@ -907,7 +1167,8 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.registrationNo')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.registrationNo")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyRegistrationNo"
@@ -916,18 +1177,25 @@ const Company = () => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(value.trim() === ''){
-                          return Promise.reject(t('settings.companySettings.pleaseEnterRegistrationNo'));
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                        if (value.trim() === "") {
+                          return Promise.reject(
+                            t(
+                              "settings.companySettings.pleaseEnterRegistrationNo"
+                            )
+                          );
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            t("allEmp.errors.removeConsecutiveSpaces2")
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: t('settings.minLength', { name: t('settings.companySettings.registrationNo') }),
+                      message: t("settings.minLength", {
+                        name: t("settings.companySettings.registrationNo"),
+                      }),
                     },
                   ]}
                 >
@@ -949,7 +1217,8 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.phoneNumber')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.phoneNumber")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyPhoneNo"
@@ -957,11 +1226,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: t('settings.companySettings.pleaseEnterPhoneNumber'),
+                      message: t(
+                        "settings.companySettings.pleaseEnterPhoneNumber"
+                      ),
                     },
                     {
                       min: 5,
-                      message: t('settings.phoneLength', { name: t('settings.companySettings.phoneNumber') }),
+                      message: t("settings.phoneLength", {
+                        name: t("settings.companySettings.phoneNumber"),
+                      }),
                     },
                   ]}
                 >
@@ -978,7 +1251,8 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.mobileNumber')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.mobileNumber")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="mobileNumber"
@@ -986,11 +1260,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: t('settings.companySettings.pleaseEnterMobileNumber'),
+                      message: t(
+                        "settings.companySettings.pleaseEnterMobileNumber"
+                      ),
                     },
                     {
                       min: 5,
-                      message: t('settings.phoneLength', { name: t('settings.companySettings.mobileNumber') }),
+                      message: t("settings.phoneLength", {
+                        name: t("settings.companySettings.mobileNumber"),
+                      }),
                     },
                   ]}
                 >
@@ -1007,7 +1285,8 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.website')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.website")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="website"
@@ -1016,18 +1295,23 @@ const Company = () => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(value.trim() === ''){
-                          return Promise.reject(t('settings.companySettings.pleaseEnterWebsite'));
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                        if (value.trim() === "") {
+                          return Promise.reject(
+                            t("settings.companySettings.pleaseEnterWebsite")
+                          );
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            t("allEmp.errors.removeConsecutiveSpaces2")
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: t('settings.minLength2', { name: t('settings.companySettings.website') }),
+                      message: t("settings.minLength2", {
+                        name: t("settings.companySettings.website"),
+                      }),
                     },
                   ]}
                 >
@@ -1049,14 +1333,17 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.fax')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.fax")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="fax"
                   rules={[
                     {
                       min: 5,
-                      message: t('settings.phoneLength', { name: t('settings.companySettings.fax') }),
+                      message: t("settings.phoneLength", {
+                        name: t("settings.companySettings.fax"),
+                      }),
                     },
                   ]}
                 >
@@ -1070,16 +1357,17 @@ const Company = () => {
                 </Form.Item>
               </div>
             </div>
-            <div
-              className="col-sm-12"
-            >
+            <div className="col-sm-12">
               <div
                 className="form-group"
                 style={{ marginBottom: "6px", marginTop: "0px" }}
               >
                 <Form.Item name="absentDeduction">
                   <div style={{ display: "flex", height: "25px" }}>
-                    <Input style={{ display: "none" }} value={absentDeduction} />
+                    <Input
+                      style={{ display: "none" }}
+                      value={absentDeduction}
+                    />
                     <input
                       className="form-check-input customCheckbox"
                       type="checkbox"
@@ -1090,7 +1378,13 @@ const Company = () => {
                       id="flexCheckChecked"
                       style={{ width: "23px", height: "23px" }}
                     />
-                    <label style={{ marginTop: "5px", marginLeft: "15px", fontSize: "15px" }}>
+                    <label
+                      style={{
+                        marginTop: "5px",
+                        marginLeft: "15px",
+                        fontSize: "15px",
+                      }}
+                    >
                       Absent Fine Deduction
                     </label>
                   </div>
@@ -1104,11 +1398,16 @@ const Company = () => {
           <div className="submit-section">
             {/* <button className="btn btn-primary submit-btn">Save</button> */}
             <Form.Item>
-              <Button htmlType="submit" className="btn btn-primary submit-btn" disabled={loader}>
-                {
-                  loader ? <Spin size="small" indicator={antIcon} />
-                    : t('settings.saveChanges')
-                }
+              <Button
+                htmlType="submit"
+                className="btn btn-primary submit-btn"
+                disabled={loader}
+              >
+                {loader ? (
+                  <Spin size="small" indicator={antIcon} />
+                ) : (
+                  t("settings.saveChanges")
+                )}
               </Button>
             </Form.Item>
           </div>

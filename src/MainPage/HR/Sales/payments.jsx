@@ -205,7 +205,7 @@ const Payments = () => {
         dataIndex: 'invoiceNo',
         render: (text, record) => (
           // <Link to="/app/sales/invoices-view" style={{color: '#333333'}}>#{text}</Link>
-          <Link to="/invoices/view-invoice" state={{invoice_data: record}} style={{color: '#333333'}}>{text}</Link>
+          <Link to={{ pathname: "/invoices/view-invoice", search: `?id=${record?._id}` }} state={{invoice_data: record}} style={{color: '#333333'}}>{text}</Link>
           ),
       },     
       {

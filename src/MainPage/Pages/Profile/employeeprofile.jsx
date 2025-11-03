@@ -2021,44 +2021,7 @@ const EmployeeProfile = () => {
             )}
             {activeTab === "assets" && allData?._id && (
               <div className="tab-pane fade show active" id="emp_assets">
-                {/* <div className="table-responsive table-newdatatable">
-                        <table className="table table-new custom-table mb-0 datatable">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Name</th>
-                              <th>Asset ID</th>
-                              <th>Assigned Date</th>
-                              <th>Assignee</th>
-                              <th>Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td colSpan="6">
-                                
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div> */}
-                <div
-                  className="error-box"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <h1 style={{ fontSize: "29px", color: "#ff9b44" }}>
-                    <i className="fa fa-warning" style={{ color: "#ff9b44" }} />{" "}
-                    Under Construction
-                  </h1>
-                  <h3 className="mb-5 mt-3" style={{ color: "#1F1F1F" }}>
-                    {" "}
-                    {t("visitLater")}
-                  </h3>
-                </div>
+                <AssetsByEmployee employeeId={allData?._id} />
               </div>
             )}
 
@@ -3273,3 +3236,105 @@ const EmployeeProfile = () => {
   );
 };
 export default EmployeeProfile;
+
+// List assets assigned to an employee
+const AssetsByEmployee = ({ employeeId }) => {
+  const { t, i18n } = useTranslation();
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const [isLoading, setIsLoading] = useState(false);
+  const [assets, setAssets] = useState([]);
+
+  useEffect(() => {
+    if (!employeeId) return;
+    setIsLoading(true);
+    // Fetch assets assigned to this employee. Backend should support this filter.
+    apiServices(
+      "GET",
+      `assets?assignedEmployeeId=${employeeId}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res?.data?.success === true) {
+          const container = res?.data?.Assets || res?.data?.assets || res?.data;
+          const docs = container?.docs || container?.data || container || [];
+          setAssets(docs);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Failed to fetch employee assets"
+          }`
+        );
+      })
+      .finally(() => setIsLoading(false));
+  }, [employeeId]);
+
+  const columns = [
+    {
+      title: "Serial No",
+      dataIndex: "serialNumber",
+      key: "serialNumber",
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      render: (text, record) => (
+        <>
+          <img className="avatar" alt="" src={record?.imageUrl || user_icon} />
+          <span>{record?.name}</span>
+        </>
+      ),
+    },
+    {
+      title: "Model",
+      dataIndex: "model",
+      key: "model",
+    },
+    {
+      title: "Manufacturer",
+      dataIndex: "manufacturer",
+      key: "manufacturer",
+      render: (val) => val || "-",
+    },
+  ];
+
+  return (
+    <div className="row">
+      <div className="col-md-12">
+        <div className="table-responsive">
+          <Table
+            loading={isLoading}
+            className={assets?.length > 0 ? "table-striped" : ""}
+            style={{ overflowX: "auto" }}
+            pagination={false}
+            columns={columns}
+            dataSource={assets}
+            rowKey={(record) => record?._id || record?.id}
+            components={
+              i18n.dir() === "rtl"
+                ? {
+                    header: {
+                      cell: ({ children }) => (
+                        <th style={{ textAlign: "right" }}>{children}</th>
+                      ),
+                    },
+                  }
+                : null
+            }
+            onRow={
+              i18n.dir() === "rtl"
+                ? (record, rowIndex) => ({ style: { textAlign: "right" } })
+                : null
+            }
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
