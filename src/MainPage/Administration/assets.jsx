@@ -12,11 +12,12 @@ import {
   InputNumber,
   Upload,
   message,
+  Divider,
 } from "antd";
 import { Modal } from "@mui/material";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { LoadingOutlined, UploadOutlined } from "@ant-design/icons";
+import { LoadingOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
 import { apiUploadToS3 } from "../../Services/uploadImage";
 import ImgCrop from "antd-img-crop";
@@ -26,6 +27,8 @@ import { itemRender } from "../paginationfunction";
 import { Helmet } from "react-helmet";
 import { user_icon } from "../../Entryfile/imagepath";
 import { Link } from "react-router-dom";
+import AssetsSubCategoryModal from "./Settings/AssetsSubCategoryModal";
+import AssetsCategoryModal from "./Settings/AssetsCategoryModal";
 
 const Assets = () => {
   const { t, i18n } = useTranslation();
@@ -50,10 +53,13 @@ const Assets = () => {
     data: "",
   });
 
+  const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [imageLoader, setImageLoader] = useState(false);
   const [image, setImage] = useState("");
+  const [isSubCatModalOpen, setIsSubCatModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   const handleClose = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
@@ -70,6 +76,28 @@ const Assets = () => {
 
   useEffect(() => {
     // dropdown preloads
+    apiServices(
+      "GET",
+      `assets-category/?page=1&limit=1000`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setCategories(res?.data?.data?.docs || []);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Failed to fetch assets Categories"
+          }`
+        );
+      });
     apiServices(
       "GET",
       `assets-sub-category/?page=1&limit=1000`,
@@ -168,11 +196,8 @@ const Assets = () => {
           model: open?.data?.model || "",
           price: open?.data?.price || undefined,
           quantity: open?.data?.quantity || 1,
-          assetSubCategoryId:
-            open?.data?.assetSubCategoryId?._id ||
-            open?.data?.assetSubCategoryId ||
-            open?.data?.subCategory?._id ||
-            undefined,
+          assetCategoryId: open?.data?.assetSubCategoryId?.categoryId?._id || undefined,
+          assetSubCategoryId: open?.data?.assetSubCategoryId?._id || undefined,
           isAssignable: open?.data?.isAssignable || false,
           assignedEmployeeId:
             open?.data?.assignedEmployeeId?._id ||
@@ -202,6 +227,7 @@ const Assets = () => {
           model: "",
           price: undefined,
           quantity: 1,
+          assetCategoryId: undefined,
           assetSubCategoryId: undefined,
           isAssignable: false,
           assignedEmployeeId: undefined,
@@ -450,6 +476,13 @@ const Assets = () => {
       ),
     },
   ];
+
+  const categoryOptions = useMemo(() => {
+    return (categories || []).map((c) => ({
+      label: c?.categoryname || c?.name,
+      value: c?._id || c?.id,
+    }));
+  }, [categories]);
 
   const subCategoryOptions = useMemo(() => {
     return (subCategories || []).map((sc) => ({
@@ -740,15 +773,18 @@ const Assets = () => {
                         />
                       </Form.Item>
                     </div>
+                  </div>
+
+                  <div className="row">
                     <div className="col-md-6">
                       <Form.Item
-                        label="Sub-Category"
-                        name="assetSubCategoryId"
+                        label="Category"
+                        name="assetCategoryId"
                         className="custom-border"
                         rules={[
                           {
                             required: true,
-                            message: "Please select sub-category",
+                            message: "Please select category",
                           },
                         ]}
                       >
@@ -758,14 +794,111 @@ const Assets = () => {
                             document.getElementById("area")
                           }
                           showSearch
-                          placeholder="Select sub-category"
-                          options={subCategoryOptions}
+                          placeholder="Select category"
+                          options={categoryOptions}
                           filterOption={(input, option) =>
                             (option?.label || "")
                               .toLowerCase()
                               .includes(input.toLowerCase())
                           }
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                              <>
+                                <Divider style={{ margin: '5px 0' }} />
+                                <Button
+                                  type="button"
+                                  icon={<PlusOutlined style={{ fontSize: '20px', marginRight: '5px' }} />}
+                                  className="addButtonStyles"
+                                  style={{ width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                                  onClick={() => setIsCategoryModalOpen(true)}
+                                >
+                                  Add Category
+                                </Button>
+                              </>
+                            </>
+                          )}
+                          onChange={() => {
+                            form.setFieldsValue({ assetSubCategoryId: undefined });
+                          }}
                         />
+                      </Form.Item>
+                    </div>
+                    <div className="col-md-6">
+                      <Form.Item
+                        noStyle
+                        shouldUpdate={(prev, cur) =>
+                          prev.assetCategoryId !== cur.assetCategoryId
+                        }
+                      >
+                        {({ getFieldValue }) => {
+                          const selectedCategoryId = getFieldValue("assetCategoryId");
+                          const filteredSubCategories = selectedCategoryId
+                            ? (subCategories || []).filter(
+                                (sc) =>
+                                  sc?.assetCategoryId?._id === selectedCategoryId ||
+                                  sc?.assetCategoryId === selectedCategoryId ||
+                                  sc?.categoryId?._id === selectedCategoryId ||
+                                  sc?.categoryId === selectedCategoryId
+                              )
+                            : subCategories || [];
+                          const filteredSubCategoryOptions = filteredSubCategories.map((sc) => ({
+                            label: sc?.assetSubCategoryName || sc?.subcategoryname || sc?.name,
+                            value: sc?._id || sc?.id,
+                          }));
+
+                          return (
+                            <Form.Item
+                              label="Sub-Category"
+                              name="assetSubCategoryId"
+                              className="custom-border"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please select sub-category",
+                                },
+                              ]}
+                            >
+                              <Select
+                                className="custom-select custom-normal"
+                                getPopupContainer={() =>
+                                  document.getElementById("area")
+                                }
+                                showSearch
+                                placeholder="Select sub-category"
+                                options={filteredSubCategoryOptions}
+                                filterOption={(input, option) =>
+                                  (option?.label || "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                                }
+                                disabled={!selectedCategoryId}
+                                dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                              {
+                                  <>
+                                    <Divider
+                                      style={{
+                                        margin: '5px 0',
+                                      }}
+                                    />
+                                    <Button
+                                      type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                      className="addButtonStyles"
+                                      style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                      onClick={() => setIsSubCatModalOpen(true)}
+                                    >
+                                      Add Sub-Category
+                                    </Button>
+                                  </>
+                              }
+                            </>
+                          )}
+                        />
+                            </Form.Item>
+                          );
+                        }}
                       </Form.Item>
                     </div>
                   </div>
@@ -849,6 +982,7 @@ const Assets = () => {
                         <DatePicker
                           className="form-control"
                           style={{ width: "100%", minHeight: "45px" }}
+                          disabledDate={(current) => current && current > moment().endOf('day')}
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
@@ -947,6 +1081,48 @@ const Assets = () => {
           </div>
         </div>
       </Modal>
+
+      <AssetsSubCategoryModal
+        open={isSubCatModalOpen}
+        onClose={() => setIsSubCatModalOpen(false)}
+        onSuccess={() => {
+          apiServices(
+            "GET",
+            `assets-sub-category/?page=1&limit=1000`,
+            null,
+            user_state
+          )
+            .then((res) => {
+              if (res?.data?.success === true) {
+                const container =
+                  res?.data?.SubCategories ||
+                  res?.data?.subCategories ||
+                  res?.data?.data;
+                setSubCategories(container?.docs || []);
+              }
+            })
+            .catch(() => {});
+        }}
+      />
+
+      <AssetsCategoryModal
+        open={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onSuccess={() => {
+          apiServices(
+            "GET",
+            `assets-category/?page=1&limit=1000`,
+            null,
+            user_state
+          )
+            .then((res) => {
+              if (res?.data?.success === true) {
+                setCategories(res?.data?.data?.docs || []);
+              }
+            })
+            .catch(() => {});
+        }}
+      />
 
       <Modal
         open={open.isDelOpen}
