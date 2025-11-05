@@ -150,9 +150,13 @@ const AssetDetails = () => {
                     <label>Asset Information</label>
                   </h5>
                   <ul className="other-info">
-                    <li>
+                  <li>
                       <label className="other-title">Category</label>
-                      <label>{asset?.assetSubCategoryId?.subcategoryname || asset?.subCategory?.assetSubCategoryName || "-"}</label>
+                      <label>{asset?.assetSubCategoryId?.categoryId?.categoryname || "-"}</label>
+                    </li>
+                    <li>
+                      <label className="other-title">Sub Category</label>
+                      <label>{asset?.assetSubCategoryId?.subcategoryname || "-"}</label>
                     </li>
                     <li>
                       <label className="other-title">Manufacturer</label>
