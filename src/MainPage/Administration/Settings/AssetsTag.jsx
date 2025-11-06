@@ -211,11 +211,9 @@ const AssetsTag = () => {
               <h3 className="page-title">Assets Tag</h3>
             </div>
             <div className="col-auto float-end ms-auto">
-              {tags?.length === 0 && (
                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => setOpen({ isAddOpen: true, isDelOpen: false, data: '' })}>
                   <i className="fa fa-plus" /> Add Asset Tag
                 </a>
-              )}
             </div>
           </div>
         </div>
@@ -228,7 +226,7 @@ const AssetsTag = () => {
                 className={tags?.length > 0 ? 'table-striped' : ''}
                 locale={{ emptyText: isLoading ? null : customEmptyText }}
                 pagination={false}
-                style={{ overflowX: 'auto' }}
+                style={{ minHeight: '200px' }}
                 columns={columns}
                 bordered
                 dataSource={tags}

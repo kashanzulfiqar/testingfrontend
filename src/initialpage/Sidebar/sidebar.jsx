@@ -2734,7 +2734,9 @@ const Sidebar = (props) => {
                   <li className="menu-title">
                     <span>{t("sideBar.administration")}</span>
                   </li>
-                  <li className={pathname.includes('assets') ? "active" : ""}>
+                  {(user_state?.role === "admin" ||
+                    permissions?.assetsManagement) && (
+                    <li className={pathname.includes('assets') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </a>
@@ -2742,6 +2744,7 @@ const Sidebar = (props) => {
                   <Link to="/assets"><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </Link>
                 }
                 </li>
+                )}
                   <li className="submenu">
                     {user_state?.role === "client" ||
                     user_state?.role === "focalperson" ? (
