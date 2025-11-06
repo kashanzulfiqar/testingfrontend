@@ -188,6 +188,7 @@ function WeekViewTimeSheet({
   const to_data = currentWeekDates[currentWeekDates.length - 1];
 
   setTableLoader(true);
+  setWorkingData([]); //wipe previous local edits
 
   try {
     const res = await apiServices(
@@ -419,6 +420,8 @@ function WeekViewTimeSheet({
     if (isFuture) return;
 
     setUpdatedDuration(time);
+    const key = `${date}_${project?._id || project}_${task?._id || task}`;
+
 
     const patch = {
       date, // e.g. 'YYYY-MM-DD'
@@ -440,6 +443,7 @@ function WeekViewTimeSheet({
 
     // Upsert into workingData without hitting the server
     setWorkingData(prev => upsertWorking(prev, patch));
+    setPendingChanges(prev => ({ ...prev, [key]: patch }));
     setSaveButton(false); // indicate unsaved local changes
   };
 
@@ -447,6 +451,8 @@ function WeekViewTimeSheet({
 const handleNoteChange = (date, project, task, note) => {
   // block future dates
   const isFuture = moment(date).isAfter(moment(), 'day');
+  const key = `${date}_${project?._id || project}_${task?._id || task}`;
+
   if (isFuture) return;
 
   const patch = {
@@ -467,6 +473,7 @@ const handleNoteChange = (date, project, task, note) => {
   };
 
   setWorkingData(prev => upsertWorking(prev, patch));
+  setPendingChanges(prev => ({ ...prev, [key]: patch }));
   setCardReason(note);
   setSaveButton(false); // mark unsaved edits
 };
@@ -596,11 +603,9 @@ const handleCreate = () => {
     });
   };
 
-  // Save all local edits to the server (batch PUT/POST)
 const handleSaveAll = async () => {
-  const unsaved = workingData.filter(
-    item => !item._id || item._isDirty // mark dirty entries when edited
-  );
+  const unsaved = Object.values(pendingChanges);
+
   if (!unsaved.length) {
     message.info("No new or modified entries to save.");
     return;
@@ -620,17 +625,15 @@ const handleSaveAll = async () => {
           status: entry.status || "No-Status",
           submittedForApproval: false,
         };
-
-
-        
         const method = entry._id ? "PUT" : "POST";
-        console.log('saving entry', payload)
+        console.log("saving entry", payload);
         return apiServices(method, "timesheet", payload, user_state);
       })
     );
-    setWorkingData(prev => prev.map(e => ({ ...e, _isDirty: false })));
-
-    message.success("Saved all changes successfully!");
+    console.log("Check 1.", unsaved);
+    message.success("Saved all pending changes successfully!");
+    setPendingChanges({}); // ✅ clear only unsaved items
+    console.log("Check 2.", pendingChanges);
     getData(currentPage, pageSize);
   } catch (err) {
     console.error(err);
@@ -639,6 +642,7 @@ const handleSaveAll = async () => {
     setLoader(false);
   }
 };
+
 
 
 
@@ -1259,9 +1263,10 @@ const groupedData = workingData?.reduce((result, item) => {
           !allData.some((item) => item?.submittedForApproval === true) && (
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <button
-                onClick={handleSubmitApproval}
+                onClick={Object.keys(pendingChanges).length ? handleSaveAll : handleSubmitApproval}
                 className="SubmitForApprovalButton"
                 disabled={loader}
+                
                 style={{
                   border: "2px solid #FF9B44",
                   borderRadius: "8px",
@@ -1269,6 +1274,7 @@ const groupedData = workingData?.reduce((result, item) => {
                   color: "#FF9B44",
                   minWidth: "90px",
                   height: "42px",
+                  marginRight: "20px",
                   paddingTop: "3px",
                   margin: "30px 0px 15px 0px",
                   paddingInline: "18px",
@@ -1278,16 +1284,16 @@ const groupedData = workingData?.reduce((result, item) => {
                   <Spin size="small" indicator={antIcon3} />
                 ) : (
                   <span style={{ fontSize: "16px", fontWeight: "500" }}>
-                    {t("Timesheetemployee.submitForApproval")}
+                    {Object.keys(pendingChanges).length ? "Save Changes" : t("Timesheetemployee.submitForApproval")}
                   </span>
                 )}
                 {/* <span style={{fontSize: '16px', fontWeight: '500'}}>Submit for Approval</span> */}
               </button>
-               {/* New Save button */}
-              <button
+               {/* New Save button */} 
+              {/* <button
                 onClick={handleSaveAll}
                 className="SaveAllButton"
-                disabled={loader || workingData.length === 0}
+                disabled={loader || Object.keys(pendingChanges).length === 0}
                 style={{
                   border: "2px solid #FF9B44",
                   borderRadius: "8px",
@@ -1305,7 +1311,7 @@ const groupedData = workingData?.reduce((result, item) => {
                     {t("Save All")}
                   </span>
                 
-              </button>
+              </button> */}
             </div>
           )}
         {allData.some((item) => item?.status === "Approved") ? (
@@ -1620,15 +1626,15 @@ const groupedData = workingData?.reduce((result, item) => {
                       >
                         <div>
                           <Input.TextArea
+                            key={`${moment(showCard?.data?.date).format("YYYY-MM-DD")}_${idOf(showCard?.data?.projectId)}_${idOf(showCard?.data?.taskId)}`}
                             rows={2}
-                            defaultValue={showCard?.data?.notes}
                             value={cardReason}
                             style={{ resize: "none" }}
                             className="form-control"
                             onChange={(e) => {
                               setCardReason(e.target.value);
                               setSaveButton(false);
-                               handleNoteChange(
+                              handleNoteChange(
                                 showCard.data.date,
                                 showCard.data.projectId,
                                 showCard.data.taskId,
