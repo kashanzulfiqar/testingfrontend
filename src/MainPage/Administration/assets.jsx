@@ -26,14 +26,16 @@ import EmptyTable from "../../files/Icons/EmptyTable.svg";
 import { itemRender } from "../paginationfunction";
 import { Helmet } from "react-helmet";
 import { user_icon } from "../../Entryfile/imagepath";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AssetsSubCategoryModal from "./Settings/AssetsSubCategoryModal";
 import AssetsCategoryModal from "./Settings/AssetsCategoryModal";
 
 const Assets = () => {
   const { t, i18n } = useTranslation();
+  const nav = useNavigate();
   const user_state = useSelector((state) => state.user.loginvalue);
   const [form] = Form.useForm();
+  const [filterForm] = Form.useForm();
 
   const [menu, setMenu] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +43,7 @@ const Assets = () => {
   const [assetsObj, setAssetsObj] = useState();
   const [loader, setLoader] = useState(false);
   const [flag, setFlag] = useState(false);
+  const [filterValues, setFilterValues] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
@@ -134,18 +137,50 @@ const Assets = () => {
   useEffect(() => {
     if (!flag) {
       setIsLoading(true);
-      fetchAssets();
+      fetchAssets(filterValues);
     }
   }, [pagination.current, pagination.pageSize]);
 
-  const fetchAssets = (page, pageSize) => {
+  const fetchAssets = (values, page, pageSize) => {
+    setIsLoading(true);
     const params = {
       page: page || pagination.current,
       limit: pageSize ? pageSize : pagination.pageSize,
     };
+    const nameParam =
+      values === ""
+        ? ""
+        : values?.name === ""
+        ? ""
+        : values?.name
+        ? `&name=${encodeURIComponent(values?.name)}`
+        : filterValues?.name
+        ? `&name=${encodeURIComponent(filterValues?.name)}`
+        : "";
+    const subCatParam =
+      values === ""
+        ? ""
+        : values?.assetSubCategoryId === ""
+        ? ""
+        : values?.assetSubCategoryId
+        ? `&assetSubCategoryId=${encodeURIComponent(values?.assetSubCategoryId)}`
+        : filterValues?.assetSubCategoryId
+        ? `&assetSubCategoryId=${encodeURIComponent(filterValues?.assetSubCategoryId)}`
+        : "";
+    const statusParam =
+      values === ""
+        ? ""
+        : values?.status === ""
+        ? ""
+        : values?.status
+        ? `&status=${encodeURIComponent(values?.status)}`
+        : filterValues?.status
+        ? `&status=${encodeURIComponent(filterValues?.status)}`
+        : "";
+
     apiServices(
       "GET",
-      `assets/?page=${params.page}&limit=${params.limit}`,
+      `assets/?page=${params.page}&limit=${params.limit}${nameParam}${subCatParam}${statusParam}`,
       null,
       user_state
     )
@@ -180,6 +215,24 @@ const Assets = () => {
         setIsLoading(false);
         setFlag(false);
       });
+  };
+
+  const onFilterFinish = (values) => {
+    console.log("values !!!! !", values);
+    
+    // Only trigger when some value is present (mirrors employees logic)
+    for (const key in values) {
+      if (values[key] !== undefined && values[key] !== null && values[key] !== "") {
+        setFilterValues(values);
+        setPagination({ ...pagination, current: 1 });
+        fetchAssets(values, 1, pagination.pageSize);
+        return;
+      }
+    }
+    // If all empty, still apply empty filter
+    setFilterValues(null);
+    setPagination({ ...pagination, current: 1 });
+    fetchAssets("", 1, pagination.pageSize);
   };
 
   const antIcon = (
@@ -422,12 +475,10 @@ const Assets = () => {
       title: "Name",
       dataIndex: "name",
       render: (text, record) => (
-        <Link to={`/assets/${record?._id}`} state={{ asset: record }} style={{ color: '#333333' }}>
-          <h2  style={{ cursor: 'pointer' }} className="table-avatar">
+        <h2 className="table-avatar">
           <img className="avatar" alt="" src={record?.imageUrl || user_icon} />
-            <span>{record?.name}</span>
+          <span>{record?.name}</span>
         </h2>
-        </Link>
       ),
     },
     { title: "Model", dataIndex: "model" },
@@ -501,16 +552,32 @@ const Assets = () => {
     }));
   }, [employees]);
 
+  const statusOptions = useMemo(() => {
+    const unique = Array.from(new Set((assets || []).map((a) => a?.status).filter(Boolean)));
+    return unique.map((s) => ({ label: s, value: s }));
+  }, [assets]);
+
+  const handleAlphabeticInput = (e) => {
+    const val = e?.target?.value || "";
+    const cleaned = val.replace(/[^a-zA-Z ]/g, "");
+    filterForm.setFieldsValue({ name: cleaned });
+  };
+
+  const handleAlphabetInput = (e) => {
+    const val = e?.target?.value || "";
+    const cleaned = val.replace(/[^a-zA-Z ]/g, "");
+    form.setFieldsValue({ name: cleaned });
+  };
   return (
     <div className="page-wrapper">
       <Helmet>
-        <title>{t("assets.pageTitle")}</title>
+        <title>Assets - {t("header.daftarPro")}</title>
         <meta name="description" content="Login page" />
       </Helmet>
       {/* Page Content */}
       <div className="content container-fluid">
         <div className="page-header">
-          <div className="row align-items-center pt-3 pb-3">
+        <div className="row align-items-center pt-3 pb-3">
             <div className="col">
               <h3 className="page-title">Assets</h3>
             </div>
@@ -527,6 +594,89 @@ const Assets = () => {
             </div>
           </div>
         </div>
+
+      {/* Search Filter */}
+      <Form form={filterForm} onFinish={onFilterFinish}>
+        <div className="row filter-row">
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-3 col-12">
+            <div className="form-group">
+              <Form.Item name="name" className="custom-border">
+                <Input
+                  className="form-control"
+                  style={{ height: "50px" }}
+                  placeholder={"Asset Name"}
+                  onChange={handleAlphabeticInput}
+                />
+              </Form.Item>
+            </div>
+          </div>
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-3 col-12">
+            <div style={{ position: "relative" }} id="assetsFilterArea1">
+              <Form.Item name="assetSubCategoryId" className="custom-border">
+                <Select
+                  className="custom-select"
+                  style={{ width: "100%" }}
+                  placeholder={"Sub-Category"}
+                  size="large"
+                  showSearch
+                  options={subCategoryOptions}
+                  getPopupContainer={() => document.getElementById("assetsFilterArea1")}
+                  filterOption={(input, option) =>
+                    (option?.label || "").toLowerCase().includes(input.toLowerCase())
+                  }
+                />
+              </Form.Item>
+            </div>
+          </div>
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-3 col-12">
+            <div style={{ position: "relative" }} id="assetsFilterArea2">
+              <Form.Item name="status" className="custom-border">
+                <Select
+                  className="custom-select"
+                  style={{ width: "100%" }}
+                  placeholder={"Status"}
+                  size="large"
+                  showSearch
+                  options={statusOptions}
+                  getPopupContainer={() => document.getElementById("assetsFilterArea2")}
+                  filterOption={(input, option) =>
+                    (option?.label || "").toLowerCase().includes(input.toLowerCase())
+                  }
+                />
+              </Form.Item>
+            </div>
+          </div>
+          <div
+            className="col-sm-6 col-md-3 col-lg-3 col-xl-3 col-12"
+            style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", gap: "2px" }}
+          >
+            <button
+              href="javascript:void(0)"
+              type="submit"
+              className="btn btn-success btn-block w-100"
+              disabled={isLoading}
+            >
+              {t("search")}
+            </button>
+            <button
+              href="javascript:void(0)"
+              type="reset"
+              onClick={() => {
+                filterForm.resetFields();
+                setFilterValues(null);
+                setPagination({ ...pagination, current: 1 });
+                fetchAssets("", 1, pagination.pageSize);
+              }}
+              className="btn btn-success btn-block w-100 resetButton"
+              style={{ backgroundColor: "#616161", color: "white", borderColor: "#aeaeae" }}
+              disabled={isLoading}
+            >
+              {t("reset")}
+            </button>
+          </div>
+        </div>
+      </Form>
+      {/* /Search Filter */}
 
         <div className="row">
           <div className="col-md-12">
@@ -552,13 +702,27 @@ const Assets = () => {
                       }
                     : null
                 }
-                onRow={
-                  i18n.dir() === "rtl"
-                    ? (record, rowIndex) => {
-                        return { style: { textAlign: "right" } };
+                onRow={(record, rowIndex) => {
+                  const baseProps = {
+                    style: {
+                      cursor: "pointer",
+                      ...(i18n.dir() === "rtl" ? { textAlign: "right" } : {}),
+                    },
+                    onClick: (e) => {
+                      // Don't navigate if clicking on the actions dropdown or its trigger
+                      if (
+                        e.target.closest(".dropdown-action") ||
+                        e.target.closest(".dropdown-toggle") ||
+                        e.target.closest(".dropdown-menu") ||
+                        e.target.closest(".dropdown-item")
+                      ) {
+                        return;
                       }
-                    : null
-                }
+                      nav(`/assets/${record?._id}`, { state: { asset: record } });
+                    },
+                  };
+                  return baseProps;
+                }}
               />
             </div>
             {assets?.length > 0 && (
@@ -577,9 +741,10 @@ const Assets = () => {
                   }
                   pageSizeOptions={["20", "30", "40", "50"]}
                   showSizeChanger
-                  onChange={(page, pageSize) =>
-                    setPagination({ ...pagination, current: page, pageSize })
-                  }
+                onChange={(page, pageSize) => {
+                    setPagination({ ...pagination, current: page, pageSize });
+                    fetchAssets(filterValues, page, pageSize);
+                  }}
                   itemRender={(current, type, originalElement) =>
                     itemRender(current, type, originalElement, t)
                   }
@@ -724,7 +889,7 @@ const Assets = () => {
                           },
                         ]}
                       >
-                        <Input className="form-control" maxLength={80} />
+                        <Input className="form-control" maxLength={50} onChange={handleAlphabetInput}/>
                       </Form.Item>
                     </div>
                     <div className="col-md-6">
@@ -733,7 +898,7 @@ const Assets = () => {
                         name="model"
                         className="custom-border"
                       >
-                        <Input className="form-control" maxLength={80} />
+                        <Input className="form-control" maxLength={15} />
                       </Form.Item>
                     </div>
                   </div>
@@ -755,6 +920,25 @@ const Assets = () => {
                           className="form-control"
                           style={{ width: "100%" }}
                           min={0}
+                          maxLength={10}
+                          onKeyPress={(e) => {
+                            if (!/[0-9]/.test(e.key)) {
+                              e.preventDefault(); // block letters or symbols
+                            }
+                          }}
+                          onPaste={(e) => {
+                            e.preventDefault(); // Stop default paste
+                            const paste = (e.clipboardData || window.clipboardData).getData("text");
+                            const onlyNumbers = paste.replace(/\D/g, ""); // Remove non-digits
+                            if (onlyNumbers) {
+                              // Insert the cleaned number into the field
+                              const input = e.target;
+                              const currentValue = input.value?.toString() || "";
+                              let newValue = currentValue + onlyNumbers;
+                              newValue = newValue.slice(0, 10);
+                              form.setFieldsValue({price: newValue})
+                            }
+                          }}
                         />
                       </Form.Item>
                     </div>
@@ -764,12 +948,30 @@ const Assets = () => {
                         name="quantity"
                         className="custom-border"
                         initialValue={1}
-                        rules={[{ type: "number", min: 1, message: "Min 1" }]}
+                        // rules={[{ type: "number", min: 1, message: "Min 1" }]}
                       >
                         <InputNumber
                           className="form-control"
                           style={{ width: "100%" }}
                           min={1}
+                          maxLength={10}
+                          onKeyPress={(e) => {
+                            if (!/[0-9]/.test(e.key)) {
+                              e.preventDefault(); // block letters or symbols
+                            }
+                          }}
+                          onPaste={(e) => {
+                            e.preventDefault();
+                            const paste = (e.clipboardData || window.clipboardData).getData("text");
+                            const onlyNumbers = paste.replace(/\D/g, ""); // Keep only digits
+                            if (onlyNumbers) {
+                              const input = e.target;
+                              const currentValue = input.value?.toString() || "";
+                              let newValue = currentValue + onlyNumbers;
+                              newValue = newValue.slice(0, 10);
+                              form.setFieldsValue({quantity: newValue})
+                            }
+                          }}
                         />
                       </Form.Item>
                     </div>
