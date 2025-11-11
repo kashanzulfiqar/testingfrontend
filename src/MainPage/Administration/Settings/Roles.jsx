@@ -11,6 +11,7 @@ import { apiServices } from "../../../Services/apiServices";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { LoadingOutlined } from "@ant-design/icons";
 import PermissionsTable from "../../../Components/PermissionsTable";
+import RolePermissionsModal from "../../../Components/RolePermissionsModal";
 import { useTranslation } from "react-i18next";
 
 const Roles = () => {
@@ -41,6 +42,10 @@ const Roles = () => {
     data: null,
     users: [],
     loading: false,
+  });
+  const [openNewPermissions, setOpenNewPermissions] = useState({
+    isOpen: false,
+    data: null,
   });
   const [data, setData] = useState([]);
 
@@ -407,6 +412,80 @@ const Roles = () => {
     });
   };
 
+  const handleNewPermissionsOpen = (roleData) => {
+    setOpenNewPermissions({
+      isOpen: true,
+      data: roleData,
+    });
+  };
+
+  const handleNewPermissionsClose = () => {
+    setOpenNewPermissions({
+      isOpen: false,
+      data: null,
+    });
+  };
+
+  const handleNewPermissionsSave = (backendPermissions, backendPermissionsData) => {
+    setLoader(true);
+
+    const allpermissions = backendPermissions.every((item) =>
+      item.subPermissions.every((subObj) => subObj.checked === true)
+    );
+
+    let updated_data = {
+      ...backendPermissionsData,
+      permissions: backendPermissions,
+    };
+
+    apiServices("PUT", "permissions", updated_data, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          let role_data = {
+            _id: openNewPermissions.data?._id,
+            companyId: openNewPermissions.data?.companyId,
+            roleName: openNewPermissions.data?.roleName,
+            customPermissions: allpermissions,
+          };
+
+          return apiServices("PUT", "role/update-role", role_data, user_state);
+        }
+      })
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setData(
+            data.map((role) => {
+              if (role._id === openNewPermissions.data._id) {
+                return {
+                  ...role,
+                  customPermissions: allpermissions,
+                };
+              } else {
+                return {
+                  ...role,
+                };
+              }
+            })
+          );
+          handleNewPermissionsClose();
+          message.success(t('settings.Roles.rolePermissionsUpdated'));
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t('settings.Roles.updatePermissionsInfoError')
+          }`
+        );
+      });
+  };
+
   const columns = [
     {
       title: "#",
@@ -474,6 +553,14 @@ const Roles = () => {
               }}
             >
               <i className="fa fa-pencil m-r-5" /> {t('edit')}
+            </a>
+            <a
+              className="dropdown-item"
+              href="javascript:void(0)"
+              onClick={() => handleNewPermissionsOpen(row)}
+              style={{ borderTop: "1px solid #e5e7eb", marginTop: "4px", paddingTop: "8px" }}
+            >
+              <i className="fa fa-shield m-r-5" style={{ color: "#ff9b44" }} /> Manage Permissions (New)
             </a>
             <a
               className="dropdown-item"
@@ -1024,7 +1111,7 @@ const Roles = () => {
               <button type="button" className="close" onClick={handleViewUsersClose}>
                 <span aria-hidden="true">×</span>
               </button>
-            </div>
+    </div>
             <div className="modal-body" style={{ minHeight: "300px" }}>
               {openViewUsers.loading ? (
                 <Spin
@@ -1171,6 +1258,14 @@ const Roles = () => {
           </div>
         </div>
       </Modal>
+
+      <RolePermissionsModal
+        open={openNewPermissions.isOpen}
+        onClose={handleNewPermissionsClose}
+        roleData={openNewPermissions.data}
+        onSave={handleNewPermissionsSave}
+        loading={loader}
+      />
     </div>
   );
 };
