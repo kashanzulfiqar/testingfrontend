@@ -49,7 +49,7 @@ function WeekViewTimeSheet({
 
   const [allData, setAllData] = useState([]);
   const [workingData, setWorkingData] = useState([]); //local state changes
-  const [pendingChanges, setPendingChanges] = useState({});
+  const [pendingChanges, setPendingChanges] = useState({}); //changes to push into data store
   const [allTasks, setAllTasks] = useState([]);
   const [loader, setLoader] = useState(false);
   const [taskLoader, setTaskLoader] = useState(false);
@@ -131,58 +131,6 @@ function WeekViewTimeSheet({
     setOldDurationValue("");
   }, [currentWeekDates]);
 
-  // const getData = (current_page, page_size) => {
-  //   // const current_date = moment(selectedDate).format('YYYY-MM-DD')
-  //   const from_data = currentWeekDates[0];
-  //   const to_data = currentWeekDates[currentWeekDates.length - 1];
-  //   // console.log(currentWeekDates, from_data, to_data);
-
-  //   setTableLoader(true);
-  //   // apiServices("GET", `timesheet?page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}${from_data ? `&timesheetFrom=${from_data}` : ''}${to_data ? `&timesheetTo=${to_data}` : ''}`, null, user_state)
-  //   apiServices(
-  //     "GET",
-  //     `timesheet?page=${
-  //       current_page ? current_page : currentPage ? currentPage : 1
-  //     }&limit=99999${from_data ? `&timesheetFrom=${from_data}` : ""}${
-  //       to_data ? `&timesheetTo=${to_data}` : ""
-  //     }&employeeOnly=${true}`,
-  //     null,
-  //     user_state
-  //   )
-  //     .then((res) => {
-  //       if (res?.data?.success === true) {
-  //         setAllData(res?.data?.Timesheet?.docs);
-  //         setPaginationDetail(res?.data?.Timesheet);
-  //         setTableLoader(false);
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       setTableLoader(false);
-  //       message.error(
-  //         `${
-  //           err?.response?.data?.msg
-  //             ? err?.response?.data?.msg
-  //             : err?.response?.data?.validation?.body?.message
-  //             ? err?.response?.data?.validation?.body?.message
-  //             : t("Timesheetemployee.viewTimesheetError")
-  //         }!`
-  //       );
-  //     });
-
-  //   // const filteredData = t_data.filter(item => currentWeekDates.includes(item.date));
-  //   // setAllData(filteredData);
-  // };
-  // const handleSelectionChange = (value) => {
-  //   setIsProjectAssociated(value === "project");
-  //   if (!isProjectAssociated) {
-  //     setAllTasks([]);
-  //     form2.setFieldsValue({ taskId: "", projectId: "" });
-  //   } else {
-  //     setAllTasks([]);
-  //     form2.setFieldsValue({ taskId: "", boardId: "" });
-  //   }
-  // };
-  
   const getData = async (current_page, page_size) => {
   const from_data = currentWeekDates[0];
   const to_data = currentWeekDates[currentWeekDates.length - 1];
@@ -393,27 +341,6 @@ function WeekViewTimeSheet({
     }
   };
 
-  //OG
-  // const handleTimePickerChange = (date, project, task, time, type) => {
-  //   if (type === "Update") {
-  //     const updatedData = allData.map((item) => {
-  //       if (
-  //         moment(item?.date).format("YYYY-MM-DD") === date &&
-  //         item.projectId?._id === project?._id &&
-  //         item.taskId?._id === task?._id
-  //       ) {
-  //         // console.log({ ...item, hoursWorked: time });
-  //         setUpdatedDuration(time);
-  //         return { ...item, hoursWorked: time };
-  //       }
-  //       return item;
-  //     });
-  //     setAllData(updatedData);
-  //   } else {
-  //     setUpdatedDuration(time);
-  //   }
-  // };
-
   const handleTimePickerChange = (date, project, task, time, type) => {
     // Block edits for future dates
     const isFuture = moment(date).isAfter(moment(), 'day');
@@ -528,8 +455,6 @@ const handleCreate = () => {
     apiServices("DELETE", "timesheet", data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          // setData([...data.filter((designation) => designation._id !== id)]);
-          // getData(currentPage, pageSize)
           if (allData?.length > 1) {
             getData(currentPage, pageSize);
             setShowCard({ isShown: false, data: "" });
@@ -563,7 +488,6 @@ const handleCreate = () => {
   };
 
   const handleSubmitApproval = () => {
-    // const found = allData.some(item => item?.submittedForApproval === true)
     let data = {
       submittedForApproval: true,
       status: "Pending",
@@ -642,25 +566,6 @@ const handleSaveAll = async () => {
     setLoader(false);
   }
 };
-
-
-
-
-  // const handleCancel = () => {
-  //   const updatedData = allData.map((item) => {
-  //     if (
-  //       item?.date === showCard?.data?.date &&
-  //       item.projectId?._id === showCard?.data?.projectId?._id &&
-  //       item.taskId?._id === showCard?.data?.taskId?._id
-  //     ) {
-  //       // console.log({ ...item, hoursWorked: time });
-  //       return { ...item, hoursWorked: oldDurationValue };
-  //     }
-  //     return item;
-  //   });
-  //   setAllData(updatedData);
-  //   // setOldDurationValue('');
-  // };
 const handleCancel = () => {
   if (!showCard?.data) return;
 
@@ -735,8 +640,6 @@ const handleCancel = () => {
       key: day,
       render: (text, record, index2) => {
         if (record?.projectId || record?.boardId) {
-          // console.log(record, new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toISOString().split('T')[0]);
-          // const d = record?.data?.filter(rec => rec?.date === new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toISOString().split('T')[0])
           const d = record?.data?.filter(
             (rec) =>
               moment(rec?.date).format("YYYY-MM-DD") ===
@@ -745,13 +648,10 @@ const handleCancel = () => {
               ).format("YYYY-MM-DD")
           );
           const [specific_date_data] = d;
-          // console.log(d);
           return (
             <>
               {
-                // <label style={{fontWeight: '500', border: '2px solid #BCBCBC', borderRadius: '8px', padding: '6px 12px', fontSize: '17px'}}>
-                //     {specific_date_data?.hoursWorked}
-                // </label>
+
                 specific_date_data?.date ? (
                   <TimePicker
                     allowClear={false}
@@ -794,13 +694,6 @@ const handleCancel = () => {
                         setUpdatedDuration(specific_date_data?.hoursWorked || "");
                         setDescLength(specific_date_data?.notes?.length || 0);
                         setOldDurationValue(specific_date_data?.hoursWorked || "");
-                        
-                        /**
-                         * ⚠️ REMOVE handleCancel() here!
-                         * Old logic reverted values on open. That breaks local unsaved data.
-                         * The card opening should never mutate state.
-                         */
-                        // handleCancel(); ❌ remove this line
 
                         formduration.resetFields(); // optional reset for card form only
                         console.log("specific_date_data", specific_date_data);
@@ -828,14 +721,8 @@ const handleCancel = () => {
                   />
 
                 ) : (
-                  // <label style={{color: '#66666633', border: '2px solid #BCBCBC', borderRadius: '8px', padding: '6px 12px', fontSize: '17px'}}>
-                  //     00:00
-                  // </label>
-
                   <Form form={formduration} className="formDurationInput">
                     <Form.Item
-                      // name={`${record?.taskId?._id}${new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toISOString().split('T')[0]}`}
-                      // name={`${record?.taskId?._id}${new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)}`}
                       name={`${index}${index2}`}
                     >
                       <TimePicker
@@ -886,15 +773,9 @@ const handleCancel = () => {
                                 (e.projectId?._id || e.projectId) === d.projectId._id &&
                                 (e.taskId?._id || e.taskId) === d.taskId._id
                             );
-
                             setCardReason(existing?.notes || "");
                             setUpdatedDuration(existing?.hoursWorked || "");
                             setDescLength(existing?.notes?.length || 0);
-
-                            // ⚠️ REMOVE destructive actions that clear UI
-                            // formduration.setFieldsValue({ [idd]: "" });
-                            // handleCancel(); ❌ remove this
-
                             setSaveButton(true);
                             console.log("Opened card for:", d);
                           }
@@ -922,7 +803,6 @@ const handleCancel = () => {
             </>
           );
         } else {
-          // const totalMinutes = allData?.filter(item => item.date === new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toISOString().split('T')[0])
           const totalMinutes = workingData
             ?.filter(
               (item) =>
