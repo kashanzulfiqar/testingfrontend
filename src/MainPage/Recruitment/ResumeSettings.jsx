@@ -27,6 +27,7 @@ import {
   LockOutlined,
   UnlockOutlined,
   ArrowRightOutlined,
+  PlusOutlined,
   EyeOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
@@ -434,7 +435,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
                     <UnlockOutlined /> Unlock & Reset
                   </Button>
                 )}
-                <Button
+                {/* <Button
                   type="primary"
                   block
                   style={{ backgroundColor: "#FF9B44", border: "none" }}
@@ -451,7 +452,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
                   }}
                 >
                   <ArrowRightOutlined /> Use Settings
-                </Button>
+                </Button> */}
               </Space>
             </Card>
 
@@ -521,7 +522,24 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
         <Col xs={24} lg={8}>
           <Space direction="vertical" style={{ width: "100%" }} size="large">
             {/* Presets List */}
-            <Card title="Your Presets">
+            <Card title="Your Presets"
+              extra={
+                <PlusOutlined 
+                onClick={() => {
+                  setModalConfig(currentConfig);
+                  setShowCreateModal(true);
+                }}
+                style={{
+                  fontSize: 18,
+                  color: "#FF9B44",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease-in-out",
+                }}
+                onMouseEnter={(e) => (e.target.style.color = "#ff7a00")}
+                onMouseLeave={(e) => (e.target.style.color = "#FF9B44")}
+                />
+              }
+            >
               {presets.length === 0 ? (
                 <Empty description="No presets yet" />
               ) : (
@@ -603,17 +621,25 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
               type="primary"
               shape="round"
               block
-              icon={<SaveOutlined />}
+              icon={<ArrowRightOutlined />}
               style={{
                 backgroundColor: "#FF9B44",
                 border: "none",
                 fontWeight: 600,
               }}
-              onClick={() => {
-                setModalConfig(currentConfig);
-                setShowCreateModal(true)}}  
+              onClick={async () => {
+                    try {
+                      if (isPresetSelected && selectedPresetId) {
+                        await usePreset(selectedPresetId);
+                      } else {
+                        await updateCurrentTheme();
+                      }
+                    } catch (err) {
+                      console.error("❌ Failed to apply settings:", err);
+                    }
+                  }}
             >
-              Create Preset
+              Use Settings
             </Button>
 
 
@@ -769,7 +795,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
             style={{ backgroundColor: "#FF9B44", border: "none", marginTop: 16, borderRadius: 10 }}
             disabled={!newPresetName.trim()}
           >
-            {isEditingPreset? 'Update Preset': 'Save Preset' }
+            <div style={{color : 'fff'}}>{isEditingPreset? 'Update Preset': 'Save Preset' }</div>
           </Button>
         </Space>
       </Modal>
