@@ -513,7 +513,7 @@ const Assets = () => {
             >
               <i className="fa fa-pencil m-r-5" /> {t("edit")}
             </a>
-            <a
+            {/* <a
               className="dropdown-item"
               href="javascript:void(0)"
               onClick={() =>
@@ -521,7 +521,7 @@ const Assets = () => {
               }
             >
               <i className="fa fa-trash-o m-r-5" /> {t("delete")}
-            </a>
+            </a> */}
           </div>
         </div>
       ),
@@ -1241,9 +1241,8 @@ const Assets = () => {
                           }
                           options={[
                             { label: "New", value: "New" },
-                            { label: "Good", value: "Good" },
-                            { label: "Fair", value: "Fair" },
-                            { label: "Damaged", value: "Damaged" },
+                            { label: "Used", value: "Used" },
+                            { label: "Refurbished", value: "Refurbished" },
                           ]}
                         />
                       </Form.Item>
@@ -1326,7 +1325,7 @@ const Assets = () => {
         }}
       />
 
-      <Modal
+      {/* <Modal
         open={open.isDelOpen}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
@@ -1379,7 +1378,7 @@ const Assets = () => {
             </div>
           </div>
         </div>
-      </Modal>
+      </Modal> */}
     </div>
   );
 };
