@@ -31,7 +31,7 @@ const AssetsCounter = () => {
   useEffect(() => {
     if (open.isAddOpen) {
       form.setFieldsValue({
-        assetCounterName: open?.data ? (open?.data?.assetCounter || open?.data?.assetCounterName || open?.data?.counterName || open?.data?.name || '') : ''
+        assetCount: open?.data ? (open?.data?.assetCount || open?.data?.assetCounter || open?.data?.assetCounterName || open?.data?.counterName || open?.data?.name || '') : ''
       });
     } else {
       form.resetFields();
@@ -178,8 +178,8 @@ const AssetsCounter = () => {
     },
     {
       title: 'Counter Name',
-      dataIndex: 'assetCounterName',
-      render: (_, row) => row?.assetCounter || row?.assetCounterName || row?.counterName || row?.name,
+      dataIndex: 'assetCount',
+      render: (_, row) => row?.assetCount || row?.assetCounter || row?.assetCounterName || row?.counterName || row?.name || '-',
     },
     {
       title: t('holiday.actions'),
@@ -269,7 +269,7 @@ const AssetsCounter = () => {
                     message.error(t('allEmp.errors.fillRequiredFields'));
                   }
                 }}
-                initialValues={{ assetCounterName: open?.data ? (open?.data?.assetCounter || open?.data?.assetCounterName || open?.data?.counterName || open?.data?.name) : '' }}
+                initialValues={{ assetCount: open?.data ? (open?.data?.assetCount || open?.data?.assetCounter || open?.data?.assetCounterName || open?.data?.counterName || open?.data?.name) : '' }}
                 autoComplete="off"
               >
                 <div className="form-group">
@@ -277,7 +277,7 @@ const AssetsCounter = () => {
                     Counter Name <span className="text-danger">*</span>
                   </label>
                   <Form.Item
-                    name="assetCounterName"
+                    name="assetCount"
                     rules={[
                       {
                         whitespace: true,
@@ -294,7 +294,7 @@ const AssetsCounter = () => {
                     ]}
                     className="custom-border"
                   >
-                    <Input className="form-control" maxLength={50} />
+                    <Input className="form-control" maxLength={5} />
                   </Form.Item>
                 </div>
                 <div className="submit-section">
@@ -317,7 +317,7 @@ const AssetsCounter = () => {
               <div className="form-header">
                 <h3 style={{ marginBottom: '30px' }}>{t('delete')} Assets Counter</h3>
                 <p>
-                  Are you sure you want to delete "{open?.data?.assetCounter || open?.data?.assetCounterName || open?.data?.counterName || open?.data?.name}"?
+                  Are you sure you want to delete "{open?.data?.assetCount || open?.data?.assetCounter || open?.data?.assetCounterName || open?.data?.counterName || open?.data?.name || 'this counter'}"?
                 </p>
               </div>
               <div className="modal-btn delete-action">

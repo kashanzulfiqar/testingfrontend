@@ -61,13 +61,16 @@ const Assets = () => {
   const [employees, setEmployees] = useState([]);
   const [imageLoader, setImageLoader] = useState(false);
   const [image, setImage] = useState("");
+  const [serialNumberLoading, setSerialNumberLoading] = useState(false);
   const [isSubCatModalOpen, setIsSubCatModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const assignedEmployeeWatch = Form.useWatch("assignedEmployeeId", form);
 
   const handleClose = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
     setLoader(false);
     setImage("");
+    setSerialNumberLoading(false);
     form?.resetFields();
   };
 
@@ -133,6 +136,44 @@ const Assets = () => {
       }
     });
   }, []);
+
+  // Keep status in sync with assignment
+  useEffect(() => {
+    const currentStatus = form.getFieldValue("status");
+    const currentNote = form.getFieldValue("assignmentNote");
+    if (assignedEmployeeWatch) {
+      const updates = {};
+      if (currentStatus !== "assigned") {
+        updates.status = "assigned";
+      }
+      if (Object.keys(updates).length) {
+        form.setFieldsValue(updates);
+      }
+    } else {
+      const updates = {};
+      if (currentStatus === "assigned") {
+        updates.status = "available";
+      }
+      if (currentNote) {
+        updates.assignmentNote = undefined;
+      }
+      updates.assignedDate = undefined;
+      updates.expectedReturnDate = undefined;
+      if (Object.keys(updates).length) {
+        form.setFieldsValue(updates);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignedEmployeeWatch]);
+
+  const fixedStatusOptions = [
+    // { label: "Assigned", value: "assigned" },
+    { label: "Available", value: "available" },
+    { label: "Sold", value: "sold" },
+    { label: "Lost", value: "lost" },
+    { label: "Damaged", value: "damaged" },
+    { label: "Under Maintenance", value: "undermaintenance" },
+  ];
 
   useEffect(() => {
     if (!flag) {
@@ -249,13 +290,20 @@ const Assets = () => {
           model: open?.data?.model || "",
           price: open?.data?.price || undefined,
           quantity: open?.data?.quantity || 1,
-          assetCategoryId: open?.data?.assetSubCategoryId?.categoryId?._id || undefined,
+          assetCategoryId: open?.data?.assetCategoryId?._id || undefined,
           assetSubCategoryId: open?.data?.assetSubCategoryId?._id || undefined,
           isAssignable: open?.data?.isAssignable || false,
           assignedEmployeeId:
             open?.data?.assignedEmployeeId?._id ||
             open?.data?.assignedEmployeeId ||
             undefined,
+          assignmentNote: open?.data?.assignmentNote || "",
+          assignedDate: open?.data?.assignmentHistory[0]?.assignedDate
+            ? moment(open?.data?.assignmentHistory[0]?.assignedDate)
+            : undefined,
+          expectedReturnDate: open?.data?.assignmentHistory[0]?.expectedReturnDate
+            ? moment(open?.data?.assignmentHistory[0]?.expectedReturnDate)
+            : undefined,
           manufacturer: open?.data?.manufacturer || "",
           purchasedDate: open?.data?.purchasedDate
             ? moment(open?.data?.purchasedDate)
@@ -266,10 +314,14 @@ const Assets = () => {
             undefined,
           condition: open?.data?.condition || undefined,
           warranty: open?.data?.warranty || undefined,
-          status: open?.data?.status || "Pending",
+          status: open?.data?.status || "available",
           imageUrl: open?.data?.imageUrl || "",
+          supplier: open?.data?.supplier || "",
+          serialNumber: open?.data?.serialNumber || "",
+          description: open?.data?.description || "",
         };
 
+        setSerialNumberLoading(false);
         form.setFieldsValue(formValues);
         const imageUrl = open?.data?.imageUrl || "";
         setImage(imageUrl);
@@ -289,12 +341,55 @@ const Assets = () => {
           purchasedByEmployeeId: undefined,
           condition: undefined,
           warranty: undefined,
-          status: "Pending",
+          status: "available",
+          supplier: "",
           imageUrl: "",
+          serialNumber: "",
+          assignmentNote: "",
+          assignedDate: undefined,
+          expectedReturnDate: undefined,
+          description: "",
         };
 
         form.resetFields();
         form.setFieldsValue(defaultValues);
+        const fetchSerialNumber = async () => {
+          setSerialNumberLoading(true);
+          try {
+            const res = await apiServices(
+              "GET",
+              "assets/serial-number",
+              null,
+              user_state
+            );
+            const serial =
+              res?.data?.serialNumber ||
+              res?.data?.data?.serialNumber ||
+              res?.data?.data ||
+              res?.data?.result?.serialNumber ||
+              res?.data?.SerialNumber;
+            if (serial) {
+              form.setFieldsValue({ serialNumber: serial });
+            } else {
+              form.setFieldsValue({ serialNumber: "" });
+              message.warning("Serial number not provided by server");
+            }
+          } catch (err) {
+            message.error(
+              `${
+                err?.response?.data?.msg
+                  ? err?.response?.data?.msg
+                  : err?.response?.data?.validation?.body?.message
+                  ? err?.response?.data?.validation?.body?.message
+                  : "Failed to fetch serial number"
+              }`
+            );
+            form.setFieldsValue({ serialNumber: "" });
+          } finally {
+            setSerialNumberLoading(false);
+          }
+        };
+        fetchSerialNumber();
         setImage("");
       }
     }
@@ -483,12 +578,12 @@ const Assets = () => {
     },
     { title: "Model", dataIndex: "model" },
     {
-      title: "Sub-Category",
-      dataIndex: "subCategoryName",
+      title: "Category",
+      dataIndex: "categoryName",
       render: (_, row) =>
-        row?.subCategory?.assetSubCategoryName ||
-        row?.assetSubCategoryId?.subcategoryname ||
-        row?.assetSubCategoryName,
+        row?.category?.assetCategoryName ||
+        row?.assetCategoryId?.categoryname ||
+        row?.assetCategoryName,
     },
     { title: "Status", dataIndex: "status" },
     {
@@ -535,12 +630,6 @@ const Assets = () => {
     }));
   }, [categories]);
 
-  const subCategoryOptions = useMemo(() => {
-    return (subCategories || []).map((sc) => ({
-      label: sc?.assetSubCategoryName || sc?.subcategoryname || sc?.name,
-      value: sc?._id || sc?.id,
-    }));
-  }, [subCategories]);
 
   const employeeOptions = useMemo(() => {
     return (employees || []).map((e) => ({
@@ -612,14 +701,14 @@ const Assets = () => {
           </div>
           <div className="col-sm-6 col-md-3 col-lg-3 col-xl-3 col-12">
             <div style={{ position: "relative" }} id="assetsFilterArea1">
-              <Form.Item name="assetSubCategoryId" className="custom-border">
+              <Form.Item name="assetCategoryId" className="custom-border">
                 <Select
                   className="custom-select"
                   style={{ width: "100%" }}
-                  placeholder={"Sub-Category"}
+                  placeholder={"Category"}
                   size="large"
                   showSearch
-                  options={subCategoryOptions}
+                  options={categoryOptions}
                   getPopupContainer={() => document.getElementById("assetsFilterArea1")}
                   filterOption={(input, option) =>
                     (option?.label || "").toLowerCase().includes(input.toLowerCase())
@@ -879,6 +968,43 @@ const Assets = () => {
                   <div className="row">
                     <div className="col-md-6">
                       <Form.Item
+                        label="SerialNumber"
+                        name="serialNumber"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Serial number is required",
+                          },
+                        ]}
+                      >
+                        {serialNumberLoading ? (
+                          <div
+                            style={{
+                              width: "100%",
+                              height: 40,
+                              backgroundColor: "#f5f5f5",
+                              border: "1px solid #d9d9d9",
+                              borderRadius: 6,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Spin size="small" />
+                          </div>
+                        ) : (
+                          <Input
+                            className="form-control"
+                            maxLength={50}
+                            readOnly
+                            style={{ backgroundColor: "#f5f5f5", cursor: "not-allowed" }}
+                          />
+                        )}
+                      </Form.Item>
+                    </div>
+                    <div className="col-md-6">
+                      <Form.Item
                         label="Name"
                         name="name"
                         className="custom-border"
@@ -892,6 +1018,8 @@ const Assets = () => {
                         <Input className="form-control" maxLength={50} onChange={handleAlphabetInput}/>
                       </Form.Item>
                     </div>
+                  </div>
+                  <div className="row">
                     <div className="col-md-6">
                       <Form.Item
                         label="Model"
@@ -901,10 +1029,19 @@ const Assets = () => {
                         <Input className="form-control" maxLength={15} />
                       </Form.Item>
                     </div>
+                    <div className="col-md-6">
+                      <Form.Item
+                        label="Manufacturer"
+                        name="manufacturer"
+                        className="custom-border"
+                      >
+                        <Input className="form-control" maxLength={80} />
+                      </Form.Item>
+                    </div>
                   </div>
 
                   <div className="row">
-                    <div className="col-md-3">
+                    <div className="col-md-6">
                       <Form.Item
                         label="Price"
                         name="price"
@@ -942,7 +1079,7 @@ const Assets = () => {
                         />
                       </Form.Item>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-6">
                       <Form.Item
                         label="Quantity"
                         name="quantity"
@@ -1146,6 +1283,7 @@ const Assets = () => {
                                 }
                                 showSearch
                                 placeholder="Select employee"
+                                allowClear
                                 options={employeeOptions}
                                 filterOption={(input, option) =>
                                   (option?.label || "")
@@ -1159,41 +1297,71 @@ const Assets = () => {
                       </Form.Item>
                     </div>
                   </div>
+                  {assignedEmployeeWatch ? (
+                    <div className="row">
+                      <div className="col-md-6">
+                        <Form.Item
+                          label="Assigned Date"
+                          name="assignedDate"
+                          className="custom-border"
+                        >
+                          <DatePicker
+                            className="form-control"
+                            style={{ width: "100%", minHeight: "45px" }}
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                            disabledDate={(current) =>
+                              current && current > moment().endOf("day")
+                            }
+                          />
+                        </Form.Item>
+                      </div>
+                      <div className="col-md-6">
+                        <Form.Item
+                          label="Expected Return Date"
+                          name="expectedReturnDate"
+                          className="custom-border"
+                        >
+                          <DatePicker
+                            className="form-control"
+                            style={{ width: "100%", minHeight: "45px" }}
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                  ) : null}
+                  {assignedEmployeeWatch ? (
+                    <div className="row">
+                      <div className="col-md-12">
+                        <Form.Item
+                          label="Assignment Note"
+                          name="assignmentNote"
+                          className="custom-border"
+                        >
+                          <Input.TextArea
+                            className="form-control"
+                            rows={2}
+                            maxLength={500}
+                            placeholder="Add assignment note"
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="row">
                     <div className="col-md-6">
                       <Form.Item
-                        label="Manufacturer"
-                        name="manufacturer"
+                        label="Supplier"
+                        name="supplier"
                         className="custom-border"
                       >
                         <Input className="form-control" maxLength={80} />
                       </Form.Item>
                     </div>
-                    <div className="col-md-6">
-                      <Form.Item
-                        label="Purchased Date"
-                        name="purchasedDate"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select purchased date",
-                          },
-                        ]}
-                      >
-                        <DatePicker
-                          className="form-control"
-                          style={{ width: "100%", minHeight: "45px" }}
-                          disabledDate={(current) => current && current > moment().endOf('day')}
-                          getPopupContainer={() =>
-                            document.getElementById("area")
-                          }
-                        />
-                      </Form.Item>
-                    </div>
-                  </div>
-
-                  <div className="row">
                     <div className="col-md-6">
                       <Form.Item
                         label="Purchased By"
@@ -1218,6 +1386,31 @@ const Assets = () => {
                             (option?.label || "")
                               .toLowerCase()
                               .includes(input.toLowerCase())
+                          }
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-3">
+                      <Form.Item
+                        label="Purchased Date"
+                        name="purchasedDate"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please select purchased date",
+                          },
+                        ]}
+                      >
+                        <DatePicker
+                          className="form-control"
+                          style={{ width: "100%", minHeight: "45px" }}
+                          disabledDate={(current) => current && current > moment().endOf('day')}
+                          getPopupContainer={() =>
+                            document.getElementById("area")
                           }
                         />
                       </Form.Item>
@@ -1257,6 +1450,44 @@ const Assets = () => {
                           className="form-control"
                           style={{ width: "100%" }}
                           min={0}
+                        />
+                      </Form.Item>
+                    </div>
+                    <div className="col-md-3">
+                      <Form.Item
+                        label="Status"
+                        name="status"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please select status",
+                          },
+                        ]}
+                      >
+                        <Select
+                          className="custom-select custom-normal"
+                          options={fixedStatusOptions}
+                          disabled={!!assignedEmployeeWatch}
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="col-md-12">
+                      <Form.Item
+                        label="Description"
+                        name="description"
+                        className="custom-border"
+                      >
+                        <Input.TextArea
+                          className="form-control"
+                          rows={3}
+                          maxLength={500}
+                          placeholder="Add description"
                         />
                       </Form.Item>
                     </div>
