@@ -354,6 +354,8 @@ const handleSaveMongo = async () => {
       ...parsedData,
       company_logo: logoUrl || parsedData.company_logo || null,
       createdAt: new Date().toISOString(),
+      presetId: selectedPresetId || null,
+      isTwoColumnSkills,
     };
 
     console.log("🖼️ Final company logo URL:", payload.company_logo);
@@ -381,9 +383,14 @@ const handleSaveMongo = async () => {
     if (existing) {
       setDuplicateRecord(existing);
       setIsDuplicateModalVisible(true);
-      record = existing;
+      record = {...existing,
+        presetId: selectedPresetId || null,
+      };
     } else {
-      const saveRes = await apiServices("POST", "resumes", payload);
+      const saveRes = await apiServices("POST", "resumes", {
+        ...payload,
+        presetId: selectedPresetId || null,      
+      });
       record = saveRes?.data || payload;
       message.success("✅ Resume saved to MongoDB!");
     }
@@ -395,7 +402,7 @@ const handleSaveMongo = async () => {
 
         const blobRes = await axiosInstance.post(
           "resume/preview-from-json",
-          { parsed: record },
+          { parsed: record, presetId: selectedPresetId || null },
           {
             headers: {
               Authorization: `Bearer ${token}`,
