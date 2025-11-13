@@ -1130,23 +1130,42 @@ const EmployeeSalary = () => {
   //   doc.save("payroll_export.pdf");
   // };
 
+  const handleFormValuesChange = (changedValues, allValues) => {
+    const salary = parseFloat(allValues.salary) || 0;
+    const tax = parseFloat(allValues.tax) || 0;
+    const deduction = parseFloat(allValues.deduction) || 0;
+    const absentFine = parseFloat(allValues.absentFine) || 0;
+    const bonus = parseFloat(allValues.bonus) || 0;
+    const extraPayment = parseFloat(allValues.extraPayment) || 0;
+
+    const totalDeduction = tax + deduction + absentFine;
+    const totalAddition = bonus + extraPayment;
+    const creditSalary = salary - totalDeduction;
+
+    form.setFieldsValue({
+      totalDeduction: totalDeduction.toFixed(2),
+      totalAddition: totalAddition.toFixed(2),
+      creditSalary: creditSalary.toFixed(2),
+    });
+  };
+
   const updatePayroll = (values) => {
     setEditLoader(true);
     const updateData = {
       _id: selectedRecord?._id,
       companyId: selectedRecord?.companyId,
-      deduction: values.deduction, // Use values from the form
-      deductionReason: values.deductionReason, // Use values from the form
-      totalDeduction: values.totalDeduction, // Use values from the form
-      bonus: values.bonus, // Use values from the form
-      bonusReason: values.bonusReason, // Use values from the form
-      totalAddition: values.totalAddition, // Use values from the form
-      creditSalary: values.creditSalary, // Use values from the form
-      modeOfPayment: values.modeOfPayment, // Use values from the form
-      transactionId: values.transactionId, // Use values from the form
-      extraPayment: values.extraPayment, // Use values from the form
+      deduction: parseFloat(values.deduction) || 0,
+      deductionReason: values.deductionReason,
+      totalDeduction: parseFloat(values.totalDeduction) || 0,
+      bonus: parseFloat(values.bonus) || 0,
+      bonusReason: values.bonusReason,
+      totalAddition: parseFloat(values.totalAddition) || 0,
+      creditSalary: parseFloat(values.creditSalary) || 0,
+      modeOfPayment: values.modeOfPayment,
+      transactionId: values.transactionId,
+      extraPayment: parseFloat(values.extraPayment) || 0,
       extraPaymentReason: values.extraPaymentReason,
-      processed : false // Use values from the form
+      processed : false
     };
 
     console.log(updateData);
@@ -1773,8 +1792,9 @@ const EmployeeSalary = () => {
 
                 <div className="modal-body">
                   <Form
+                  form={form}
                   onFinish={updatePayroll}
-
+                  onValuesChange={handleFormValuesChange}
                   name="control-hooks"
 
                   initialValues={{
