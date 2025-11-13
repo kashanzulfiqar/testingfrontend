@@ -20,11 +20,9 @@ import InvoiceTags from "./InvoiceTags";
 import InvoiceCounter from "./InvoiceCounter";
 import BankDetails from "./BankDetails";
 import ExpenseCategory from "./ExpenseCategory";
-import AssetsCategory from "./AssetsCategory";
-import AssetsSubCategory from "./AssetsSubCategory";
 import { useTranslation } from "react-i18next";
 import WokringDays from "./WorkingDays";
-import AssetsTag from "./AssetsTag";
+import AssetsManagement from "./AssetsManagement";
 
 const Settings = ({test}) => {
 
@@ -49,7 +47,15 @@ const Settings = ({test}) => {
   const getInitialComponent = () => {
     const params = new URLSearchParams(location.search);
     const settingFromURL = params.get('setting');
-    return settingFromURL ? decodeURIComponent(settingFromURL) : 'Company Settings';
+    if (settingFromURL) {
+      const decoded = decodeURIComponent(settingFromURL);
+      // Redirect old asset component names to Assets Management
+      if (decoded === 'Assets Category' || decoded === 'Assets Sub-Category' || decoded === 'Assets Tag') {
+        return 'Assets Management';
+      }
+      return decoded;
+    }
+    return 'Company Settings';
   };
 
   const [editModal, setEditModal] = useState('')
@@ -101,7 +107,19 @@ useEffect(() => {
   const params = new URLSearchParams(location.search);
   const settingFromURL = params.get('setting');
   if (settingFromURL) {
-    setShowComponent(decodeURIComponent(settingFromURL));
+    const decoded = decodeURIComponent(settingFromURL);
+    // Redirect old asset component names to Assets Management
+    if (decoded === 'Assets Category' || decoded === 'Assets Sub-Category' || decoded === 'Assets Tag') {
+      setShowComponent('Assets Management');
+      // Update URL to reflect the change
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('setting', encodeURIComponent('Assets Management'));
+      // Preserve the old setting as subTab for AssetsManagement component
+      newUrl.searchParams.set('subTab', encodeURIComponent(decoded));
+      window.history.replaceState({}, '', newUrl);
+    } else {
+      setShowComponent(decoded);
+    }
   }
 }, [location.search]);
 
@@ -135,6 +153,8 @@ useEffect(() => {
           ? t('settings.invoiceCounter')
           : showComponent==="Expense Categories" 
           ? t('settings.expenseCategories')
+          : showComponent==="Assets Management" 
+          ? 'Assets Management'
           : showComponent==="Working Days" 
           ? 'Working Days'
           : showComponent
@@ -316,40 +336,16 @@ useEffect(() => {
                         {t('settings.expenseCategories')}
                       </a>
                     </li>
-                    <li className={showComponent === 'Assets Category' ? 'active' : ''}>
+                    <li className={showComponent === 'Assets Management' ? 'active' : ''}>
                       <a 
-                        href={getMenuItemUrl('Assets Category')}
+                        href={getMenuItemUrl('Assets Management')}
                         onClick={(e) => {
                           e.preventDefault();
-                          handleMenuClick('Assets Category');
+                          handleMenuClick('Assets Management');
                         }}
                       >
                         <i className="fa fa-fw fa-cubes" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
-                        Assets Category
-                      </a>
-                    </li>
-                    <li className={showComponent === 'Assets Sub-Category' ? 'active' : ''}>
-                      <a 
-                        href={getMenuItemUrl('Assets Sub-Category')}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleMenuClick('Assets Sub-Category');
-                        }}
-                      >
-                        <i className="fa fa-fw fa-cube" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
-                        Assets Sub-Category
-                      </a>
-                    </li>
-                    <li className={showComponent === 'Assets Tag' ? 'active' : ''}>
-                      <a 
-                        href={getMenuItemUrl('Assets Tag')}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleMenuClick('Assets Tag');
-                        }}
-                      >
-                        <i className="fa fa-fw fa-tags" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
-                        Assets Tag
+                        Assets Management
                       </a>
                     </li>
                   </ul>
@@ -369,9 +365,7 @@ useEffect(() => {
                 showComponent === 'Invoice Counter' ? <InvoiceCounter /> : 
                 showComponent === 'Bank Details' ? <BankDetails /> : 
                 showComponent === 'Expense Categories' ? <ExpenseCategory /> : 
-                showComponent === 'Assets Category' ? <AssetsCategory /> : 
-                showComponent === 'Assets Sub-Category' ? <AssetsSubCategory /> : 
-                showComponent === 'Assets Tag' ? <AssetsTag /> : 
+                showComponent === 'Assets Management' ? <AssetsManagement /> : 
                 <WokringDays />
               }
              </div>
