@@ -30,7 +30,7 @@ export default function ResumeConverter() {
   const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
   const [isDuplicateModalVisible, setIsDuplicateModalVisible] = useState(false);
   const [duplicateRecord, setDuplicateRecord] = useState(null);
-
+  const [isSaving, setIsSaving] = useState(false);
   const [resumeHistory, setResumeHistory] = useState([]);
   const [lastDeleted, setLastDeleted] = useState(null);
   const [isPreviewModalVisible, setIsPreviewModalVisible] = useState(false);
@@ -385,6 +385,7 @@ const handleSaveMongo = async () => {
       setIsDuplicateModalVisible(true);
       record = {...existing,
         presetId: selectedPresetId || null,
+        isTwoColumnSkills,
       };
     } else {
       const saveRes = await apiServices("POST", "resumes", {
@@ -402,7 +403,7 @@ const handleSaveMongo = async () => {
 
         const blobRes = await axiosInstance.post(
           "resume/preview-from-json",
-          { parsed: record, presetId: selectedPresetId || null },
+          { parsed: record, presetId: selectedPresetId || null, isTwoColumnSkills },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -431,10 +432,6 @@ const handleSaveMongo = async () => {
     setSaving(false);
   }
 };
-
-
-  
-
   const handleFocusPreview = async () => {
     if (!parsedData) return message.warning("No resume data to preview.");
     
@@ -1501,6 +1498,8 @@ const handleSaveMongo = async () => {
                 {/* Override */}
                 <Button
                   type="primary"
+                  loading={isSaving}
+                  disabled={isSaving}
                   style={{
                     background: "#FF9B44",
                     borderColor: "#FF9B44",
@@ -1510,6 +1509,7 @@ const handleSaveMongo = async () => {
                   }}
                   onClick={async () => {
                     try {
+                      setIsSaving(true);
                       // await apiServices("DELETE", `resumes/${duplicateRecord._id}`);
                       const payload = {
                         ...parsedData,
@@ -1522,11 +1522,12 @@ const handleSaveMongo = async () => {
                       console.error(" Override failed:", err);
                       message.error("Failed to override resume.");
                     } finally {
+                      setIsSaving(false);
                       setIsDuplicateModalVisible(false);
                     }
                   }}
                 >
-                  Proceed
+                  {isSaving ? "Saving..." : "Proceed"}
                 </Button>
               </div>
             </div>
