@@ -9,6 +9,11 @@ import { useTranslation } from "react-i18next";
 import { apiServices } from "../../Services/apiServices";
 import { user_icon } from "../../Entryfile/imagepath";
 
+const HISTORY_TABS = {
+  ASSIGNMENT: "assignment",
+  ASSET: "asset",
+};
+
 const AssetDetails = () => {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
@@ -19,7 +24,7 @@ const AssetDetails = () => {
   const [asset, setAsset] = useState(location?.state?.asset || null);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [activeHistoryTab, setActiveHistoryTab] = useState("assignment");
+  const [activeHistoryTab, setActiveHistoryTab] = useState(HISTORY_TABS.ASSIGNMENT);
 
   const antIcon = (
     <LoadingOutlined style={{ fontSize: 24, color: "#fff" }} spin />
@@ -271,14 +276,14 @@ const AssetDetails = () => {
                     }}
                   >
                     <Button
-                      type={activeHistoryTab === "assignment" ? "primary" : "default"}
-                      onClick={() => setActiveHistoryTab("assignment")}
+                      type={activeHistoryTab === HISTORY_TABS.ASSIGNMENT ? "primary" : "default"}
+                      onClick={() => setActiveHistoryTab(HISTORY_TABS.ASSIGNMENT)}
                     >
                       Assignment History
                     </Button>
                     <Button
-                      type={activeHistoryTab === "asset" ? "primary" : "default"}
-                      onClick={() => setActiveHistoryTab("asset")}
+                      type={activeHistoryTab === HISTORY_TABS.ASSET ? "primary" : "default"}
+                      onClick={() => setActiveHistoryTab(HISTORY_TABS.ASSET)}
                     >
                       Asset History
                     </Button>
@@ -286,7 +291,7 @@ const AssetDetails = () => {
                   <div className="tab-content pt-0">
                     <div className="view-header d-flex align-items-center justify-content-between">
                       <h3>
-                        {activeHistoryTab === "assignment"
+                        {activeHistoryTab === HISTORY_TABS.ASSIGNMENT
                           ? "Assignment History"
                           : "Asset History"}
                       </h3>
@@ -294,7 +299,7 @@ const AssetDetails = () => {
                     <div className="table-responsive">
                       <Table
                         className={
-                          (activeHistoryTab === "assignment"
+                          (activeHistoryTab === HISTORY_TABS.ASSIGNMENT
                             ? asset?.assignmentHistory
                             : asset?.assetsHistory)?.length > 0
                             ? "table-striped"
@@ -302,7 +307,7 @@ const AssetDetails = () => {
                         }
                         locale={{
                           emptyText:
-                            activeHistoryTab === "assignment" ? (
+                            activeHistoryTab === HISTORY_TABS.ASSIGNMENT ? (
                               <Empty description="No assignment history" />
                             ) : (
                               <Empty description="No asset history" />
@@ -311,12 +316,12 @@ const AssetDetails = () => {
                         style={{ overflowX: "auto" }}
                         pagination={false}
                         columns={
-                          activeHistoryTab === "assignment"
+                          activeHistoryTab === HISTORY_TABS.ASSIGNMENT
                             ? assignmentColumns
                             : assetHistoryColumns
                         }
                         dataSource={
-                          activeHistoryTab === "assignment"
+                          activeHistoryTab === HISTORY_TABS.ASSIGNMENT
                             ? asset?.assignmentHistory || []
                             : asset?.assetsHistory || []
                         }

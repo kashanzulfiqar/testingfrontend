@@ -294,7 +294,30 @@ const AssetsCounter = () => {
                     ]}
                     className="custom-border"
                   >
-                    <Input className="form-control" maxLength={5} />
+                    <Input
+                      className="form-control"
+                      maxLength={5}
+                      inputMode="numeric"
+                      onKeyPress={(e) => {
+                        if (!/[0-9]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const paste = (e.clipboardData || window.clipboardData).getData('text') || '';
+                        const onlyNumbers = paste.replace(/\D/g, '');
+                        const current = form.getFieldValue('assetCount') || '';
+                        const next = (current + onlyNumbers).slice(0, 5);
+                        form.setFieldsValue({ assetCount: next });
+                      }}
+                      onChange={(e) => {
+                        const onlyNumbers = (e.target.value || '').replace(/\D/g, '');
+                        if (onlyNumbers !== e.target.value) {
+                          form.setFieldsValue({ assetCount: onlyNumbers });
+                        }
+                      }}
+                    />
                   </Form.Item>
                 </div>
                 <div className="submit-section">

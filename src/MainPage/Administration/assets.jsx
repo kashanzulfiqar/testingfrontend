@@ -198,15 +198,15 @@ const Assets = () => {
         : filterValues?.name
         ? `&name=${encodeURIComponent(filterValues?.name)}`
         : "";
-    const subCatParam =
+    const categoryParam =
       values === ""
         ? ""
-        : values?.assetSubCategoryId === ""
+        : values?.assetCategoryId === ""
         ? ""
-        : values?.assetSubCategoryId
-        ? `&assetSubCategoryId=${encodeURIComponent(values?.assetSubCategoryId)}`
-        : filterValues?.assetSubCategoryId
-        ? `&assetSubCategoryId=${encodeURIComponent(filterValues?.assetSubCategoryId)}`
+        : values?.assetCategoryId
+        ? `&assetCategoryId=${encodeURIComponent(values?.assetCategoryId)}`
+        : filterValues?.assetCategoryId
+        ? `&assetCategoryId=${encodeURIComponent(filterValues?.assetCategoryId)}`
         : "";
     const statusParam =
       values === ""
@@ -221,7 +221,7 @@ const Assets = () => {
 
     apiServices(
       "GET",
-      `assets/?page=${params.page}&limit=${params.limit}${nameParam}${subCatParam}${statusParam}`,
+      `assets/?page=${params.page}&limit=${params.limit}${nameParam}${categoryParam}${statusParam}`,
       null,
       user_state
     )
