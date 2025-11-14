@@ -54,6 +54,7 @@ const EmployeeSalary = () => {
   const nav = useNavigate();
 
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [genModal, setGenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -114,6 +115,39 @@ const EmployeeSalary = () => {
       setDownAvailable(true);
     }
   },[downloadData]);
+
+  useEffect(() => {
+    if (editModal && selectedRecord) {
+      editForm.resetFields();
+      editForm.setFieldsValue({
+        deduction: selectedRecord?.deduction || "0",
+        deductionReason: selectedRecord?.deductionReason || "",
+        tax: selectedRecord?.tax || "0",
+        totalDeduction: selectedRecord?.totalDeduction || "0",
+        bonus: selectedRecord?.bonus || "0",
+        bonusReason: selectedRecord?.bonusReason || "",
+        totalAddition: selectedRecord?.totalAddition || "0.00",
+        creditSalary: selectedRecord?.creditSalary || "0.00",
+        modeOfPayment: selectedRecord?.modeOfPayment || "",
+        transactionId: selectedRecord?.transactionId || "",
+        extraPayment: selectedRecord?.extraPayment || "0",
+        extraPaymentReason: selectedRecord?.extraPaymentReason || "",
+        absentFine: selectedRecord?.absentFine || "0",
+        payMonth: moment(selectedRecord?.payMonth, 'MMMM'),
+        payYear: moment(selectedRecord?.payYear, 'YYYY'),
+        processed: selectedRecord?.processed || false,
+        status: selectedRecord?.status || "Unpaid",
+        createdAt: moment(selectedRecord?.createdAt).format("D MMM YYYY"),
+        updatedAt: moment(selectedRecord?.updatedAt).format("D MMM YYYY"),
+        employeeId: selectedRecord?.user?.employeeId || "",
+        fullName: selectedRecord?.user?.fullName || "",
+        salary: selectedRecord?.basicSalary ? selectedRecord?.basicSalary : selectedRecord?.user?.salary ? selectedRecord?.user?.salary : "0.00",
+        email: selectedRecord?.user?.email || "",
+        bankAccountNumber: selectedRecord?.user?.bankAccountNumber || "-",
+        bankName: selectedRecord?.user?.bankName || "-",
+      });
+    }
+  }, [editModal, selectedRecord, editForm]);
 
   const isdownDisabled = !downAvailable;
   const isDisabled = !dataAvailable;
@@ -1142,7 +1176,7 @@ const EmployeeSalary = () => {
     const totalAddition = bonus + extraPayment;
     const creditSalary = salary - totalDeduction;
 
-    form.setFieldsValue({
+    editForm.setFieldsValue({
       totalDeduction: totalDeduction.toFixed(2),
       totalAddition: totalAddition.toFixed(2),
       creditSalary: creditSalary.toFixed(2),
@@ -1792,39 +1826,10 @@ const EmployeeSalary = () => {
 
                 <div className="modal-body">
                   <Form
-                  form={form}
+                  form={editForm}
                   onFinish={updatePayroll}
                   onValuesChange={handleFormValuesChange}
                   name="control-hooks"
-
-                  initialValues={{
-                    deduction: selectedRecord?.deduction || "0",
-                    deductionReason: selectedRecord?.deductionReason || "",
-                    tax: selectedRecord?.tax || "0",
-                    totalDeduction: selectedRecord?.totalDeduction || "0",
-                    bonus: selectedRecord?.bonus || "0",
-                    bonusReason: selectedRecord?.bonusReason || "",
-                    totalAddition: selectedRecord?.totalAddition || "0.00",
-                    creditSalary: selectedRecord?.creditSalary || "0.00",
-                    modeOfPayment: selectedRecord?.modeOfPayment || "",
-                    transactionId: selectedRecord?.transactionId || "",
-                    extraPayment: selectedRecord?.extraPayment || "0",
-                    extraPaymentReason: selectedRecord?.extraPaymentReason || "",
-                    absentFine: selectedRecord?.absentFine || "0",
-                    payMonth: moment(selectedRecord?.payMonth, 'MMMM') || "",
-                    payYear: moment(selectedRecord?.payYear, 'YYYY') || "",
-                    processed: selectedRecord?.processed || false,
-                    status: selectedRecord?.status || "Unpaid",
-                    createdAt: moment(selectedRecord?.createdAt).format("D MMM YYYY") || "",
-                    updatedAt: moment(selectedRecord?.updatedAt).format("D MMM YYYY") || "",
-                    employeeId: selectedRecord?.user?.employeeId || "",
-                    fullName: selectedRecord?.user?.fullName || "",
-                    salary: selectedRecord?.basicSalary ? selectedRecord?.basicSalary : selectedRecord?.user?.salary ? selectedRecord?.user?.salary : "0.00",
-                    email: selectedRecord?.user?.email || "",
-                    bankAccountNumber: selectedRecord?.user?.bankAccountNumber || "-",
-                    bankName: selectedRecord?.user?.bankName || "-",
-
-                  }}
                   >
                     <div className="row">
                       <div className="col-sm-6">
