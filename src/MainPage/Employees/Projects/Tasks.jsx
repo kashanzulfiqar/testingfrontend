@@ -52,6 +52,7 @@ const Tasks = () => {
   const [openStatusDropdownId, setOpenStatusDropdownId] = useState(null);
   const [isArchived, setIsArchived] = useState(false);
   const [allEmployees, setAllEmployees] = useState([]);
+  const [availableAssignees, setAvailableAssignees] = useState([]);
   // Add state for editing due date in the modal
   const [editingDueDate, setEditingDueDate] = useState(false);
   const [dueDateValue, setDueDateValue] = useState(null);
@@ -77,6 +78,43 @@ const Tasks = () => {
       setDescValue('');
     }
   }, [open?.isAddOpen, open?.data]);
+
+  const formatAssigneeList = (developers) => {
+    if (!Array.isArray(developers)) return [];
+    return developers
+      .map((developer) => {
+        if (!developer) return null;
+        if (typeof developer === 'string') {
+          return allEmployees.find((emp) => emp?._id === developer) || null;
+        }
+        if (developer?._id) return developer;
+        return null;
+      })
+      .filter(Boolean);
+  };
+
+  const updateAvailableAssignees = (associationType, sourceId, fallbackDevelopers = []) => {
+    if (!sourceId) {
+      setAvailableAssignees([]);
+      return;
+    }
+    const sourceCollection = associationType === 'project' ? allProjects : allTaskboards;
+    const selectedSource = sourceCollection.find((item) => item?._id === sourceId);
+    const developers = selectedSource?.assignedDevelopers ?? fallbackDevelopers;
+    setAvailableAssignees(formatAssigneeList(developers));
+  };
+
+  useEffect(() => {
+    if (!open?.isAddOpen) {
+      setAvailableAssignees([]);
+      return;
+    }
+    if (open?.data?.projectId?._id) {
+      updateAvailableAssignees('project', open?.data?.projectId?._id, open?.data?.projectId?.assignedDevelopers);
+    } else if (open?.data?.boardId?._id) {
+      updateAvailableAssignees('taskboard', open?.data?.boardId?._id, open?.data?.boardId?.assignedDevelopers);
+    }
+  }, [open?.isAddOpen, open?.data, allProjects, allTaskboards]);
 
   // Effect to handle modal open state changes
 useEffect(() => {
@@ -653,6 +691,7 @@ const onFinishEdit = (values) => {
             >
               <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
+            {!(role === 'client' || role === 'focalperson') && (
             <a
               className="dropdown-item"
               href="#"
@@ -664,6 +703,7 @@ const onFinishEdit = (values) => {
             >
               <i className="fa fa-trash m-r-5" /> {t('delete')}
             </a>
+            )}
           </div>
         </div>
       ),
@@ -671,7 +711,7 @@ const onFinishEdit = (values) => {
   ]
 
   const filteredColumns = (role === 'client' || role === 'focalperson')
-    ? columns.filter(col => col.title !== t('allEmp.action') && col.title !== t('sideBar.taskBoard'))
+    ? columns.filter(col => col.title !== t('sideBar.taskBoard'))
     : columns;
 
   const customEmptyText = (
@@ -762,9 +802,7 @@ const onFinishEdit = (values) => {
                 style={{ width: '100%' }}
                 />
               </div>
-                {!(role === 'client' || role === 'focalperson') && (
                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); }}><i className="fa fa-plus" /> {t('Tasks.addtask')}</a>
-                )}
               </div>
               </div>
             </div>
@@ -1101,10 +1139,14 @@ const onFinishEdit = (values) => {
                                       } else {
                                         form2.setFieldsValue({ projectId: undefined });
                                       }
+                                      form2.setFieldsValue({ assignee: undefined });
+                                      setAvailableAssignees([]);
                                     }}
                                     >
                                     <Select.Option value="project">Project</Select.Option>
-                                    <Select.Option value="taskboard">Task Boards</Select.Option>
+                                    {role !== 'client' && role !== 'focalperson' && (
+                                      <Select.Option value="taskboard">Task Boards</Select.Option>
+                                    )}
                                 </Select>
                         </Form.Item>
                         </div>
@@ -1132,7 +1174,10 @@ const onFinishEdit = (values) => {
                                     onSearch={(val) => {
                                       searchHandler(val, 'project')
                                     }}
-                                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                    filterOption={(input, option) => {
+                                      const label = (option?.children || '').toString().toLowerCase();
+                                      return label.indexOf(input.toLowerCase()) >= 0;
+                                    }}
                                     optionFilterProp="children"
                                     notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                                     dropdownRender={(menu) => (
@@ -1144,6 +1189,10 @@ const onFinishEdit = (values) => {
                                     getPopupContainer={() =>
                                         document.getElementById("area")
                                     }
+                                    onChange={(value) => {
+                                      updateAvailableAssignees('project', value);
+                                      form2.setFieldsValue({ assignee: undefined });
+                                    }}
                                     placeholder="Select Project"
                                     >
                                     {
@@ -1181,13 +1230,20 @@ const onFinishEdit = (values) => {
                                     onSearch={(val) => {
                                       searchHandler(val, 'taskboard')
                                     }}
-                                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                    filterOption={(input, option) => {
+                                      const label = (option?.children || '').toString().toLowerCase();
+                                      return label.indexOf(input.toLowerCase()) >= 0;
+                                    }}
                                     optionFilterProp="children"
                                     notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                                     className="custom-select custom-normal"
                                     getPopupContainer={() =>
                                         document.getElementById("taskboardArea")
                                     }
+                                    onChange={(value) => {
+                                      updateAvailableAssignees('taskboard', value);
+                                      form2.setFieldsValue({ assignee: undefined });
+                                    }}
                                     placeholder="Select Taskboard"
                                     >
                                     {
@@ -1292,15 +1348,20 @@ const onFinishEdit = (values) => {
                                     allowClear
                                     optionFilterProp="children"
                                     filterOption={(input, option) =>
-                                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                      (option?.children || '').toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
                                     }
                                     className="custom-select custom-normal"
                                     getPopupContainer={() =>
                                         document.getElementById("assigneeArea")
                                     }
+                                    notFoundContent={
+                                      isProjectAssociated === null
+                                        ? 'Select project or taskboard to load assignees'
+                                        : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                                    }
                                     >
                                     <Select.Option value="">Unassigned</Select.Option>
-                                    {allEmployees.map(user => (
+                                    {availableAssignees.map(user => (
                                       <Select.Option key={user._id} value={user._id}>{user.fullName}</Select.Option>
                                     ))}
                                 </Select>

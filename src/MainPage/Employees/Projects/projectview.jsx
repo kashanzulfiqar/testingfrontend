@@ -2219,7 +2219,7 @@ async function downloadFile(url, fileName) {
                   <div className="table-responsive">
                     <table className="table table-striped table-border">
                       <tbody>
-                        {((role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.projectType === 'Billed') ? 
+                        {((role === 'admin' || role === 'client' || role === 'focalperson' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.projectType === 'Billed') ? 
                         (
                         <>
                           <tr>
