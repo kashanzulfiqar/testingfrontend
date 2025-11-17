@@ -167,7 +167,7 @@ useEffect(() => {
   const uploadProps = {
     name: "file",
     multiple: false,
-    accept: ".pdf,.doc,.docx",
+    accept: ".pdf",
     beforeUpload: (file) => {
       setFileList([file]);
       return false; // prevent AntD auto upload
