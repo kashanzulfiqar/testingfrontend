@@ -1035,7 +1035,7 @@ const AdminDashboard = () => {
                               className="d-block"
                               style={{ fontWeight: "600" }}
                             >
-                              {t("aDash.earnings")}
+                              Earnings (Last Month)
                             </span>
                           </div>
                           <div>
@@ -1175,7 +1175,7 @@ const AdminDashboard = () => {
                               className="d-block"
                               style={{ fontWeight: "600" }}
                             >
-                              {t("aDash.profit")}
+                              Profit (Last Month)
                             </span>
                           </div>
                           <div>
