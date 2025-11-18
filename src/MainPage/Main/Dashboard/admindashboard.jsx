@@ -1058,7 +1058,7 @@ const AdminDashboard = () => {
                           </div>
                         </div>
                         <h3 className="mb-3">
-                          {allData?.currentMonthEarning
+                          {allData?.previousMonthEarning
                             ?.toString()
                             .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
                           {allData?.preferredCurrency}
@@ -1079,15 +1079,11 @@ const AdminDashboard = () => {
                           />
                         </div>
                         <p className="mb-0 text-start">
-                          <label>{t("aDash.previousMonth")}</label>{" "}
                           <label
                             className="text-muted"
                             style={{ unicodeBidi: "plaintext" }}
                           >
-                            {allData?.previousMonthEarning
-                              ?.toString()
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                            {allData?.preferredCurrency}
+                            {allData?.previousMonthClearedInvoices} Invoices Cleared
                           </label>
                         </p>
                       </div>
@@ -1202,7 +1198,7 @@ const AdminDashboard = () => {
                           </div>
                         </div>
                         <h3 className="mb-3">
-                          {allData?.currentMonthProfitLoss
+                          {allData?.previousMonthProfitLoss
                             ?.toString()
                             .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
                           {allData?.preferredCurrency}
@@ -1223,15 +1219,11 @@ const AdminDashboard = () => {
                           />
                         </div>
                         <p className="mb-0 text-start">
-                          <label>{t("aDash.previousMonth")}</label>{" "}
                           <label
                             className="text-muted"
                             style={{ unicodeBidi: "plaintext" }}
                           >
-                            {allData?.previousMonthProfitLoss
-                              ?.toString()
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                            {allData?.preferredCurrency}
+                            {allData?.previousMonthClearedInvoices} Invoices Cleared
                           </label>
                         </p>
                       </div>
