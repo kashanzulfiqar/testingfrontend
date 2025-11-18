@@ -794,16 +794,19 @@ const AttendanceAdmin = () => {
                     locale={{
                       emptyText: isLoading ? null : customEmptyText
                     }}
-                    style={{ height: "353px", background: "white" }}
+                    style={{ background: "white" }}
                     loading={isLoading}
                     columns={columns}
                     dataSource={dataSource}
-                    pagination={false}
-                    scroll={
-                      {
-                        // y: 310,
-                      }
-                    }
+                    pagination={{
+                      pageSize: 20,
+                      showSizeChanger: false,
+                      showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                      position: ['bottomCenter'],
+                    }}
+                    scroll={{
+                      x: 'max-content',
+                    }}
                     components={i18n.dir()==="rtl" ?
                       {
                       header: {
