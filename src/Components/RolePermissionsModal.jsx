@@ -53,42 +53,42 @@ const RolePermissionsModal = ({ open, onClose, roleData, onSave, loading }) => {
   );
 
   const permissionsStructure = {
-    Employee: {
+    Employees: {
       icon: "👥",
       groups: {
-        "Employee Management": [
+        "All Employees": [
           { label: "Create Employee", value: "createEmployee" },
           { label: "View Employee", value: "viewEmployee" },
           { label: "Update Employee", value: "updateEmployee" },
           { label: "Delete Employee", value: "deleteEmployee" },
           { label: "Is Reported To", value: "isReportedTo" },
         ],
-        "Attendance Management": [
+        "Attendance": [
           { label: "View Employees Attendance", value: "viewEmployeesAttendance" },
         ],
-        "Request Management": [
+        "Requests": [
           { label: "View Requests", value: "viewRequests" },
           { label: "Manage Self Request", value: "manageSelfRequest" },
           { label: "View Employees Requests", value: "viewEmployeesRequests" },
           { label: "Manage Request Approvals", value: "manageRequestApprovals" },
           { label: "Manage Team Request", value: "manageTeamRequest" },
         ],
-        "Timesheet Management": [
+        "Timesheet": [
           { label: "Manage Timesheet", value: "manageTimesheet" },
         ],
-        "Client Management": [
+        "Client": [
           { label: "Manage Clients", value: "manageClients" },
         ],
-        "Project Management": [
+        "Projects": [
           { label: "Manage Projects", value: "manageProjects" },
           { label: "View Project Files", value: "viewProjectFiles" },
           { label: "View Cost Details", value: "viewCostDetails" },
           { label: "View Confidential Files", value: "viewConfidentialFiles" },
         ],
-        "Leads Management": [
+        "Leads": [
           { label: "Manage Leads", value: "manageLeads" },
         ],
-        "Recruitment Management": [
+        "Recruitment": [
           { label: "Recruitment Management", value: "recruitmentManagement" },
         ],
       },
@@ -96,11 +96,13 @@ const RolePermissionsModal = ({ open, onClose, roleData, onSave, loading }) => {
     HR: {
       icon: "💼",
       groups: {
-        "Finance Management": [
+        "Finance": [
           { label: "View Self Payrolls", value: "viewSelfPayrolls" },
+        ],
+        "Payroll": [
           { label: "Manage Payrolls", value: "managePayrolls" },
         ],
-        "Report Management": [
+        "Reports": [
           { label: "View Reports", value: "viewReports" },
         ],
       },
@@ -108,11 +110,11 @@ const RolePermissionsModal = ({ open, onClose, roleData, onSave, loading }) => {
     Administration: {
       icon: "⚙️",
       groups: {
-        "Company Management": [
+        "Assets": [],
+        "Settings": [
           { label: "Manage Company", value: "manageCompany" },
         ],
-        "Asset Management": [],
-        "Stripe Management": [
+        "Subscription Details": [
           { label: "Manage Stripe", value: "manageStripe" },
         ],
       },
