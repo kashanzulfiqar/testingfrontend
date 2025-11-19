@@ -126,7 +126,18 @@ const RolePermissionsModal = ({ open, onClose, roleData, onSave, loading }) => {
   }, [open, roleData]);
 
   useEffect(() => {
-    const count = Object.values(permissions).filter(Boolean).length;
+    const validPermissions = new Set();
+    Object.keys(permissionsStructure).forEach((category) => {
+      Object.keys(permissionsStructure[category].groups).forEach((group) => {
+        permissionsStructure[category].groups[group].forEach((perm) => {
+          validPermissions.add(perm.value);
+        });
+      });
+    });
+    
+    const count = Object.entries(permissions)
+      .filter(([key, value]) => value && validPermissions.has(key))
+      .length;
     setSelectedCount(count);
   }, [permissions]);
 
