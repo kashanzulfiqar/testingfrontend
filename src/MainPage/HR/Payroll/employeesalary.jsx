@@ -1640,12 +1640,31 @@ const EmployeeSalary = () => {
                   }}
                   className="fixedTableHeader2"
                   loading={isLoading}
-                  style={{ height: "400px", background: "white" }}
+                  style={{ background: "white" }}
                   columns={columns}
                   // bordered
                   dataSource={data}
                   rowKey={(record) => record?._id}
-                  pagination={false}
+                  pagination={{
+                    total: pagination.total,
+                    pageSize: pagination.pageSize,
+                    current: pagination.current,
+                    showTotal: (total, range) =>
+                      t('paginationShow', { range1: range[0], range2: range[1], total: total }),
+                    onChange: (page, pageSize) => {
+                      setPagination({
+                        ...pagination,
+                        current: page,
+                        pageSize: pageSize,
+                      });
+                    },
+                    showSizeChanger: true,
+                    pageSizeOptions: ['20', '30', '40', '50'],
+                    position: ['bottomCenter'],
+                    itemRender: (current, type, originalElement) =>
+                      itemRender(current, type, originalElement, t),
+                    disabled: isLoading,
+                  }}
                   components={i18n.dir()==="rtl" ?
                       {
                       header: {
@@ -1666,36 +1685,6 @@ const EmployeeSalary = () => {
                 />
                 
               </div>
-              {
-                    data?.length > 0 &&
-                    <div>
-                      <Pagination
-                        style={{display: 'flex', float: 'right'}}
-                        total={pagination.total}
-                        pageSize={pagination.pageSize}
-                        defaultCurrent={1}
-                        current={pagination.current}
-                        showTotal={(total, range) =>
-                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
-                        onChange={(page, pageSize) => {
-                          setPagination({
-                            ...pagination,
-                            current: page,
-                            pageSize: pageSize,
-                          });
-                          //console.log(page, size);
-                          //setPageSize(size); setCurrentPage(page);
-                          //getEmployeeSalary(filterValues, page, size)
-                        }}
-                        showSizeChanger={true}
-                        pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={(current, type, originalElement) =>
-                          itemRender(current, type, originalElement, t)
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                  }
             </div>
           </div>
 
@@ -1765,10 +1754,15 @@ const EmployeeSalary = () => {
                           }}
                           className="fixedTableHeader"
                           loading={isLoading}
-                          style={{ height: "400px", background: "white" }}
+                          style={{ background: "white" }}
                           columns={columns2}
                           // bordered
-                          pagination={false}
+                          pagination={{
+                            pageSize: 20,
+                            showSizeChanger: false,
+                            showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                            position: ['bottomCenter'],
+                          }}
                           dataSource={downloadData}
                           rowKey={(record) => record.id}
                           components={i18n.dir()==="rtl" ?
