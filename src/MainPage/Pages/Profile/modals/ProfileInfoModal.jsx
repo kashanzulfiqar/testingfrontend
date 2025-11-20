@@ -465,6 +465,7 @@ const getTaxSlab = () => {
                         </Form.Item>
                         </div>
                         </div>
+                        {user_data && (
                         <div className="col-md-6">
                         <div className="form-group">
                             <label>
@@ -473,27 +474,12 @@ const getTaxSlab = () => {
                             <Form.Item
                             name='employeeId'
                             className='custom-border'
-                            rules={[
-                                {
-                                    whitespace: true,
-                                    required: true,
-                                    validator: (_, value) => {
-                                    if (!value || value.trim() === '') {
-                                        return Promise.reject(t('allEmp.errors.enterEmployeeId'));
-                                    } else if (/\s{2,}/.test(value)) {
-                                        return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                                    } else if (value.length < 3) {
-                                        return Promise.reject(t('allEmp.errors.idMinLength'));
-                                    }
-                                    return Promise.resolve();
-                                    },
-                                },
-                                ]}
                             >
-                            <Input className='form-control' maxLength={50} />
+                            <Input className='form-control' maxLength={50} disabled style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }} />
                             </Form.Item>
                         </div>
                         </div>
+                        )}
                         <div className="col-md-6">
                         <div className="form-group">
                             <label>
