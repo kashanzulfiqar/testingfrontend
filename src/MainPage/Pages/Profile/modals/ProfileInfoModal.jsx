@@ -48,6 +48,7 @@ const [addDesigOpen, setAddDesigOpen] = useState(false)
 const [addShiftOpen, setAddShiftOpen] = useState(false)
 const [addTaxOpen, setAddTaxOpen] = useState(false)
 const [addRoleOpen, setAddRoleOpen] = useState(false)
+const [nextEmployeeId, setNextEmployeeId] = useState('')
 
 
   useEffect(() => {
@@ -59,6 +60,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
     getTaxSlab();
     if(!user_data){
         getAllLeaves();
+        fetchNextEmployeeId(); // Fetch next employee ID for Add mode
     }
     if(user_data){
         let data = {
@@ -259,6 +261,27 @@ const getTaxSlab = () => {
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : t('allEmp.errors.getLeaveInfoError')
+            }!`
+          );
+        });
+    }
+
+    const fetchNextEmployeeId = () => {
+        apiServices("GET", "company/next-employee-id", null, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            setNextEmployeeId(res?.data?.nextEmployeeId);
+            form.setFieldsValue({ employeeId: res?.data?.nextEmployeeId });
+          }
+        })
+        .catch((err) => {
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Error fetching next employee ID"
             }!`
           );
         });
@@ -465,7 +488,6 @@ const getTaxSlab = () => {
                         </Form.Item>
                         </div>
                         </div>
-                        {user_data && (
                         <div className="col-md-6">
                         <div className="form-group">
                             <label>
@@ -474,12 +496,32 @@ const getTaxSlab = () => {
                             <Form.Item
                             name='employeeId'
                             className='custom-border'
+                            rules={[
+                                {
+                                    whitespace: true,
+                                    required: true,
+                                    validator: (_, value) => {
+                                    if (!value || value.trim() === '') {
+                                        return Promise.reject(t('allEmp.errors.enterEmployeeId'));
+                                    } else if (/\s{2,}/.test(value)) {
+                                        return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                                    } else if (value.length < 3) {
+                                        return Promise.reject(t('allEmp.errors.idMinLength'));
+                                    }
+                                    return Promise.resolve();
+                                    },
+                                },
+                                ]}
                             >
-                            <Input className='form-control' maxLength={50} disabled style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }} />
+                            <Input 
+                              className='form-control' 
+                              maxLength={50} 
+                              disabled={open?.isAddOpen}
+                              style={open?.isAddOpen ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
+                            />
                             </Form.Item>
                         </div>
                         </div>
-                        )}
                         <div className="col-md-6">
                         <div className="form-group">
                             <label>
