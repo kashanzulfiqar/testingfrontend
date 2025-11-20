@@ -45,9 +45,8 @@ export default function ResumeConverter() {
   const companyLogo = userState?.user?.companyImageUrl || "";
   const [isTwoColumnSkills, setIsTwoColumnSkills] = useState(false);
   const selectedPresetId = useSelector((state) => state.resumePreset.selectedPresetId) || "";
-  console.log(selectedPresetId)  
+  const aiModel = useSelector((state) => state.aiConfig.selectedModel || "deepSeek")
   
-
 
   //Resume History load
   // ----------------------------
@@ -57,6 +56,7 @@ export default function ResumeConverter() {
 // 1️⃣ Load saved resume data if opened from "View Existing"
 useEffect(() => {
   // 🧠 Restore state from session storage (if available)
+  console.log("selected model", aiModel)
   const savedState = sessionStorage.getItem("resume_preview_data");
   if (savedState && !stateData) {
     const { parsedData, autoPreview: shouldPreview } = JSON.parse(savedState);
@@ -219,7 +219,10 @@ useEffect(() => {
       console.log("File uploaded to S3:", fileUrl);
   
       // Step 2️⃣: Send the file URL to backend for parsing
-      const res = await apiServices("POST", "resume/parse-url", { fileUrl });
+      const res = await apiServices("POST", "resume/parse-url", { 
+        fileUrl,
+        aiModel: aiModel,
+       });
       const parsed = res?.data?.parsed;
   
       if (!parsed || typeof parsed !== "object") {
@@ -1534,22 +1537,22 @@ const handleSaveMongo = async () => {
           )}
         </Modal>
         <Modal
-  open={isPreviewModalVisible}
-  onCancel={() => setIsPreviewModalVisible(false)}
-  footer={null}
-  width={1100}
-  className="pdf-preview-modal"
-  centered
-  style={{ zIndex: 3000 }}
-  maskStyle={{ zIndex: 2999, background: "rgba(0, 0, 0, 0.5)" }}
-  bodyStyle={{ padding: 0, height: "85vh" }}
-  title={
-    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-      <EyeOutlined style={{ color: "#ff9244", fontSize: 20 }} />
-      <span>{parsedData?.full_name || "Resume"} - Full PDF View</span>
-    </div>
-  }
->
+          open={isPreviewModalVisible}
+          onCancel={() => setIsPreviewModalVisible(false)}
+          footer={null}
+          width={1100}
+          className="pdf-preview-modal"
+          centered
+          style={{ zIndex: 3000 }}
+          maskStyle={{ zIndex: 2999, background: "rgba(0, 0, 0, 0.5)" }}
+          bodyStyle={{ padding: 0, height: "85vh" }}
+          title={
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <EyeOutlined style={{ color: "#ff9244", fontSize: 20 }} />
+              <span>{parsedData?.full_name || "Resume"} - Full PDF View</span>
+            </div>
+          }
+        >
   {loadingFocusPdf ? (
     <div
       style={{
