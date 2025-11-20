@@ -161,9 +161,9 @@ const TaskBoard = () => {
       return;
     }
     // Prevent drag-and-drop for client and focalperson roles
-    if (role === 'client' || role === 'focalperson') {
-      return;
-    }
+    // if (role === 'client' || role === 'focalperson') {
+    //   return;
+    // }
     setDisableDrag(true);
     const { source, destination, type } = result;
     if (type === "column") {
@@ -436,7 +436,7 @@ const TaskBoard = () => {
     if (role === 'client' || role === 'focalperson') {
     apiServices(
       "GET",
-        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&taskId=${taskId}&isArchived=${BoardData?.board?.isArchived}`,
+        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&taskId=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}`,
         null,
         user_state
       )
@@ -1899,7 +1899,6 @@ const TaskBoard = () => {
                                                                 )}
                                                               </ul>
                                                             </div> */}
-                                                            {!(role === 'client' || role === 'focalperson') && (
                                                             <div className="dropdown kanban-task-action" onClick={(e) => e.stopPropagation()}>
                                                               <a
                                                                 data-bs-toggle="dropdown"
@@ -2018,6 +2017,7 @@ const TaskBoard = () => {
                                                                   Edit
                                                                 </a>
                                                                 {/* )} */}
+                                                                {!(role === 'client' || role === 'focalperson') && (
                                                                 <a
                                                                   className="dropdown-item"
                                                                   onClick={() => {
@@ -2038,10 +2038,10 @@ const TaskBoard = () => {
                                                                   }}
                                                                 >
                                                                   Remove
-                                                                </a>
+                                                                </a>)}
                                                               </div>
                                                             </div>
-                                                            )}
+                                                            
                                                           </div>
                                                         </span>
                                                       </div>
@@ -2142,7 +2142,6 @@ const TaskBoard = () => {
                                       </div>
                                     )}
                                   </Droppable>
-                                  {!(role === 'client' || role === 'focalperson') && (
                                   <div
                                     className="add-new-task"
                                     style={{
@@ -2162,7 +2161,6 @@ const TaskBoard = () => {
                                       Add New Task
                                     </a>
                                   </div>
-                                  )}
                                 </div>
                               </div>
                             )}
