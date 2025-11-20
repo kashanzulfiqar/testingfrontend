@@ -1593,6 +1593,51 @@ const Company = () => {
                 </Form.Item>
               </div>
             </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  {t("settings.companySettings.employeeIdCounter")}{" "}
+                  <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="employeeIdCounter"
+                  rules={[
+                    {
+                      required: true,
+                      validator: (_, value) => {
+                        if (value === undefined || value === null || value === "") {
+                          return Promise.reject(
+                            t("settings.companySettings.pleaseEnterEmployeeIdCounter")
+                          );
+                        }
+                        const numValue = Number(value);
+                        if (isNaN(numValue) || numValue < 0) {
+                          return Promise.reject(
+                            t("settings.companySettings.counterMustBePositive")
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.employeeIdCounter}
+                  />
+                  <input
+                    className="form-control"
+                    type="number"
+                    defaultValue={data?.employeeIdCounter !== undefined ? data?.employeeIdCounter : ""}
+                    onInput={(e) => {
+                      onHandleChange("employeeIdCounter", e.target.value);
+                    }}
+                    placeholder="e.g., 0, 001"
+                    min="0"
+                  />
+                </Form.Item>
+              </div>
+            </div>
             <div className="col-sm-12">
               <div
                 className="form-group"
