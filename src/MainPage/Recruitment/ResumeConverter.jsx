@@ -352,8 +352,10 @@ const handleSaveMongo = async () => {
     console.log("🟢 Preparing to save resume...");
     console.log(parsedData);
 
-    // ✅ Smart merge logic
-    const payload = {
+    // -----------------------------------------
+    // 1️⃣ Build FINAL, unified resume payload ONCE
+    // -----------------------------------------
+    const finalPayload = {
       ...parsedData,
       company_logo: logoUrl || parsedData.company_logo || null,
       createdAt: new Date().toISOString(),
@@ -361,13 +363,14 @@ const handleSaveMongo = async () => {
       isTwoColumnSkills,
     };
 
-    console.log("🖼️ Final company logo URL:", payload.company_logo);
-    console.log("📦 Payload being sent to MongoDB:", payload);
+    console.log("📦 FINAL PAYLOAD SENT TO BACKEND:", finalPayload);
 
-    // 🔍 Check for existing record
+    // -----------------------------------------
+    // 2️⃣ Correct Duplicate Detection
+    // -----------------------------------------
     const existingRes = await apiServices(
       "GET",
-      `resumes?name=${encodeURIComponent(parsedData.full_name || "")}`
+      `resumes?candidateName=${encodeURIComponent(parsedData.full_name || "")}`  // ✅ FIXED
     );
 
     const list = Array.isArray(existingRes?.data)
@@ -381,52 +384,55 @@ const handleSaveMongo = async () => {
       (r) => (r?.full_name || "").trim().toLowerCase() === target
     );
 
-    let record = null;
-
+    // -----------------------------------------
+    // 3️⃣ Duplicate → Open Modal (NO SAVE YET)
+    // -----------------------------------------
     if (existing) {
       setDuplicateRecord(existing);
       setIsDuplicateModalVisible(true);
-      record = {...existing,
-        presetId: selectedPresetId || null,
-        isTwoColumnSkills,
-      };
-    } else {
-      const saveRes = await apiServices("POST", "resumes", {
-        ...payload,
-        presetId: selectedPresetId || null,      
-      });
-      record = saveRes?.data || payload;
-      message.success("✅ Resume saved to MongoDB!");
+
+      // Modal will use finalPayload as well
+      return;
+        // isTwoColumnSkills,
     }
 
-    // 🧾 Always download a fresh PDF after saving
-    if (record) {
-      try {
-        message.loading({ content: "Generating PDF...", key: "pdfGen" });
+    // -----------------------------------------
+    // 4️⃣ FIRST-TIME SAVE → Mongo + Pinecone
+    // -----------------------------------------
+    const saveRes = await apiServices("POST", "resumes", finalPayload);
+    const record = saveRes?.data || finalPayload;
 
-        const blobRes = await axiosInstance.post(
-          "resume/preview-from-json",
-          { parsed: record, presetId: selectedPresetId || null, isTwoColumnSkills },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            responseType: "arraybuffer",
-          }
-        );
-  
-        const blob = new Blob([blobRes.data], { type: "application/pdf" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `${record.full_name || "resume"}.pdf`;
-        link.click();
-        URL.revokeObjectURL(link.href);
-        message.success("Download started!");
-      } catch (err) {
-        console.error("❌ Download failed:", err);
-        message.error("Failed to download PDF.");
-      }
+    message.success("✅ Resume saved successfully!");
+
+    // -----------------------------------------
+    // 5️⃣ Always Download Fresh PDF
+    // -----------------------------------------
+    try {
+      message.loading({ content: "Generating PDF...", key: "pdfGen" });
+
+      const blobRes = await axiosInstance.post(
+        "resume/preview-from-json",
+        { parsed: record, presetId: selectedPresetId || null, isTwoColumnSkills },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          responseType: "arraybuffer",
+        }
+      );
+
+      const blob = new Blob([blobRes.data], { type: "application/pdf" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${record.full_name || "resume"}.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+
+      message.success("📄 Download started!");
+    } catch (err) {
+      console.error("❌ PDF download failed:", err);
+      message.error("PDF generation failed.");
     }
   } catch (err) {
     console.error("❌ Save failed:", err);
@@ -435,6 +441,7 @@ const handleSaveMongo = async () => {
     setSaving(false);
   }
 };
+
   const handleFocusPreview = async () => {
     if (!parsedData) return message.warning("No resume data to preview.");
     
@@ -1514,12 +1521,12 @@ const handleSaveMongo = async () => {
                     try {
                       setIsSaving(true);
                       // await apiServices("DELETE", `resumes/${duplicateRecord._id}`);
-                      const payload = {
-                        ...parsedData,
-                        company_logo: logoUrl || null, // add logo URL
-                        createdAt: new Date().toISOString(), // ensure new timestamp
-                      };
-                      await apiServices("POST", "resumes", payload);
+                      // const payload = {
+                      //   ...parsedData,
+                      //   company_logo: logoUrl || null, // add logo URL
+                      //   createdAt: new Date().toISOString(), // ensure new timestamp
+                      // };
+                      await apiServices("POST", "resumes", finalPayload);
                       message.success("Resume saved successfully!");
                     } catch (err) {
                       console.error(" Override failed:", err);

@@ -23,6 +23,8 @@ import ExpenseCategory from "./ExpenseCategory";
 import { useTranslation } from "react-i18next";
 import WokringDays from "./WorkingDays";
 import AssetsManagement from "./AssetsManagement";
+import AI_Config from "./AI_Config";
+
 
 const Settings = ({test}) => {
 
@@ -348,6 +350,20 @@ useEffect(() => {
                         Assets Management
                       </a>
                     </li>
+                    <li className={showComponent === 'AI Configuration' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('AI Configuration')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('AI Configuration');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-android" 
+                          style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}
+                        ></i>
+                        AI Configuration
+                      </a>
+                    </li>
                   </ul>
                </div>
              </div>
@@ -366,6 +382,7 @@ useEffect(() => {
                 showComponent === 'Bank Details' ? <BankDetails /> : 
                 showComponent === 'Expense Categories' ? <ExpenseCategory /> : 
                 showComponent === 'Assets Management' ? <AssetsManagement /> : 
+                showComponent === 'AI Configuration' ? <AI_Config /> :
                 <WokringDays />
               }
              </div>

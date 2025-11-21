@@ -93,6 +93,8 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   const [activityTab, setActivityTab] = useState("comments");
   const [assignee, setAssignee] = useState(taskData?.assignee || null);
   const [priority, setPriority] = useState(taskData?.priority || null);
+  const aiModel = useSelector((state) => state.aiConfig.selectedModel || "deepSeek")
+
   
   // Helper: format history values
   const formatHistoryValue = (field, value) => {
@@ -447,7 +449,9 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
       const response = await apiServices(
         'POST',
         'api/rewrite-description',
-        { text: currentDescription },
+        { text: currentDescription,
+          aiConfig: aiModel,
+         },
         user_state
       );
       
