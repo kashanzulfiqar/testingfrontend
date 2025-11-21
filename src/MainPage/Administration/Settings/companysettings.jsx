@@ -25,6 +25,8 @@ import AssetsSubCategory from "./AssetsSubCategory";
 import { useTranslation } from "react-i18next";
 import WokringDays from "./WorkingDays";
 import AssetsTag from "./AssetsTag";
+import AI_Config from "./AI_Config";
+
 
 const Settings = ({test}) => {
 
@@ -352,6 +354,34 @@ useEffect(() => {
                         Assets Tag
                       </a>
                     </li>
+                    <li className={showComponent === 'AI Configuration' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('AI Configuration')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('AI Configuration');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-android" 
+                          style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}
+                        ></i>
+                        AI Configuration
+                      </a>
+                    </li>
+                    <li className={showComponent === 'AI Configuration' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('AI Configuration')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('AI Configuration');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-android" 
+                          style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}
+                        ></i>
+                        AI Configuration
+                      </a>
+                    </li>
                   </ul>
                </div>
              </div>
@@ -372,6 +402,7 @@ useEffect(() => {
                 showComponent === 'Assets Category' ? <AssetsCategory /> : 
                 showComponent === 'Assets Sub-Category' ? <AssetsSubCategory /> : 
                 showComponent === 'Assets Tag' ? <AssetsTag /> : 
+                showComponent === 'AI Configuration' ? <AI_Config /> :
                 <WokringDays />
               }
              </div>
