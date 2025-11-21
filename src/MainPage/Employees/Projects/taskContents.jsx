@@ -191,7 +191,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   // Add user state from Redux
   const user_state = useSelector((state) => state?.user?.loginvalue);
   const userRole = user_state?.user?.role;
-  const isReadOnly = userRole === 'client' || userRole === 'focalperson';
 
   // Add editing states at the top of the component
   const [editingAssignee, setEditingAssignee] = useState(false);
@@ -229,7 +228,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     apiServices("GET", `user/all-employees`, null, user_state)
       .then(res => {
         if (res?.data?.success) {
-          console.log('Fetched employees:', res.data.User);
           setAllEmployees(res.data.User || []);
         }
       });
@@ -278,14 +276,20 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     if (!taskId) return;
 
     try {
+
+      const endpoint = userRole === 'client' || userRole === 'focalperson'
+       ? `tasks/task-by-id?role=${userRole}&id=${user_state?.user?._id}&Id=${taskId}` 
+       : `tasks?taskId=${taskId}`;
       const res = await apiServices(
         "GET",
-        `tasks?taskId=${taskId}`,
+        endpoint,
         null,
         user_state
       );
       if (res?.data?.success) {
-        const updatedTask = res?.data?.Task;
+        const updatedTask = userRole === 'client' || userRole === 'focalperson'
+        ? res?.data?.Task?.docs?.[0]
+        : res?.data?.Task;
         setTaskData(updatedTask);
         // Update the location state to keep it in sync
         navigate(location.pathname, {
@@ -308,7 +312,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   };
 
   const getInitials = (name) => {
-    console.log("ASDFG", taskData);
     if (!name) return "";
     const nameParts = name.trim().split(" ");
     const initials = nameParts.map((part) => part[0].toUpperCase()).join("");
@@ -324,11 +327,8 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
       columnId: option.columnId,
     })) || [];
   
-  console.log("Status options:", statusOptions);
-  console.log("Task data:", taskData);
 
   const handleUpdateStatus = (boardId, taskId, sourceId, destinationId) => {
-    console.log("handleUpdateStatus called with:", { boardId, taskId, sourceId, destinationId });
     
     if (boardId && taskId && sourceId && destinationId) {
       let updated_data = {
@@ -395,7 +395,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   };
 
   const handleRemoveTag = (removedTag) => {
-    console.log("removedTag", removedTag);
     const newTags = taskData.tags.filter((tag) => tag !== removedTag);
 
     setTagLoading(true);
@@ -463,7 +462,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
         message.error(t('Failed to rewrite description'));
       }
     } catch (error) {
-      console.error('Error rewriting description:', error);
       message.error(t('Failed to rewrite description'));
     } finally {
       setIsDescriptionLoading(false);
@@ -765,7 +763,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     }
     setHistoryLoading(false);
   };
-  console.log("Active Tab",activeTab)
 
   useEffect(() => {
     if ( taskData?._id) {
@@ -948,7 +945,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
       const xhr = new XMLHttpRequest();
       // Use the correct token path and fallback
       const token = user_state?.access_token?.accessToken || localStorage.getItem('token');
-      console.log('Uploading with token:', token);
       // Use environment variable for backend API URL
       xhr.open('POST', `${BASE_URL}/tasks/${taskData._id}/attachments`);
       xhr.setRequestHeader('Authorization', token ? `Bearer ${token}` : '');
@@ -1034,7 +1030,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
         message.error('Failed to update reporter');
       }
     } catch (error) {
-      console.error('Error updating reporter:', error);
       message.error('Failed to update reporter');
     } finally {
       setReporterLoading(false);
@@ -1064,7 +1059,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
         message.error('Failed to update task name');
       }
     } catch (error) {
-      console.error('Error updating task name:', error);
       message.error('Failed to update task name');
     } finally {
       setTaskNameLoading(false);
@@ -1098,7 +1092,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
 
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Download failed:", error);
     }
   };
 
@@ -1150,7 +1143,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       wordBreak: 'break-word'
                     }}
                     onClick={() => {
-                      if (isReadOnly) return;
                       setTaskNameValue(taskData?.title || "");
                       setEditingTaskName(true);
                     }}
@@ -1242,7 +1234,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       __html: taskData?.description || "Enter task description..." 
                     }}
                     onClick={() => {
-                      if (isReadOnly) return;
                       setDescriptionValue(taskData?.description || "");
                       setIsEditing(true);
                     }}
@@ -1251,7 +1242,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                 </div>
               
               {/* Action Buttons - Outside the card */}
-              {isEditing && !isReadOnly && (
+              {isEditing && (
                 <div style={{
                   display: 'flex',
                   justifyContent: 'flex-start',
@@ -1324,7 +1315,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         onChange={handleAttachmentUpload}
                         disabled={uploading}
                       />
-                      { !isReadOnly && (
                       <Button
                     icon={<PlusOutlined />}
                         loading={uploading}
@@ -1347,7 +1337,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       >
                         Upload
                       </Button>
-                      )}
                     </div>
                     {uploading && (
                       <div style={{ marginBottom: 8 }}>
@@ -1501,7 +1490,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
         <DownloadOutlined style={{ fontSize: 16, color: "#1890ff" }} />
       </div>
     </Tooltip>
-                                      {!isReadOnly && (
                                       <Dropdown overlay={menu} trigger={['click']}>
                                       <div
                                           style={{
@@ -1526,7 +1514,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                         <EllipsisOutlined style={{ fontSize: 16, color: '#666' }} />
                                       </div>
                                       </Dropdown>
-                                      )}
                                     </div>
                                   </div>
                                 
@@ -1824,18 +1811,17 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                               style={{ 
                                                 width: '16px', 
                                                 height: '16px', 
-                                                cursor: isReadOnly ? 'default' : 'pointer',
-                                                opacity: isReadOnly ? 0.4 : 0.7
+                                                cursor: 'pointer',
+                                                opacity: 0.7
                                               }}
                                               onClick={(e) => {
-                                                if (isReadOnly) return;
                                                 e.stopPropagation();
                                                 toggleReactionPicker(c._id);
                                               }}
                                             />
                                             
                                             {/* Emoji Picker */}
-                                            {showReactionPicker === c._id && !isReadOnly && (
+                                            {showReactionPicker === c._id && (
                                               <div 
                                                 className="reaction-picker"
                                                 style={{
@@ -1885,7 +1871,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                             )}
                                           </div>
                                           
-                                          {c.userId === user_state?.user?._id && !isReadOnly && (
+                                          {c.userId === user_state?.user?._id && (
                                             <img 
                                               src={EditIcon} 
                                               alt="Edit" 
@@ -1909,7 +1895,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         </div>
                         
                         {/* Comment Input Section */}
-                        {!isReadOnly && (
                         <div style={{
                           marginTop: 24,
                     
@@ -1950,8 +1935,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                         users={boardAssociatedUsers}
                                       />
                                       {/* Debug info */}
-                                      {console.log('Mention users (boardAssociatedUsers):', boardAssociatedUsers.map(u => u.fullName))}
-                                      {console.log('All employees:', allEmployees.map(u => u.fullName))}
                                       <div style={{
                                         fontSize: '12px',
                                         color: '#666',
@@ -1987,7 +1970,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                   </div>
                           </div>
                         </div>
-                        )}
                       </div>
                     )}
                     {activityTab === 'history' && (
@@ -2063,7 +2045,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <span style={{ fontWeight: 600, fontSize: 16 }}>Task Status</span>
-                    {!isReadOnly ? (
                     <Dropdown
                       menu={{
                         items: statusOptions.map(option => ({
@@ -2076,13 +2057,6 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                           ),
                           disabled: taskData?.lane === option.value,
                           onClick: () => {
-                            console.log("Menu.Item clicked:", option);
-                            console.log("Task data:", {
-                              boardId: taskData?.boardId?._id || taskData?.projectId?._id,
-                              taskId: taskData?._id,
-                              sourceId: taskData?.columnId,
-                              destinationId: option.columnId
-                            });
                             handleUpdateStatus(
                               taskData?.boardId?._id || taskData?.projectId?._id,
                               taskData?._id,
@@ -2102,24 +2076,11 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         icon={<i className={`fa fa-dot-circle-o text-${taskData?.columnColor}`} />}
                         style={{ borderRadius: 20, background: '#f6f6fa', border: 'none', display: 'flex', gap:"5px",alignItems:"center" }}
                         onClick={() => {
-                          console.log("Dropdown button clicked in modal context");
-                          console.log("Status options:", statusOptions);
-                          console.log("Task data:", taskData);
                         }}
                       >
                         {taskData?.lane || "Backlog"}
                       </Button>
                     </Dropdown>
-                    ) : (
-                      <Button
-                        size="small"
-                        icon={<i className={`fa fa-dot-circle-o text-${taskData?.columnColor}`} />}
-                        style={{ borderRadius: 20, background: '#f6f6fa', border: 'none', display: 'flex', gap:"5px",alignItems:"center", opacity: 0.6, cursor: 'not-allowed' }}
-                        disabled
-                      >
-                        {taskData?.lane || "Backlog"}
-                      </Button>
-                    )}
         </div>
                   <div style={{ borderTop: '1px solid #eee', margin: '16px 0' }} />
                   <div>
@@ -2183,7 +2144,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       ))}
                     </Select>
                           ) : (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: isReadOnly ? 'default' : 'pointer' }} onClick={() => { if (!isReadOnly) setEditingAssignee(true); }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer' }} onClick={() => { setEditingAssignee(true); }}>
                               <span style={{ 
                                 fontWeight: 500, 
                                 color: assignee ? '#222' : '#bbb',
@@ -2212,7 +2173,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             </div>
                           )}
                         </div>
-                        {(!assignee || assignee?._id !== user_state?.user?._id) && !editingAssignee && !isReadOnly && (
+                        {(!assignee || assignee?._id !== user_state?.user?._id) && !editingAssignee && !(userRole === 'client' || userRole === 'focalperson') && (
                           <div style={{ marginTop: 2 }}>
                             <a style={{ color: '#ff9800', fontSize: 12, cursor: 'pointer' }} onClick={handleAssignToMe} disabled={assigneeLoading}>
                           Assign to me
@@ -2255,8 +2216,8 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         </Select>
                       ) : (
                         <div
-                          style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: isReadOnly ? 'default' : 'pointer' }}
-                          onClick={() => { if (!isReadOnly) setEditingType(true); }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer' }}
+                          onClick={() => { setEditingType(true); }}
                         >
                           {taskTypes.find(t => t.value === taskType)?.icon || taskTypes[0].icon}
                           <span>{taskType || 'Task'}</span>
@@ -2301,7 +2262,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       ))}
                     </Select>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: isReadOnly ? 'default' : 'pointer', fontWeight: 500 }} onClick={() => { if (!isReadOnly) setEditingPriority(true); }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer', fontWeight: 500 }} onClick={() => { setEditingPriority(true); }}>
                             {priority && (
                               <>
                                 {priority === 'Highest' || priority === 'High' ? (
@@ -2372,7 +2333,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             <CloseOutlined style={{ color: '#f5222d', cursor: 'pointer' }} onClick={() => { setEditingDueDate(false); setDueDateValue(taskData.dueDate ? moment(taskData.dueDate) : null); }} />
                         </span>
                       ) : (
-                          <span style={{ cursor: isReadOnly ? 'default' : 'pointer', color: taskData.dueDate ? '#222' : '#bbb' }} onClick={() => { if (!isReadOnly) setEditingDueDate(true); }}>
+                          <span style={{ cursor: 'pointer', color: taskData.dueDate ? '#222' : '#bbb' }} onClick={() => { setEditingDueDate(true); }}>
                             {taskData.dueDate ? moment(taskData.dueDate).format('DD/MM/YYYY') : 'None'}
                         </span>
                       )}
@@ -2429,7 +2390,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       ))}
                     </Select>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: isReadOnly ? 'default' : 'pointer' }} onClick={() => { if (!isReadOnly) setEditingReporter(true); }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer' }} onClick={() => { setEditingReporter(true); }}>
                             {reporter ? (
                               <Avatar size={24} src={reporter.imageUrl} style={{ background: '#ffe082', color: '#333', fontWeight: 600 }}>
                                 {reporter.fullName?.split(' ').map(n => n[0]).join('').toUpperCase()}
@@ -2506,10 +2467,10 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             gap: 8, 
                             flexWrap: 'wrap', 
                             minHeight: 32, 
-                            cursor: isReadOnly ? 'default' : 'pointer',
+                            cursor: 'pointer',
                             maxWidth: '100%',
                             width: '100%'
-                          }} onClick={() => { if (!isReadOnly) { setLabelsValue(taskData.tags || []); setEditingTags(true); } }}>
+                          }} onClick={() => { setLabelsValue(taskData.tags || []); setEditingTags(true); }}>
                             {taskData.tags && taskData.tags.length > 0 ? (
                               taskData.tags.map((label, idx) => (
                                 <span
