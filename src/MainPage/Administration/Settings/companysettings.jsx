@@ -364,48 +364,6 @@ useEffect(() => {
                         AI Configuration
                       </a>
                     </li>
-                    <li className={showComponent === 'AI Configuration' ? 'active' : ''}>
-                      <a 
-                        href={getMenuItemUrl('AI Configuration')}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleMenuClick('AI Configuration');
-                        }}
-                      >
-                        <i className="fa fa-fw fa-android" 
-                          style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}
-                        ></i>
-                        AI Configuration
-                      </a>
-                    </li>
-                    <li className={showComponent === 'AI Configuration' ? 'active' : ''}>
-                      <a 
-                        href={getMenuItemUrl('AI Configuration')}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleMenuClick('AI Configuration');
-                        }}
-                      >
-                        <i className="fa fa-fw fa-android" 
-                          style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}
-                        ></i>
-                        AI Configuration
-                      </a>
-                    </li>
-                    <li className={showComponent === 'AI Configuration' ? 'active' : ''}>
-                      <a 
-                        href={getMenuItemUrl('AI Configuration')}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleMenuClick('AI Configuration');
-                        }}
-                      >
-                        <i className="fa fa-fw fa-android" 
-                          style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}
-                        ></i>
-                        AI Configuration
-                      </a>
-                    </li>
                   </ul>
                </div>
              </div>
