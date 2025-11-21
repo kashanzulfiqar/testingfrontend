@@ -342,7 +342,13 @@ const handleSave = async () => {
   }
 };
 
-
+const buildFinalPayload = () => ({
+  ...parsedData,
+  company_logo: logoUrl || parsedData.company_logo || null,
+  createdAt: new Date().toISOString(),
+  presetId: selectedPresetId || null,
+  isTwoColumnSkills,
+});
 
 const handleSaveMongo = async () => {
   if (!parsedData) return message.warning("No parsed data to save.");
@@ -355,13 +361,7 @@ const handleSaveMongo = async () => {
     // -----------------------------------------
     // 1️⃣ Build FINAL, unified resume payload ONCE
     // -----------------------------------------
-    const finalPayload = {
-      ...parsedData,
-      company_logo: logoUrl || parsedData.company_logo || null,
-      createdAt: new Date().toISOString(),
-      presetId: selectedPresetId || null,
-      isTwoColumnSkills,
-    };
+    const finalPayload = buildFinalPayload();
 
     console.log("📦 FINAL PAYLOAD SENT TO BACKEND:", finalPayload);
 
@@ -1526,6 +1526,7 @@ const handleSaveMongo = async () => {
                       //   company_logo: logoUrl || null, // add logo URL
                       //   createdAt: new Date().toISOString(), // ensure new timestamp
                       // };
+                      const finalPayload = buildFinalPayload();
                       await apiServices("POST", "resumes", finalPayload);
                       message.success("Resume saved successfully!");
                     } catch (err) {

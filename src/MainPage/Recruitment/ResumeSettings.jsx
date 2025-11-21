@@ -72,6 +72,8 @@ export default function ResumeSettings() {
 
 const dispatch = useDispatch();
 const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetId);
+const user_state = useSelector((state) => state.user.loginvalue);
+
 
 
   // ---------------------- FETCH ON LOAD ----------------------
@@ -82,7 +84,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       setLoading(false);
 
       if (reduxPresetId) {
-        console.log("🔁 Redux preset found on load:", reduxPresetId);
+        // console.log("🔁 Redux preset found on load:", reduxPresetId);
         handleSelectPreset(reduxPresetId); // visually mark selected
         await usePreset(reduxPresetId); // load its config from DB
         setIsLocked(true);
@@ -91,12 +93,12 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       }
     };
     loadData();
-  }, []);
+  }, [reduxPresetId]);
 
   // ---------------------- API CALLS ----------------------
   const fetchCurrentTheme = async () => {
     try {
-      const res = await apiServices("GET", "resume-theme");
+      const res = await apiServices("GET", "resume-theme", null, user_state);
       if (res?.data?.config) {
         setCurrentConfig(res.data.config);
         setDefaultConfig(res.data.config);
@@ -111,7 +113,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
 
   const fetchPresets = async () => {
     try {
-      const res = await apiServices("GET", "resume-presets");
+      const res = await apiServices("GET", "resume-presets", null, user_state);
       if (res?.data) setPresets(res.data);
     } catch (err) {
       console.error("❌ Failed to fetch presets:", err);
@@ -121,7 +123,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
 
   const updateCurrentTheme = async () => {
     try {
-      const res = await apiServices("POST", "resume-theme", { config: currentConfig });
+      const res = await apiServices("POST", "resume-theme", { config: currentConfig }, user_state);
       if (res?.data) message.success("Theme updated successfully!");
     } catch (err) {
       console.error("❌ Failed to update theme:", err);
@@ -138,7 +140,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       const res = await apiServices("POST", "resume-presets", {
         name: newPresetName,
         config: modalConfig,
-      });
+      }, user_state);
   
       if (res?.data?.preset) {
         message.success(`Preset "${res.data.preset.name}" saved successfully!`);
@@ -165,7 +167,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       const res = await apiServices("PATCH", `resume-presets/${selectedPresetId}`, {
         name: newPresetName,
         config: modalConfig,
-      });
+      }, user_state);
   
       if (res?.data?.preset) {
         message.success(`Preset "${res.data.preset.name}" updated successfully!`);
@@ -190,7 +192,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       cancelText: "No",
       onOk: async () => {
         try {
-          await apiServices("DELETE", `resume-presets/${id}`);
+          await apiServices("DELETE", `resume-presets/${id}`, null, user_state);
           message.success("Preset deleted");
           fetchPresets();
         } catch (err) {
@@ -207,7 +209,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       }
   
       // 🧠 Fetch preset config
-      const res = await apiServices("GET", `resume-presets/${presetId}`);
+      const res = await apiServices("GET", `resume-presets/${presetId}`, null, user_state);
   
       // 🧩 Update Redux state (no await!)
       console.log('dispatching presetID', dispatch(setSelectedReduxPresetId(presetId)));
@@ -258,10 +260,14 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
   };
 
   const handleResetConfig = () => {
+
+    dispatch(clearSelectedPreset())
+
     setCurrentConfig(defaultConfig);
     setSelectedPresetId(null);
     setIsPresetSelected(false);
     setIsLocked(false);
+    console.log('using default settings', selectedPresetId, isPresetSelected)
   };
 
   // ---------------------- RENDER LOADING ----------------------
