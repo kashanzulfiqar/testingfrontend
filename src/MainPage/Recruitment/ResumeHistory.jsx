@@ -59,6 +59,8 @@ const ResumeHistory = () => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const companyId = user_state?.user?.companyId
 
   // ----------------------------
   // Fetch from Mongo
@@ -72,8 +74,8 @@ const ResumeHistory = () => {
         candidateName: filters.candidateName || "",
         appliedPosition: filters.title || "",
       }).toString();
-
-      const res = await apiServices("GET", `resumes?${query}`);
+      // console.log('meow', user_state?.user?.companyId)
+      const res = await apiServices("GET", `resumes?${query}`, null, user_state);
       if (res?.data) {
         setResumeHistory(res.data.docs || res.data);
         setPaginationDetail(res.data.totalDocs || res.data.length);
