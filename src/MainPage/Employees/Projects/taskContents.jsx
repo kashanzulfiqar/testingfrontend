@@ -141,7 +141,19 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
       setReporter(taskData.reporter);
     } else if (taskData?.reporter && typeof taskData.reporter === 'string') {
       const found = allEmployees.find(u => u._id === taskData.reporter);
-      setReporter(found || null);
+      if (found) {
+        setReporter(found);
+      } else if (taskData?.projectId?.clientId?._id === taskData.reporter) {
+        const client = taskData.projectId.clientId;
+        setReporter({
+          _id: client._id,
+          clientName: client.clientName,
+          imageUrl: client.imageUrl || null,
+          type: 'client'
+        });
+      } else {
+        setReporter(null);
+      }
     } else {
       setReporter(null);
     }
@@ -316,6 +328,11 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     const nameParts = name.trim().split(" ");
     const initials = nameParts.map((part) => part[0].toUpperCase()).join("");
     return initials.length > 2 ? initials.slice(0, 2) : initials; // Limit to 2 characters
+  };
+
+  const getReporterName = (entity) => {
+    if (!entity) return "";
+    return entity.fullName || entity.clientName || entity.name || "";
   };
 
   // Create options array for the dropdown
@@ -1019,7 +1036,19 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
           setReporter(null);
         } else {
           const found = allEmployees.find(u => u._id === userId);
-          setReporter(found || null);
+          if (found) {
+            setReporter(found);
+          } else if (taskData?.projectId?.clientId?._id === userId) {
+            const client = taskData.projectId.clientId;
+            setReporter({
+              _id: client._id,
+              clientName: client.clientName,
+              imageUrl: client.imageUrl || null,
+              type: 'client'
+            });
+          } else {
+            setReporter(null);
+          }
         }
         setEditingReporter(false);
         fetchTaskDetails();
@@ -2378,6 +2407,26 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                           <span>Unassigned</span>
                         </span>
                       </Select.Option>
+                          {taskData?.projectId?.clientId && (
+                            <Select.Option
+                              key={`client-${taskData.projectId.clientId._id}`}
+                              value={taskData.projectId.clientId._id}
+                            >
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <Avatar
+                                  size={24}
+                                  style={{ background: '#d1c4e9', color: '#4a148c', fontWeight: 600 }}
+                                >
+                                  {taskData.projectId.clientId.clientName
+                                    ?.split(' ')
+                                    .map(n => n[0])
+                                    .join('')
+                                    .toUpperCase()}
+                                </Avatar>
+                                <span>{taskData.projectId.clientId.clientName} (Client)</span>
+                              </span>
+                            </Select.Option>
+                          )}
                       {boardAssociatedUsers.map(user => (
                         <Select.Option key={user._id} value={user._id}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -2392,13 +2441,15 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         ) : (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer' }} onClick={() => { setEditingReporter(true); }}>
                             {reporter ? (
-                              <Avatar size={24} src={reporter.imageUrl} style={{ background: '#ffe082', color: '#333', fontWeight: 600 }}>
-                                {reporter.fullName?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              <Avatar
+                                size={24}
+                                src={reporter.imageUrl}
+                                style={{ background: '#ffe082', color: '#333', fontWeight: 600 }}
+                              >
+                                {!reporter.imageUrl && getInitials(getReporterName(reporter))}
                               </Avatar>
                             ) : (
-                              <Avatar size={24} style={{ background: '#ffe082', color: '#333', fontWeight: 600 }}>
-                                SF
-                              </Avatar>
+                              <UserOutlined style={{ fontSize: 18, color: '#888' }} />
                             )}
                             <span style={{ 
                               fontWeight: 500, 
@@ -2407,7 +2458,9 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                               maxWidth: '100%',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis'
-                            }}>{reporter ? reporter.fullName : 'None'}</span>
+                            }}>
+                              {reporter ? `${getReporterName(reporter)}${reporter?.type === 'client' || reporter?.clientName ? ' (Client)' : ''}` : 'None'}
+                            </span>
                   </div>
                         )}
                 </div>
