@@ -71,6 +71,7 @@ const AttendanceAdmin = () => {
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role;
+  const loggedInUserId = user_state?.user?._id;
 
   const [loader, setLoader] = useState(false);
 
@@ -445,14 +446,19 @@ const AttendanceAdmin = () => {
               break;
           }
 
+          const isOwnAttendance = record.key === loggedInUserId;
+          
           return (
             <div style={{ textAlign: "center" }}>
               <span
                 style={{
                   color: color,
-                  cursor: abbreviation !== "-" ? "pointer" : "default",
+                  cursor: abbreviation !== "-" && !isOwnAttendance ? "pointer" : "default",
                 }}
                 onClick={() => {
+                  if (isOwnAttendance) {
+                    return;
+                  }
                   setSpecific(record)
                   openModal(dayRecord, abbreviation);
                   //console.log(dayRecord)
@@ -788,16 +794,19 @@ const AttendanceAdmin = () => {
                     locale={{
                       emptyText: isLoading ? null : customEmptyText
                     }}
-                    style={{ height: "353px", background: "white" }}
+                    style={{ background: "white" }}
                     loading={isLoading}
                     columns={columns}
                     dataSource={dataSource}
-                    pagination={false}
-                    scroll={
-                      {
-                        // y: 310,
-                      }
-                    }
+                    pagination={{
+                      pageSize: 20,
+                      showSizeChanger: false,
+                      showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                      position: ['bottomCenter'],
+                    }}
+                    scroll={{
+                      x: 'max-content',
+                    }}
                     components={i18n.dir()==="rtl" ?
                       {
                       header: {

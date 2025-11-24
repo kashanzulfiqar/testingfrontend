@@ -465,6 +465,7 @@ const Sidebar = (props) => {
                       <i className="la la-user-secret" /> <span>Leads</span>{" "}
                     </Link>
                   </li>
+                  {/* HIDDEN: Tickets
                   <li
                     className={
                       pathname.includes("tickets")
@@ -478,6 +479,7 @@ const Sidebar = (props) => {
                       <i className="la la-ticket" /> <span>Tickets</span>{" "}
                     </Link>
                   </li>
+                  */}
                   <li className="menu-title">
                     <span>HR</span>
                   </li>
@@ -688,11 +690,13 @@ const Sidebar = (props) => {
                       ""
                     )}
                   </li>
+                  {/* HIDDEN: Policies
                   <li className={pathname.includes("policies") ? "active" : ""}>
                     <Link to="/app/hr/policies">
                       <i className="la la-file-pdf-o" /> <span>Policies</span>{" "}
                     </Link>
                   </li>
+                  */}
                   <li className="submenu">
                     <a
                       href="javascript:"
@@ -2337,6 +2341,7 @@ const Sidebar = (props) => {
                       )}
                     </li>
                   )}
+                  {/* HIDDEN: Tickets
                   {(user_state?.role === "admin" ||
                     permissions?.recruitmentManagement) && (
                     <li
@@ -2357,6 +2362,7 @@ const Sidebar = (props) => {
                       </Link>
                     </li>
                   )}
+                  */}
                   {/* <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
@@ -2528,6 +2534,7 @@ const Sidebar = (props) => {
                       ""
                     )}
                   </li>
+                  {/* HIDDEN: Policies
                   <li className={pathname.includes("policies") ? "active" : ""}>
                     {user_state?.role === "client" ||
                     user_state?.role === "focalperson" ? (
@@ -2539,6 +2546,7 @@ const Sidebar = (props) => {
                       </Link>
                     )}
                   </li>
+                  */}
                   <li className="submenu">
                     {user_state?.role === "client" ||
                     user_state?.role === "focalperson" ? (

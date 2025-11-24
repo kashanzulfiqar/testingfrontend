@@ -59,6 +59,10 @@ const ResumeHistory = () => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const companyId = user_state?.user?.companyId
+  const selectedPresetId = useSelector((state) => state.resumePreset.selectedPresetId) || "";
+  
 
   // ----------------------------
   // Fetch from Mongo
@@ -72,8 +76,8 @@ const ResumeHistory = () => {
         candidateName: filters.candidateName || "",
         appliedPosition: filters.title || "",
       }).toString();
-
-      const res = await apiServices("GET", `resumes?${query}`);
+      // console.log('meow', user_state?.user?.companyId)
+      const res = await apiServices("GET", `resumes?${query}`, null, user_state);
       if (res?.data) {
         setResumeHistory(res.data.docs || res.data);
         setPaginationDetail(res.data.totalDocs || res.data.length);
@@ -155,20 +159,25 @@ const ResumeHistory = () => {
     }
   };
 
-  
+
   // ----------------------------
   // Edit PDF new window
   // ----------------------------
-  const handleEdit = async (record) => {}
+  const handleEdit = async (record) => { }
 
   // ----------------------------
   // Download PDF
   // ----------------------------
   const handleDownload = async (record) => {
     try {
+      console.log('meow', selectedPresetId)
       const blobRes = await axiosInstance.post(
         "resume/preview-from-json",
-        { parsed: record },
+        { parsed: {
+          ...record,
+          presetId: selectedPresetId,
+          company_logo: record.company_logo
+        }},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -291,23 +300,23 @@ const ResumeHistory = () => {
           </Menu>
         );
         return (
-            <div
-              onClick={(e) => e.stopPropagation()} // 👈 stop row click
-              style={{ display: "inline-flex", alignItems: "center" }}
-            >
-              <Dropdown overlay={menu} trigger={["click"]} placement="bottomRight">
-                <div
-                  style={{
-                    cursor: "pointer",
-                    height: "24px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <img src={more} alt="More Options" style={{ height: "24px" }} />
-                </div>
-              </Dropdown>
-            </div>
+          <div
+            onClick={(e) => e.stopPropagation()} // 👈 stop row click
+            style={{ display: "inline-flex", alignItems: "center" }}
+          >
+            <Dropdown overlay={menu} trigger={["click"]} placement="bottomRight">
+              <div
+                style={{
+                  cursor: "pointer",
+                  height: "24px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <img src={more} alt="More Options" style={{ height: "24px" }} />
+              </div>
+            </Dropdown>
+          </div>
         );
       },
     },
@@ -321,18 +330,18 @@ const ResumeHistory = () => {
   }, [pdfUrl]);
 
 
-// Inside component:
-const navigate = useNavigate();
+  // Inside component:
+  const navigate = useNavigate();
 
-const handleRowClick = (record) => {
-  // Serialize JSON to pass via route state
-  navigate("/recruitment/resume-converter", {
-    state: {
-      parsedData: record,  // 👈 pass the JSON
-      autoPreview: true,   // 👈 flag to auto-generate PDF
-    },
-  });
-};
+  const handleRowClick = (record) => {
+    // Serialize JSON to pass via route state
+    navigate("/recruitment/resume-converter", {
+      state: {
+        parsedData: record,  // 👈 pass the JSON
+        autoPreview: true,   // 👈 flag to auto-generate PDF
+      },
+    });
+  };
 
 
   // ----------------------------
@@ -405,7 +414,7 @@ const handleRowClick = (record) => {
                   htmlType="submit"
                   className="search-btn"
                   block
-                  style={{marginBottom: '2px', paddingBottom:'2px'}}
+                  style={{ marginBottom: '2px', paddingBottom: '2px' }}
                 >
                   Search
                 </Button>
@@ -425,7 +434,8 @@ const handleRowClick = (record) => {
               onRow={(record) => ({
                 onClick: () => {
                   console.log(record)
-                  handleRowClick(record)},
+                  handleRowClick(record)
+                },
               })}
               locale={{
                 emptyText: (

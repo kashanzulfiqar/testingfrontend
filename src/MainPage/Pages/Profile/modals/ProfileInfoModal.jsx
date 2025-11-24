@@ -48,6 +48,7 @@ const [addDesigOpen, setAddDesigOpen] = useState(false)
 const [addShiftOpen, setAddShiftOpen] = useState(false)
 const [addTaxOpen, setAddTaxOpen] = useState(false)
 const [addRoleOpen, setAddRoleOpen] = useState(false)
+const [nextEmployeeId, setNextEmployeeId] = useState('')
 
 
   useEffect(() => {
@@ -59,6 +60,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
     getTaxSlab();
     if(!user_data){
         getAllLeaves();
+        fetchNextEmployeeId(); // Fetch next employee ID for Add mode
     }
     if(user_data){
         let data = {
@@ -259,6 +261,27 @@ const getTaxSlab = () => {
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : t('allEmp.errors.getLeaveInfoError')
+            }!`
+          );
+        });
+    }
+
+    const fetchNextEmployeeId = () => {
+        apiServices("GET", "company/next-employee-id", null, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            setNextEmployeeId(res?.data?.nextEmployeeId);
+            form.setFieldsValue({ employeeId: res?.data?.nextEmployeeId });
+          }
+        })
+        .catch((err) => {
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Error fetching next employee ID"
             }!`
           );
         });
@@ -490,7 +513,12 @@ const getTaxSlab = () => {
                                 },
                                 ]}
                             >
-                            <Input className='form-control' maxLength={50} />
+                            <Input 
+                              className='form-control' 
+                              maxLength={50} 
+                              disabled={open?.isAddOpen}
+                              style={open?.isAddOpen ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
+                            />
                             </Form.Item>
                         </div>
                         </div>

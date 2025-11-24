@@ -831,12 +831,25 @@ const AttendanceReport = () => {
                     locale={{
                       emptyText: isLoading ? null : customEmptyText
                     }}
-                    style={{ height: "400px", background: "white" }}
+                    style={{ background: "white" }}
                     loading={isLoading}
                     columns={columns}
                     dataSource={attendancerecords}
                     bordered
-                    pagination={false}
+                    pagination={{
+                      current: pagination.current,
+                      pageSize: pagination.pageSize,
+                      total: pagination.total,
+                      showTotal: (total, range) =>
+                        t('paginationShow', { range1: range[0], range2: range[1], total: total }),
+                      pageSizeOptions: ["20", "30", "40", "50"],
+                      showSizeChanger: true,
+                      onChange: (page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,}),
+                      position: ['bottomCenter'],
+                      itemRender: (current, type, originalElement) =>
+                        itemRender(current, type, originalElement, t),
+                      disabled: isLoading,
+                    }}
                     components={i18n.dir()==="rtl" ?
                       {
                       header: {
@@ -848,34 +861,13 @@ const AttendanceReport = () => {
                     onRow={ i18n.dir()==="rtl" ?
                       (record, rowIndex) => {
                       return {
-                        style: { textAlign: 'right' }, // Align table data to the right
+                        style: { textAlign: 'right' },
                       };
                     } :
                     null
                     }
                   />
                 </div>
-
-                {
-                    attendancerecords?.length > 0 &&
-                    <div>
-                      <Pagination
-                        style={{display: 'flex', float: 'right'}}
-                        current={pagination.current}
-                        pageSize={pagination.pageSize}
-                        total={pagination.total}
-                        showTotal={(total, range) =>
-                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
-                        pageSizeOptions={["20", "30", "40", "50"]}
-                        showSizeChanger={true}
-                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
-                        itemRender={(current, type, originalElement) =>
-                          itemRender(current, type, originalElement, t)
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                  }
               </div>
             </div>
           </div>

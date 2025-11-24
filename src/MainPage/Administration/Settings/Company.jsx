@@ -1595,6 +1595,107 @@ const Company = () => {
                 </Form.Item>
               </div>
             </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  {t("settings.companySettings.employeeIdPrefix")}{" "}
+                  <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="employeeIdPrefix"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      validator: (_, value) => {
+                        if (!value || value.trim() === "") {
+                          return Promise.reject(
+                            t("settings.companySettings.pleaseEnterEmployeeIdPrefix")
+                          );
+                        } else if (/\s/.test(value)) {
+                          return Promise.reject(
+                            t("settings.companySettings.noSpacesAllowed")
+                          );
+                        } else if (!/^[A-Z0-9-]+$/.test(value)) {
+                          return Promise.reject(
+                            t("settings.companySettings.onlyUppercaseAndNumbers")
+                          );
+                        } else if (value.length < 2) {
+                          return Promise.reject(
+                            t("settings.minLength", {
+                              name: t("settings.companySettings.employeeIdPrefix"),
+                            })
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.employeeIdPrefix}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.employeeIdPrefix : ""}
+                    onInput={(e) => {
+                      const upperValue = e.target.value.toUpperCase();
+                      e.target.value = upperValue;
+                      onHandleChange("employeeIdPrefix", upperValue);
+                    }}
+                    placeholder="e.g., DG-"
+                    maxLength={10}
+                    style={{ textTransform: "uppercase" }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  {t("settings.companySettings.employeeIdCounter")}{" "}
+                  <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="employeeIdCounter"
+                  rules={[
+                    {
+                      required: true,
+                      validator: (_, value) => {
+                        if (value === undefined || value === null || value === "") {
+                          return Promise.reject(
+                            t("settings.companySettings.pleaseEnterEmployeeIdCounter")
+                          );
+                        }
+                        const numValue = Number(value);
+                        if (isNaN(numValue) || numValue < 0) {
+                          return Promise.reject(
+                            t("settings.companySettings.counterMustBePositive")
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.employeeIdCounter}
+                  />
+                  <input
+                    className="form-control"
+                    type="number"
+                    defaultValue={data?.employeeIdCounter !== undefined ? data?.employeeIdCounter : ""}
+                    onInput={(e) => {
+                      onHandleChange("employeeIdCounter", e.target.value);
+                    }}
+                    placeholder="e.g., 0, 001"
+                    min="0"
+                  />
+                </Form.Item>
+              </div>
+            </div>
             <div className="col-sm-12">
               <div
                 className="form-group"

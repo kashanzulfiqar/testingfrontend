@@ -93,6 +93,8 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   const [activityTab, setActivityTab] = useState("comments");
   const [assignee, setAssignee] = useState(taskData?.assignee || null);
   const [priority, setPriority] = useState(taskData?.priority || null);
+  const aiModel = useSelector((state) => state.aiConfig.selectedModel || "deepSeek")
+
   
   // Helper: format history values
   const formatHistoryValue = (field, value) => {
@@ -464,7 +466,9 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
       const response = await apiServices(
         'POST',
         'api/rewrite-description',
-        { text: currentDescription },
+        { text: currentDescription,
+          aiConfig: aiModel,
+         },
         user_state
       );
       
@@ -1649,21 +1653,35 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                   borderBottom: idx < comments.length - 1 ? '2px solid #f0f0f0' : 'none'
                                 }}>
                                   {/* Avatar */}
-                                <div style={{
-                                     width: 40, 
-                                     height: 40, 
-                                     borderRadius: '50%',
-                                     background: '#FF9B44', 
-                                     display: 'flex', 
-                                     alignItems: 'center', 
-                                     justifyContent: 'center',
-                                     fontWeight: 600, 
-                                     marginRight: 12,
-                                     color: 'white',
-                                     fontSize: 14
-                                }}>
-                                  {c.userName ? c.userName.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
-                                </div>
+                                  {c.userImageUrl ? (
+                                    <img 
+                                      src={c.userImageUrl} 
+                                      alt={c.userName || 'User'}
+                                      style={{
+                                        width: 40, 
+                                        height: 40, 
+                                        borderRadius: '50%',
+                                        marginRight: 12,
+                                        objectFit: 'cover'
+                                      }}
+                                    />
+                                  ) : (
+                                    <div style={{
+                                      width: 40, 
+                                      height: 40, 
+                                      borderRadius: '50%',
+                                      background: '#FF9B44', 
+                                      display: 'flex', 
+                                      alignItems: 'center', 
+                                      justifyContent: 'center',
+                                      fontWeight: 600, 
+                                      marginRight: 12,
+                                      color: 'white',
+                                      fontSize: 14
+                                    }}>
+                                      {c.userName ? c.userName.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                                    </div>
+                                  )}
                                   
                                   {/* Comment Content */}
                                   <div style={{ flex: 1 }}>
@@ -1929,21 +1947,35 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                             {/* User Avatar */}
-                                                         <div style={{
-                               width: 40, 
-                               height: 40, 
-                               borderRadius: '50%',
-                               background: '#FF9B44', 
-                               display: 'flex', 
-                               alignItems: 'center', 
-                               justifyContent: 'center',
-                               fontWeight: 600,
-                               color: 'white',
-                               fontSize: 14,
-                               flexShrink: 0
-                             }}>
-                              {user_state?.user?.fullName ? user_state.user.fullName.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
-                            </div>
+                            {user_state?.user?.image ? (
+                              <img 
+                                src={user_state.user.image} 
+                                alt={user_state.user.fullName || 'User'}
+                                style={{
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%',
+                                  objectFit: 'cover',
+                                  flexShrink: 0
+                                }}
+                              />
+                            ) : (
+                              <div style={{
+                                width: 40, 
+                                height: 40, 
+                                borderRadius: '50%',
+                                background: '#FF9B44', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                fontWeight: 600,
+                                color: 'white',
+                                fontSize: 14,
+                                flexShrink: 0
+                              }}>
+                                {user_state?.user?.fullName ? user_state.user.fullName.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                              </div>
+                            )}
                             
                                                               {/* Input Area */}
                                   <div style={{ flex: 1 }}>
