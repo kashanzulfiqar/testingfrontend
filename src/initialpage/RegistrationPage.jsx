@@ -16,6 +16,7 @@ import {
   Steps,
   message,
   Select,
+  Tooltip,
 } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import DaftarProLogo from "../files/Icons/DaftraProLogo.svg";
@@ -27,6 +28,7 @@ import styled from "styled-components";
 import { LoadingOutlined } from "@ant-design/icons";
 import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
+import { Country, State, City } from "country-state-city";
 
 const options = [
   { value: "Male", label: "Male" },
@@ -50,6 +52,7 @@ const Registrationpage = (props) => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedState, setSelectedState] = useState(null);
   const [loadingLocations, setLoadingLocations] = useState(false);
+  const [selectedCountryCode, setSelectedCountryCode] = useState(null);
   const initialLocation = { longitude: "", latitude: "" };
   const allowedNavigationKeys = [
     "Backspace",
@@ -121,97 +124,79 @@ const Registrationpage = (props) => {
     setAllCurrencies(sorted_data);
   };
 
-  const fetchCountries = async () => {
+  const fetchCountries = () => {
     setLoadingLocations(true);
     try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries"
-      );
-      const data = await response.json();
-      if (data.data) {
-        const formattedCountries = data.data.map((country) => ({
-          value: country.country,
-          label: country.country,
-        }));
-        setCountries(formattedCountries);
-      }
+      const formattedCountries = Country.getAllCountries().map((country) => ({
+        value: country.name,
+        label: country.name,
+        code: country.isoCode,
+      }));
+      setCountries(formattedCountries);
     } catch (error) {
+      console.error("Failed to load countries", error);
       message.error(t("settings.companySettings.errorFetchingCountries"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const fetchStates = async (country) => {
+  const fetchStates = (countryCode) => {
     setLoadingLocations(true);
     try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries/states",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ country }),
-        }
-      );
-      const data = await response.json();
-      if (data.data?.states) {
-        const formattedStates = data.data.states.map((state) => ({
+      const formattedStates = State.getStatesOfCountry(countryCode).map(
+        (state) => ({
           value: state.name,
           label: state.name,
-        }));
-        setStates(formattedStates);
-      }
+          code: state.isoCode,
+        })
+      );
+      setStates(formattedStates);
     } catch (error) {
+      console.error("Failed to load states", error);
       message.error(t("settings.companySettings.errorFetchingStates"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const fetchCities = async (country, state) => {
+  const fetchCities = (countryCode, stateCode) => {
     setLoadingLocations(true);
     try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries/state/cities",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ country, state }),
-        }
-      );
-      const data = await response.json();
-      if (data.data) {
-        const formattedCities = data.data.map((city) => ({
-          value: city,
-          label: city,
-        }));
-        setCities(formattedCities);
-      }
+      const formattedCities = City.getCitiesOfState(
+        countryCode,
+        stateCode
+      ).map((city) => ({
+        value: city.name,
+        label: city.name,
+      }));
+      setCities(formattedCities);
     } catch (error) {
+      console.error("Failed to load cities", error);
       message.error(t("settings.companySettings.errorFetchingCities"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const handleCountryChange = (value) => {
+  const handleCountryChange = (value, option) => {
     form.setFieldsValue({ state: undefined, city: undefined });
     setSelectedCountry(value);
+    setSelectedCountryCode(option?.code || null);
     setSelectedState(null);
     setStates([]);
     setCities([]);
-    if (value) {
-      fetchStates(value);
+    if (option?.code) {
+      fetchStates(option.code);
     }
   };
 
-  const handleStateChange = (value) => {
+  const handleStateChange = (value, option) => {
     form.setFieldsValue({ city: undefined });
     setSelectedState(value);
     setCities([]);
-    if (value && selectedCountry) {
-      fetchCities(selectedCountry, value);
+    if (option?.code && selectedCountryCode) {
+      fetchCities(selectedCountryCode, option.code);
     }
   };
 
@@ -992,6 +977,32 @@ const Registrationpage = (props) => {
                     <div className="d-flex justify-content-between align-items-center">
                         <label className="col-form-label mb-0">
                           Locations <span className="text-danger">*</span>
+                          <Tooltip
+                            placement="right"
+                            title={
+                              <label style={{ maxWidth: 260, display: "block" }}>
+                                Enter the company's Latitude, Longitude, and Radius. These values
+                                define the allowed location area for marking attendance. Employees
+                                must be within this radius to mark attendance successfully.
+                              </label>
+                            }
+                          >
+                            <span
+                              style={{
+                                border: "1px solid #999",
+                                color: "#666",
+                                fontSize: "12px",
+                                borderRadius: "50%",
+                                padding: "2px 6px",
+                                marginLeft: "8px",
+                                cursor: "help",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              i
+                            </span>
+                          </Tooltip>
                         </label>
                         <Button
                           type="dashed"
@@ -1022,6 +1033,7 @@ const Registrationpage = (props) => {
                             >
                               <Input
                                 className="form-control"
+                                placeholder="Enter company's longitude"
                                 maxLength={15}
                                 onKeyDown={handleDecimalInputKeyDown}
                                 onPaste={handleDecimalInputPaste}
@@ -1044,6 +1056,7 @@ const Registrationpage = (props) => {
                             >
                               <Input
                                 className="form-control"
+                                placeholder="Enter company's latitude"
                                 maxLength={15}
                                 onKeyDown={handleDecimalInputKeyDown}
                                 onPaste={handleDecimalInputPaste}
@@ -1105,6 +1118,7 @@ const Registrationpage = (props) => {
                     value={regValues?.radius_meter}
                   />
                   <input
+                    placeholder="Enter allowed radius (in meters) for company"
                     className="form-control"
                     onInput={(e) => {
                       onHandleRegChange("radius_meter", e.target.value);

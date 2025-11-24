@@ -19,6 +19,7 @@ import { apiUploadToS3 } from "../../../Services/uploadImage.js";
 import { user_icon } from "../../../Entryfile/imagepath.jsx";
 import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
+import { Country, State, City } from "country-state-city";
 
 const Company = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -38,6 +39,8 @@ const Company = () => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedState, setSelectedState] = useState(null);
   const [loadingLocations, setLoadingLocations] = useState(false);
+  const [selectedCountryCode, setSelectedCountryCode] = useState(null);
+  const [selectedStateCode, setSelectedStateCode] = useState(null);
   const allowedNavigationKeys = [
     "Backspace",
     "Tab",
@@ -429,112 +432,138 @@ const Company = () => {
     setAllCurrencies(sorted_data);
   };
 
-  const fetchCountries = async () => {
+  const fetchCountries = () => {
     setLoadingLocations(true);
     try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries"
-      );
-      const data = await response.json();
-      if (data.data) {
-        const formattedCountries = data.data.map((country) => ({
-          value: country.country,
-          label: country.country,
-        }));
-        setCountries(formattedCountries);
-      }
+      const formattedCountries = Country.getAllCountries().map((country) => ({
+        value: country.name,
+        label: country.name,
+        code: country.isoCode,
+      }));
+      setCountries(formattedCountries);
     } catch (error) {
+      console.error("Failed to load countries", error);
       message.error(t("settings.companySettings.errorFetchingCountries"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const fetchStates = async (country) => {
-    setLoadingLocations(true);
+  const fetchStates = (countryCode, showLoader = true) => {
+    if (!countryCode) {
+      setStates([]);
+      return [];
+    }
+    let formattedStates = [];
+    if (showLoader) {
+      setLoadingLocations(true);
+    }
     try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries/states",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ country }),
-        }
-      );
-      const data = await response.json();
-      if (data.data?.states) {
-        const formattedStates = data.data.states.map((state) => ({
-          value: state.name,
-          label: state.name,
-        }));
-        setStates(formattedStates);
-      }
+      formattedStates = State.getStatesOfCountry(countryCode).map((state) => ({
+        value: state.name,
+        label: state.name,
+        code: state.isoCode,
+      }));
+      setStates(formattedStates);
     } catch (error) {
+      console.error("Failed to load states", error);
       message.error(t("settings.companySettings.errorFetchingStates"));
-    }
-    setLoadingLocations(false);
-  };
-
-  const fetchCities = async (country, state) => {
-    setLoadingLocations(true);
-    try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries/state/cities",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ country, state }),
-        }
-      );
-      const data = await response.json();
-      if (data.data) {
-        const formattedCities = data.data.map((city) => ({
-          value: city,
-          label: city,
-        }));
-        setCities(formattedCities);
+    } finally {
+      if (showLoader) {
+        setLoadingLocations(false);
       }
-    } catch (error) {
-      message.error(t("settings.companySettings.errorFetchingCities"));
     }
-    setLoadingLocations(false);
+    return formattedStates;
   };
 
-  const handleCountryChange = (value) => {
+  const fetchCities = (countryCode, stateCode, showLoader = true) => {
+    if (!countryCode || !stateCode) {
+      setCities([]);
+      return [];
+    }
+    let formattedCities = [];
+    if (showLoader) {
+      setLoadingLocations(true);
+    }
+    try {
+      formattedCities = City.getCitiesOfState(countryCode, stateCode).map(
+        (city) => ({
+          value: city.name,
+          label: city.name,
+        })
+      );
+      setCities(formattedCities);
+    } catch (error) {
+      console.error("Failed to load cities", error);
+      message.error(t("settings.companySettings.errorFetchingCities"));
+    } finally {
+      if (showLoader) {
+        setLoadingLocations(false);
+      }
+    }
+    return formattedCities;
+  };
+
+  const handleCountryChange = (value, option) => {
     form.setFieldsValue({ state: undefined, city: undefined });
     setSelectedCountry(value);
+    setSelectedCountryCode(option?.code || null);
     setSelectedState(null);
+    setSelectedStateCode(null);
     setStates([]);
     setCities([]);
-    if (value) {
-      fetchStates(value);
+    if (option?.code) {
+      fetchStates(option.code);
     }
   };
 
-  const handleStateChange = (value) => {
+  const handleStateChange = (value, option) => {
     form.setFieldsValue({ city: undefined });
     setSelectedState(value);
+    setSelectedStateCode(option?.code || null);
     setCities([]);
-    if (value && selectedCountry) {
-      fetchCities(selectedCountry, value);
+    if (option?.code && selectedCountryCode) {
+      fetchCities(selectedCountryCode, option.code);
     }
   };
 
-  // Add this new effect to handle initial data loading
   useEffect(() => {
-    if (data?.country) {
-      setSelectedCountry(data.country);
-      fetchStates(data.country).then(() => {
-        if (data?.state) {
-          setSelectedState(data.state);
-          fetchCities(data.country, data.state);
-        }
-      });
+    if (!data?.country || !countries.length) {
+      return;
     }
-  }, [data]);
+
+    const countryOption = countries.find(
+      (country) => country.value === data.country
+    );
+
+    if (!countryOption) {
+      return;
+    }
+
+    setSelectedCountry(data.country);
+    setSelectedCountryCode(countryOption.code);
+
+    const stateOptions = fetchStates(countryOption.code, false);
+
+    if (data?.state && stateOptions.length) {
+      const stateOption = stateOptions.find(
+        (state) => state.value === data.state
+      );
+      if (stateOption) {
+        setSelectedState(data.state);
+        setSelectedStateCode(stateOption.code);
+        fetchCities(countryOption.code, stateOption.code, false);
+      } else {
+        setSelectedState(null);
+        setSelectedStateCode(null);
+        setCities([]);
+      }
+    } else {
+      setSelectedState(null);
+      setSelectedStateCode(null);
+      setCities([]);
+    }
+  }, [data, countries]);
 
   return (
     <div>
@@ -1077,12 +1106,12 @@ const Company = () => {
                           .indexOf(input.toLowerCase()) >= 0
                       }
                       options={states}
-                      disabled={!selectedCountry}
+                      disabled={!selectedCountryCode}
                       style={{ width: "100%" }}
                       className="custom-select custom-normal"
                       onFocus={() => {
-                        if (selectedCountry && states.length === 0) {
-                          fetchStates(selectedCountry);
+                        if (selectedCountryCode && states.length === 0) {
+                          fetchStates(selectedCountryCode);
                         }
                       }}
                     />
@@ -1117,16 +1146,16 @@ const Company = () => {
                           .indexOf(input.toLowerCase()) >= 0
                       }
                       options={cities}
-                      disabled={!selectedState}
+                      disabled={!selectedStateCode}
                       style={{ width: "100%" }}
                       className="custom-select custom-normal"
                       onFocus={() => {
                         if (
-                          selectedCountry &&
-                          selectedState &&
+                          selectedCountryCode &&
+                          selectedStateCode &&
                           cities.length === 0
                         ) {
-                          fetchCities(selectedCountry, selectedState);
+                          fetchCities(selectedCountryCode, selectedStateCode);
                         }
                       }}
                     />
@@ -1156,6 +1185,32 @@ const Company = () => {
                       <div className="d-flex justify-content-between align-items-center">
                         <label className="col-form-label mb-0">
                           Locations <span className="text-danger">*</span>
+                          <Tooltip
+                            placement="right"
+                            title={
+                              <label style={{ maxWidth: 260, display: "block" }}>
+                                Enter the company's Latitude, Longitude, and Radius. These values
+                                define the allowed location area for marking attendance. Employees
+                                must be within this radius to mark attendance successfully.
+                              </label>
+                            }
+                          >
+                            <span
+                              style={{
+                                border: "1px solid #999",
+                                color: "#666",
+                                fontSize: "12px",
+                                borderRadius: "50%",
+                                padding: "2px 6px",
+                                marginLeft: "8px",
+                                cursor: "help",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              i
+                            </span>
+                          </Tooltip>
                         </label>
                         <Button
                           type="dashed"
@@ -1186,6 +1241,7 @@ const Company = () => {
                             >
                               <Input
                                 className="form-control inputWordSpacing"
+                                placeholder="Enter company's longitude"
                                 maxLength={15}
                                 onKeyDown={handleDecimalInputKeyDown}
                                 onPaste={handleDecimalInputPaste}
@@ -1208,6 +1264,7 @@ const Company = () => {
                             >
                               <Input
                                 className="form-control inputWordSpacing"
+                                placeholder="Enter company's latitude"
                                 maxLength={15}
                                 onKeyDown={handleDecimalInputKeyDown}
                                 onPaste={handleDecimalInputPaste}
@@ -1269,6 +1326,7 @@ const Company = () => {
                     value={allValues?.radius_meter}
                   />
                   <input
+                    placeholder="Enter allowed radius (in meters) for company"
                     className="form-control inputWordSpacing"
                     defaultValue={data ? data?.radius_meter : ""}
                     onInput={(e) => {
