@@ -1569,7 +1569,7 @@ const TaskBoard = () => {
                                     {...provided.dragHandleProps}
                                   >
                                     <label className="status-title longText3">
-                                      {column.title}
+                                      {column.title} <span style={{ marginLeft: '8px', color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', fontWeight: '500' }}>{column.tasks.length}</span>
                                     </label>
                                     {column.title !== "Backlog" && !(role === 'client' || role === 'focalperson') && (
                                       <div className="dropdown kanban-action">
