@@ -84,6 +84,8 @@ const TaskBoard = () => {
   const [editingDueDate, setEditingDueDate] = useState(false);
   const [dueDateValue, setDueDateValue] = useState(null);
   const [originalDueDate, setOriginalDueDate] = useState(null);
+  const [selectedAssigneeFilter, setSelectedAssigneeFilter] = useState(null);
+  const [filteredColumns, setFilteredColumns] = useState([]);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -436,7 +438,7 @@ const TaskBoard = () => {
     if (role === 'client' || role === 'focalperson') {
     apiServices(
       "GET",
-        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&taskId=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}`,
+        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&taskId=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}&populate=assignedDevelopers`,
         null,
         user_state
       )
@@ -469,7 +471,7 @@ const TaskBoard = () => {
       "GET",
       `tasks?id=${taskId}&page=${1}&limit=${99999}&isArchived=${
         BoardData?.board?.isArchived
-      }`,
+      }&populate=assignedDevelopers`,
       null,
       user_state
     )
@@ -1229,7 +1231,6 @@ const TaskBoard = () => {
       setDescValue(addTask.data?.description || '');
       setDueDateValue(addTask.data?.dueDate ? moment(addTask.data.dueDate) : null);
       setOriginalDueDate(addTask.data?.dueDate ? moment(addTask.data.dueDate) : null);
-      // Fetch employees if not already loaded
       if (allEmployees.length === 0) {
         apiServices("GET", `user/all-employees`, null, user_state)
           .then(res => {
@@ -1238,6 +1239,43 @@ const TaskBoard = () => {
       }
     }
   }, [addTask.isAddOpen]);
+
+  useEffect(() => {
+    if (!selectedAssigneeFilter) {
+      setFilteredColumns(columns);
+      return;
+    }
+
+    const filtered = columns.map(column => {
+      const filteredTasks = column.tasks.filter(task => {
+        const taskDetails = allTasks.find(t => t._id === task.taskId);
+        
+        if (!taskDetails) {
+          return false;
+        }
+        
+        if (taskDetails.assignee === selectedAssigneeFilter) {
+          return true;
+        }
+        
+        if (taskDetails.assignedDevelopers && taskDetails.assignedDevelopers.length > 0) {
+          return taskDetails.assignedDevelopers.some(dev => {
+            const devId = typeof dev === 'string' ? dev : (dev?._id || dev?.userId || dev?.id);
+            return devId === selectedAssigneeFilter;
+          });
+        }
+        
+        return false;
+      });
+
+      return {
+        ...column,
+        tasks: filteredTasks
+      };
+    });
+
+    setFilteredColumns(filtered);
+  }, [selectedAssigneeFilter, columns, allTasks]);
 
   return (
     <>
@@ -1356,11 +1394,21 @@ const TaskBoard = () => {
                     >
                       {employees?.slice(0, 4).map((developer, index) => (
                         <li key={index}>
-                          <Tooltip title={developer?.fullName}>
+                          <Tooltip title={`${developer?.fullName} - Click to filter`}>
                             <Avatar
                               size={24}
-                              style={{ cursor: "pointer" }}
+                              style={{ 
+                                cursor: "pointer",
+                                border: selectedAssigneeFilter === developer._id ? "2px solid #ff902f" : "none"
+                              }}
                               src={developer?.imageUrl || user_icon}
+                              onClick={() => {
+                                if (selectedAssigneeFilter === developer._id) {
+                                  setSelectedAssigneeFilter(null);
+                                } else {
+                                  setSelectedAssigneeFilter(developer._id);
+                                }
+                              }}
                             />
                           </Tooltip>
                         </li>
@@ -1386,11 +1434,21 @@ const TaskBoard = () => {
                                 <a
                                   className="avatar avatar-xs projectTeamMember"
                                   key={index}
+                                  onClick={() => {
+                                    if (selectedAssigneeFilter === developer._id) {
+                                      setSelectedAssigneeFilter(null);
+                                    } else {
+                                      setSelectedAssigneeFilter(developer._id);
+                                    }
+                                  }}
                                 >
-                                  <Tooltip title={developer?.fullName}>
+                                  <Tooltip title={`${developer?.fullName} - Click to filter`}>
                                     <Avatar
                                       src={developer?.imageUrl || user_icon}
-                                      style={{ cursor: "pointer" }}
+                                      style={{ 
+                                        cursor: "pointer",
+                                        border: selectedAssigneeFilter === developer._id ? "2px solid #ff902f" : "none"
+                                      }}
                                     />
                                   </Tooltip>
                                 </a>
@@ -1400,6 +1458,42 @@ const TaskBoard = () => {
                         </li>
                       )}
                     </ul>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ position: "relative", minWidth: "200px" }} id="assignee-filter-area">
+                      <Select
+                        showSearch
+                        allowClear
+                        placeholder="Filter by Assignee"
+                        value={selectedAssigneeFilter}
+                        onChange={(value) => setSelectedAssigneeFilter(value)}
+                        filterOption={(input, option) =>
+                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                        style={{ width: "100%", minWidth: "200px" }}
+                        className="custom-select custom-normal"
+                        getPopupContainer={() => document.getElementById("assignee-filter-area")}
+                      >
+                        {employees?.map((employee) => (
+                          <Select.Option key={employee._id} value={employee._id}>
+                            {employee.fullName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </div>
+                    {selectedAssigneeFilter && (
+                      <Button
+                        onClick={() => setSelectedAssigneeFilter(null)}
+                        style={{
+                          height: "38px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center"
+                        }}
+                      >
+                        Clear Filter
+                      </Button>
+                    )}
                   </div>
                   {(role === "admin" || permissions?.projectManagement) &&
                     !BoardData?._id &&
@@ -1445,10 +1539,10 @@ const TaskBoard = () => {
                     <div className="col-md-12 text-center">
                       <Spin size="large" tip="Loading..." />
                     </div>
-                  ) : columns?.length > 0 ? (
+                  ) : filteredColumns?.length > 0 ? (
                     <div className="card-body">
                       <div className="kanban-cont">
-                        {columns.map((column, index) => (
+                        {filteredColumns.map((column, index) => (
                           <Draggable
                             key={column._id}
                             draggableId={column._id}
@@ -1475,7 +1569,7 @@ const TaskBoard = () => {
                                     {...provided.dragHandleProps}
                                   >
                                     <label className="status-title longText3">
-                                      {column.title}
+                                      {column.title} <span style={{ marginLeft: '8px', color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', fontWeight: '500' }}>{column.tasks.length}</span>
                                     </label>
                                     {column.title !== "Backlog" && !(role === 'client' || role === 'focalperson') && (
                                       <div className="dropdown kanban-action">
