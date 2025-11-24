@@ -185,7 +185,7 @@ export default function ResumeConverter() {
   // ----------------------------
   const fetchHistory = async () => {
     try {
-      const res = await apiServices("GET", "resumes");
+      const res = await apiServices("GET", "resumes", null, userState);
       if (res?.data) setResumeHistory(res.data);
     } catch (err) {
       console.error("❌ Failed to fetch history:", err);
@@ -222,7 +222,7 @@ export default function ResumeConverter() {
       const res = await apiServices("POST", "resume/parse-url", {
         fileUrl,
         aiModel: aiModel,
-      });
+      }, userState);
       const parsed = res?.data?.parsed;
 
       if (!parsed || typeof parsed !== "object") {
@@ -400,7 +400,7 @@ export default function ResumeConverter() {
       // -----------------------------------------
       // 4️⃣ FIRST-TIME SAVE → Mongo + Pinecone
       // -----------------------------------------
-      const saveRes = await apiServices("POST", "resumes", finalPayload);
+      const saveRes = await apiServices("POST", "resumes", finalPayload, userState);
       const record = saveRes?.data || finalPayload;
 
       message.success("✅ Resume saved successfully!");
@@ -1536,7 +1536,7 @@ export default function ResumeConverter() {
                     //   createdAt: new Date().toISOString(), // ensure new timestamp
                     // };
                     const finalPayload = buildFinalPayload();
-                    await apiServices("POST", "resumes", finalPayload);
+                    await apiServices("POST", "resumes", finalPayload, userState);
                     message.success("Resume saved successfully!");
                   } catch (err) {
                     console.error(" Override failed:", err);
