@@ -131,7 +131,6 @@ const AssetDetails = () => {
       title: "#",
       dataIndex: "index",
       key: "index",
-      width: 60,
       render: (text, record, index) => index + 1,
     },
     {
@@ -144,7 +143,9 @@ const AssetDetails = () => {
       title: "Date & Time",
       dataIndex: "date",
       key: "date",
-      render: (val) => formatDateTime(val),
+      render: (val) => (
+        <span style={{ whiteSpace: "nowrap" }}>{formatDateTime(val)}</span>
+      ),
     },
   ];
 
