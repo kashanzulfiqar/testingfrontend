@@ -268,27 +268,45 @@ const Company = () => {
 
   const numericPattern = new RegExp(/^[0-9]*$/);
 
+  const handleCoordinatesInput = (e) => {
+    const value = e.target.value;
+    const sanitized = value.replace(/[^0-9.,\s\-()]/g, "");
+    e.target.value = sanitized;
+  };
+
   const validateCoordinates = (_, value) => {
     const str = String(value ?? "").trim();
     if (!str) {
       return Promise.reject("please enter coordinates");
     }
+    
+    // Check for any alphabetic characters
+    if (/[a-zA-Z]/.test(str)) {
+      return Promise.reject("coordinates must contain only numbers");
+    }
+    
     const cleaned = str.replace(/[()]/g, "");
     const [latRaw, longRaw] = cleaned.split(",").map((part) => part?.trim());
+    
     if (!latRaw || !longRaw) {
       return Promise.reject("please enter values as 'latitude, longitude'");
     }
+    
     const latitude = parseFloat(latRaw);
     const longitude = parseFloat(longRaw);
+    
     if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
       return Promise.reject("please enter valid numeric coordinates");
     }
+    
     if (latitude < -90 || latitude > 90) {
       return Promise.reject("latitude must be between -90 and 90");
     }
+    
     if (longitude < -180 || longitude > 180) {
       return Promise.reject("longitude must be between -180 and 180");
     }
+    
     return Promise.resolve();
   };
 
@@ -1181,6 +1199,7 @@ const Company = () => {
                                 className="form-control inputWordSpacing"
                                 placeholder="Example: 33.5226784, 73.0944155"
                                 maxLength={60}
+                                onInput={handleCoordinatesInput}
                               />
                             </Form.Item>
                           </div>
