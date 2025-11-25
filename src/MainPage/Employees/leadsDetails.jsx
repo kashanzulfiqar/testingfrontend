@@ -33,6 +33,7 @@ import ReasoningModal from "./ReasoningModal";
 import LostReasonModal from "./LostReasonModal";
 import ConversionDateModal from "./ConversionDateModal";
 import { Modal } from "@mui/material";
+import { Helmet } from "react-helmet";
 
 const LeadsDetails = () => {
   const nav = useNavigate();
@@ -950,6 +951,10 @@ const LeadsDetails = () => {
     <>
       {/* Page Wrapper */}
       <div className="page-wrapper">
+      <Helmet>
+        <title>Lead Details - {t("header.daftarPro")}</title>
+        <meta name="description" content="Lead Details" />
+      </Helmet>
         {/* Page Content */}
         <div className="content container-fluid">
           {/* Page Header */}
