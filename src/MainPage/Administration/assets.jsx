@@ -143,16 +143,16 @@ const Assets = () => {
     const currentNote = form.getFieldValue("assignmentNote");
     if (assignedEmployeeWatch) {
       const updates = {};
-      if (currentStatus !== "assigned") {
-        updates.status = "assigned";
+      if (currentStatus !== "Assigned") {
+        updates.status = "Assigned";
       }
       if (Object.keys(updates).length) {
         form.setFieldsValue(updates);
       }
     } else {
       const updates = {};
-      if (currentStatus === "assigned") {
-        updates.status = "available";
+      if (currentStatus === "Assigned") {
+        updates.status = "Available";
       }
       if (currentNote) {
         updates.assignmentNote = undefined;
@@ -168,11 +168,11 @@ const Assets = () => {
 
   const fixedStatusOptions = [
     // { label: "Assigned", value: "assigned" },
-    { label: "Available", value: "available" },
-    { label: "Sold", value: "sold" },
-    { label: "Lost", value: "lost" },
-    { label: "Damaged", value: "damaged" },
-    { label: "Under Maintenance", value: "undermaintenance" },
+    { label: "Available", value: "Available" },
+    { label: "Sold", value: "Sold" },
+    { label: "Lost", value: "Lost" },
+    { label: "Damaged", value: "Damaged" },
+    { label: "Under Maintenance", value: "Under Maintenance" },
   ];
 
   useEffect(() => {
@@ -285,6 +285,11 @@ const Assets = () => {
     if (open.isAddOpen) {
       if (open?.data) {
         // Editing existing asset - set all form values
+        const latestAssignment =
+          open?.data?.assignmentHistory && open?.data?.assignmentHistory.length
+            ? open?.data?.assignmentHistory[0]
+            : null;
+
         const formValues = {
           name: open?.data?.name || "",
           model: open?.data?.model || "",
@@ -294,15 +299,20 @@ const Assets = () => {
           assetSubCategoryId: open?.data?.assetSubCategoryId?._id || undefined,
           isAssignable: open?.data?.isAssignable || false,
           assignedEmployeeId:
+            latestAssignment?.employeeId?._id ||
+            latestAssignment?.employeeId ||
             open?.data?.assignedEmployeeId?._id ||
             open?.data?.assignedEmployeeId ||
             undefined,
-          assignmentNote: open?.data?.assignmentNote || "",
-          assignedDate: open?.data?.assignmentHistory[0]?.assignedDate
-            ? moment(open?.data?.assignmentHistory[0]?.assignedDate)
+          assignmentNote:
+            latestAssignment?.assignmentNote ||
+            open?.data?.assignmentNote ||
+            "",
+          assignedDate: latestAssignment?.assignedDate
+            ? moment(latestAssignment?.assignedDate)
             : undefined,
-          expectedReturnDate: open?.data?.assignmentHistory[0]?.expectedReturnDate
-            ? moment(open?.data?.assignmentHistory[0]?.expectedReturnDate)
+          expectedReturnDate: latestAssignment?.expectedReturnDate
+            ? moment(latestAssignment?.expectedReturnDate)
             : undefined,
           manufacturer: open?.data?.manufacturer || "",
           purchasedDate: open?.data?.purchasedDate
@@ -1290,6 +1300,9 @@ const Assets = () => {
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                                 }
+                                onChange={() => {
+                                  form.setFieldsValue({ assignmentNote: "" });
+                                }}
                               />
                             </Form.Item>
                           ) : null
