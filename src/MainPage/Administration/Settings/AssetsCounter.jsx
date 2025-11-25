@@ -177,7 +177,7 @@ const AssetsCounter = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: 'Counter Name',
+      title: 'Counter Number',
       dataIndex: 'assetCount',
       render: (_, row) => row?.assetCount || row?.assetCounter || row?.assetCounterName || row?.counterName || row?.name || '-',
     },
@@ -274,7 +274,7 @@ const AssetsCounter = () => {
               >
                 <div className="form-group">
                   <label>
-                    Counter Name <span className="text-danger">*</span>
+                    Counter Number <span className="text-danger">*</span>
                   </label>
                   <Form.Item
                     name="assetCount"
