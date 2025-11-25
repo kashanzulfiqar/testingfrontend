@@ -110,6 +110,41 @@ const Projects = () => {
     },
   ]);
 
+  const DEADLINE_COLORS = {
+    overdue: "#ff4d4f",
+    upcoming: "#faad14",
+    default: "#6f6f6f",
+  };
+
+  const getDeadlineColor = (endDate) => {
+    if (!endDate) {
+      return DEADLINE_COLORS.default;
+    }
+    const deadline = moment(endDate, ["YYYY-MM-DD", moment.ISO_8601], true);
+    if (!deadline.isValid()) {
+      return DEADLINE_COLORS.default;
+    }
+    const today = moment().startOf("day");
+    const diffDays = deadline.diff(today, "days");
+    if (diffDays < 0) {
+      return DEADLINE_COLORS.overdue;
+    }
+
+    if (diffDays <= 7) {
+      return DEADLINE_COLORS.upcoming;
+    }
+
+    return DEADLINE_COLORS.default;
+  };
+
+  const getDeadlineStyle = (endDate) => {
+    const color = getDeadlineColor(endDate);
+    return {
+      color,
+      fontWeight: color === DEADLINE_COLORS.default ? "normal" : 600,
+    };
+  };
+
   const addPaymentSchedule = () => {
     setPaymentSchedules([
       ...paymentSchedules,
@@ -732,7 +767,16 @@ const Projects = () => {
       title: t('projectScreen.deadline'),
       dataIndex: "endDate",
       key: "endDate",
-      render: (text, record) => <label style={{minWidth: 'max-content'}}>{text}</label> 
+      render: (text) => (
+        <label
+          style={{
+            minWidth: "max-content",
+            ...getDeadlineStyle(text),
+          }}
+        >
+          {text}
+        </label>
+      ),
     },
     {
       title: t('projectScreen.Modal.priority'),
@@ -1870,7 +1914,12 @@ const filteredColumns = columns.filter(column => {
                         </div>
                         <div className="pro-deadline m-b-15">
                           <div className="sub-title">{t('projectScreen.deadline')}:</div>
-                          <div className="text-muted">{project?.endDate}</div>
+                          <div
+                            // className="text-muted"
+                            style={getDeadlineStyle(project?.endDate)}
+                          >
+                            {project?.endDate || "-"}
+                          </div>
                         </div>
                         <div className="pro-deadline m-b-15">
                           <div className="sub-title">{t('projectScreen.status')}:</div>
