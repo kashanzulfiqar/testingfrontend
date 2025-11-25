@@ -427,6 +427,31 @@ const TaskBoard = () => {
     return task ? task.priority : "";
   };
 
+  const getTaskAssignee = (taskId) => {
+    const task = allTasks.find((task) => task._id === taskId);
+    if (!task) return null;
+
+    if (task.assignee) {
+      const assignee = employees.find(emp => emp._id === task.assignee);
+      return assignee;
+    }
+
+    if (task.assignedDevelopers && task.assignedDevelopers.length > 0) {
+      return task.assignedDevelopers[0];
+    }
+
+    return null;
+  };
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    const words = name.trim().split(' ');
+    if (words.length === 1) {
+      return words[0].substring(0, 2).toUpperCase();
+    }
+    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  };
+
   const getAllTasks = (id) => {
     const taskId = id;
 
@@ -2183,8 +2208,8 @@ const TaskBoard = () => {
                                                             <div
                                                               style={{
                                                                 position: "absolute",
-                                                                bottom: "0px",
-                                                                right: "8px",
+                                                                bottom: "2px",
+                                                                right: "44px",
                                                                 fontSize: "10px",
                                                                 fontWeight: "500",
                                                                 padding: "2px 6px",
@@ -2203,6 +2228,50 @@ const TaskBoard = () => {
                                                               {getTaskPriority(task.taskId)}
                                                             </div>
                                                           )}
+                                                          {/* Assignee Avatar */}
+                                                          {(() => {
+                                                            const assignee = getTaskAssignee(task.taskId);
+                                                            if (!assignee) return null;
+
+                                                            return (
+                                                              <Tooltip title={assignee?.fullName || 'Assignee'}>
+                                                                <div
+                                                                  style={{
+                                                                    position: "absolute",
+                                                                    bottom: "0px",
+                                                                    right: "8px",
+                                                                    width: "28px",
+                                                                    height: "28px",
+                                                                    borderRadius: "50%",
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "center",
+                                                                    fontSize: "11px",
+                                                                    fontWeight: "600",
+                                                                    cursor: "pointer",
+                                                                    border: "2px solid white",
+                                                                    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                                                                    backgroundColor: assignee?.imageUrl ? "transparent" : "#4285f4",
+                                                                    color: "white",
+                                                                    backgroundImage: assignee?.imageUrl ? `url(${assignee.imageUrl})` : "none",
+                                                                    backgroundSize: "cover",
+                                                                    backgroundPosition: "center"
+                                                                  }}
+                                                                  onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    // Toggle filter for this assignee
+                                                                    if (selectedAssigneeFilter.includes(assignee._id)) {
+                                                                      setSelectedAssigneeFilter(selectedAssigneeFilter.filter(id => id !== assignee._id));
+                                                                    } else {
+                                                                      setSelectedAssigneeFilter([...selectedAssigneeFilter, assignee._id]);
+                                                                    }
+                                                                  }}
+                                                                >
+                                                                  {!assignee?.imageUrl && getInitials(assignee?.fullName)}
+                                                                </div>
+                                                              </Tooltip>
+                                                            );
+                                                          })()}
                                                         </div>
                                                       </div>
                                                     </div>
@@ -2624,7 +2693,7 @@ const TaskBoard = () => {
                           <Select
                             showSearch
                             onSearch={(val) => {
-                              showTeamSearch(val, "Team");
+                              // showTeamSearch(val, "Team");
                               // onTeamChange(val)
                             }}
                             filterOption={(input, option) =>
@@ -2865,7 +2934,7 @@ const TaskBoard = () => {
                       <Select
                         showSearch
                         onSearch={(val) => {
-                          showTeamSearch(val, "Team");
+                          // showTeamSearch(val, "Team");
                           // onTeamChange(val)
                         }}
                         filterOption={(input, option) =>
