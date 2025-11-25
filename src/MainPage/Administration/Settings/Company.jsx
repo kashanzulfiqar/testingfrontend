@@ -1180,34 +1180,7 @@ const Company = () => {
                           key={field.key}
                           style={{ marginTop: index === 0 ? "15px" : "5px" }}
                         >
-<<<<<<< feat/geoFencing
                           <div className="col-sm-10">
-=======
-                          <div className="col-sm-5">
-                            <label className="col-form-label">
-                              Longitude <span className="text-danger">*</span>
-                            </label>
-                            <Form.Item
-                              {...field}
-                              name={[field.name, "longitude"]}
-                              fieldKey={[field.fieldKey, "longitude"]}
-                              rules={[
-                                {
-                                  validator: validateLongitude,
-                                },
-                              ]}
-                            >
-                              <Input
-                                className="form-control inputWordSpacing"
-                                placeholder="Enter company's longitude"
-                                maxLength={15}
-                                onKeyDown={handleDecimalInputKeyDown}
-                                onPaste={handleDecimalInputPaste}
-                              />
-                            </Form.Item>
-                          </div>
-                          <div className="col-sm-5">
->>>>>>> dev
                             <label className="col-form-label">
                               Coordinates{" "}
                               <span className="text-danger">*</span>
@@ -1224,16 +1197,9 @@ const Company = () => {
                             >
                               <Input
                                 className="form-control inputWordSpacing"
-<<<<<<< feat/geoFencing
                                 placeholder="Example: 33.5226784, 73.0944155"
                                 maxLength={60}
                                 onInput={handleCoordinatesInput}
-=======
-                                placeholder="Enter company's latitude"
-                                maxLength={15}
-                                onKeyDown={handleDecimalInputKeyDown}
-                                onPaste={handleDecimalInputPaste}
->>>>>>> dev
                               />
                             </Form.Item>
                           </div>
