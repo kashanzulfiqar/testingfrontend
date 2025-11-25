@@ -53,16 +53,48 @@ const Registrationpage = (props) => {
   const [selectedState, setSelectedState] = useState(null);
   const [loadingLocations, setLoadingLocations] = useState(false);
   const [selectedCountryCode, setSelectedCountryCode] = useState(null);
-  const initialLocation = { longitude: "", latitude: "" };
-  const allowedNavigationKeys = [
-    "Backspace",
-    "Tab",
-    "ArrowLeft",
-    "ArrowRight",
-    "Delete",
-    "Home",
-    "End",
-  ];
+  
+  const formatCoordinates = (latitude, longitude) => {
+    const hasLat =
+      latitude !== undefined && latitude !== null && latitude !== "";
+    const hasLong =
+      longitude !== undefined && longitude !== null && longitude !== "";
+    if (!hasLat && !hasLong) {
+      return "";
+    }
+    const lat = hasLat ? String(latitude).trim() : "";
+    const long = hasLong ? String(longitude).trim() : "";
+    return lat && long ? `${lat}, ${long}` : lat || long;
+  };
+
+  const parseCoordinates = (value) => {
+    if (!value && value !== 0) {
+      return null;
+    }
+    const cleaned = String(value).trim().replace(/[()]/g, "");
+    const [latRaw, longRaw] = cleaned.split(",").map((part) => part?.trim());
+    if (!latRaw || !longRaw) {
+      return null;
+    }
+    const latitude = parseFloat(latRaw);
+    const longitude = parseFloat(longRaw);
+    if (
+      Number.isNaN(latitude) ||
+      Number.isNaN(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      return null;
+    }
+    return {
+      latitude,
+      longitude,
+    };
+  };
+
+  const initialLocation = { coordinates: "" };
 
   useEffect(() => {
     form.setFieldsValue({ locations: [initialLocation] });
@@ -330,96 +362,28 @@ const Registrationpage = (props) => {
     // Add any other custom styles as needed
   };
 
-  const validateLongitude = (_, value) => {
+  const validateCoordinates = (_, value) => {
     const str = String(value ?? "").trim();
     if (!str) {
-      return Promise.reject("please enter longitude");
+      return Promise.reject("please enter coordinates");
     }
-    const num = parseFloat(str);
-    if (Number.isNaN(num)) {
-      return Promise.reject("please enter a valid number");
+    const cleaned = str.replace(/[()]/g, "");
+    const [latRaw, longRaw] = cleaned.split(",").map((part) => part?.trim());
+    if (!latRaw || !longRaw) {
+      return Promise.reject("please enter values as 'latitude, longitude'");
     }
-    if (num < -180 || num > 180) {
+    const latitude = parseFloat(latRaw);
+    const longitude = parseFloat(longRaw);
+    if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+      return Promise.reject("please enter valid numeric coordinates");
+    }
+    if (latitude < -90 || latitude > 90) {
+      return Promise.reject("latitude must be between -90 and 90");
+    }
+    if (longitude < -180 || longitude > 180) {
       return Promise.reject("longitude must be between -180 and 180");
     }
     return Promise.resolve();
-  };
-
-  const validateLatitude = (_, value) => {
-    const str = String(value ?? "").trim();
-    if (!str) {
-      return Promise.reject("please enter latitude");
-    }
-    const num = parseFloat(str);
-    if (Number.isNaN(num)) {
-      return Promise.reject("please enter a valid number");
-    }
-    if (num < -90 || num > 90) {
-      return Promise.reject("latitude must be between -90 and 90");
-    }
-    return Promise.resolve();
-  };
-
-  const handleDecimalInputKeyDown = (event) => {
-    if (event.ctrlKey || event.metaKey) {
-      return;
-    }
-    if (allowedNavigationKeys.includes(event.key)) {
-      return;
-    }
-    const isDigit = /^[0-9]$/.test(event.key);
-    if (isDigit) {
-      return;
-    }
-    if (event.key === ".") {
-      const { value, selectionStart, selectionEnd } = event.currentTarget;
-      const selectedText = value.slice(selectionStart, selectionEnd);
-      const existingHasDecimal =
-        value.includes(".") && !selectedText.includes(".");
-      if (existingHasDecimal) {
-        event.preventDefault();
-      }
-      return;
-    }
-    event.preventDefault();
-  };
-
-  const handleDecimalInputPaste = (event) => {
-    const pastedRaw = event.clipboardData.getData("text") || "";
-    const trimmed = pastedRaw.trim();
-    let sanitized = "";
-    let decimalAdded = false;
-    for (const char of trimmed) {
-      if (char >= "0" && char <= "9") {
-        sanitized += char;
-      } else if (char === "." && !decimalAdded) {
-        sanitized += char;
-        decimalAdded = true;
-      }
-    }
-
-    const input = event.currentTarget;
-    const { value, selectionStart, selectionEnd } = input;
-    const selectedText = value.slice(selectionStart, selectionEnd);
-    const existingHasDecimal =
-      value.includes(".") && !selectedText.includes(".");
-
-    if (existingHasDecimal) {
-      sanitized = sanitized.replace(/\./g, "");
-    } else {
-      const firstDecimalIndex = sanitized.indexOf(".");
-      if (firstDecimalIndex !== -1) {
-        sanitized =
-          sanitized.slice(0, firstDecimalIndex + 1) +
-          sanitized.slice(firstDecimalIndex + 1).replace(/\./g, "");
-      }
-    }
-
-    event.preventDefault();
-    const newValue =
-      value.slice(0, selectionStart) + sanitized + value.slice(selectionEnd);
-    input.value = newValue;
-    input.dispatchEvent(new Event("input", { bubbles: true }));
   };
 
   const onRegFinish = (values) => {
@@ -428,25 +392,14 @@ const Registrationpage = (props) => {
 
     const sanitizedLocations = (values?.locations || [])
       .map((loc) => {
-        const longitudeStr =
-          loc?.longitude !== undefined && loc?.longitude !== null
-            ? String(loc.longitude).trim()
-            : "";
-        const latitudeStr =
-          loc?.latitude !== undefined && loc?.latitude !== null
-            ? String(loc.latitude).trim()
-            : "";
-        return {
-          longitude:
-            longitudeStr === "" ? null : parseFloat(longitudeStr),
-          latitude: latitudeStr === "" ? null : parseFloat(latitudeStr),
-        };
+        const parsed =
+          parseCoordinates(loc?.coordinates) ||
+          parseCoordinates(
+            formatCoordinates(loc?.latitude, loc?.longitude)
+          );
+        return parsed;
       })
-      .filter(
-        (loc) =>
-          loc.longitude !== null &&
-          loc.latitude !== null
-      );
+      .filter(Boolean);
 
     if (!sanitizedLocations.length) {
       setLoader(false);
@@ -981,9 +934,10 @@ const Registrationpage = (props) => {
                             placement="right"
                             title={
                               <label style={{ maxWidth: 260, display: "block" }}>
-                                Enter the company's Latitude, Longitude, and Radius. These values
+                                Enter the company's coordinates (latitude, longitude) and radius. These values
                                 define the allowed location area for marking attendance. Employees
-                                must be within this radius to mark attendance successfully.
+                                must be within this radius to mark attendance successfully. You can copy
+                                coordinates directly from Google Maps.
                               </label>
                             }
                           >
@@ -1006,7 +960,7 @@ const Registrationpage = (props) => {
                         </label>
                         <Button
                           type="dashed"
-                          onClick={() => add({ longitude: "", latitude: "" })}
+                          onClick={() => add({ coordinates: "" })}
                         >
                           + Add Location
                         </Button>
@@ -1017,49 +971,25 @@ const Registrationpage = (props) => {
                           key={field.key}
                           style={{ marginTop: index === 0 ? "15px" : "5px" }}
                         >
-                          <div className="col-sm-5">
+                          <div className="col-sm-10">
                             <label className="col-form-label">
-                              Longitude <span className="text-danger">*</span>
+                              Coordinates{" "}
+                              <span className="text-danger">*</span>
                             </label>
                             <Form.Item
                               {...field}
-                              name={[field.name, "longitude"]}
-                              fieldKey={[field.fieldKey, "longitude"]}
+                              name={[field.name, "coordinates"]}
+                              fieldKey={[field.fieldKey, "coordinates"]}
                               rules={[
                                 {
-                                  validator: validateLongitude,
+                                  validator: validateCoordinates,
                                 },
                               ]}
                             >
                               <Input
                                 className="form-control"
-                                placeholder="Enter company's longitude"
-                                maxLength={15}
-                                onKeyDown={handleDecimalInputKeyDown}
-                                onPaste={handleDecimalInputPaste}
-                              />
-                            </Form.Item>
-                          </div>
-                          <div className="col-sm-5">
-                            <label className="col-form-label">
-                              Latitude <span className="text-danger">*</span>
-                            </label>
-                            <Form.Item
-                              {...field}
-                              name={[field.name, "latitude"]}
-                              fieldKey={[field.fieldKey, "latitude"]}
-                              rules={[
-                                {
-                                  validator: validateLatitude,
-                                },
-                              ]}
-                            >
-                              <Input
-                                className="form-control"
-                                placeholder="Enter company's latitude"
-                                maxLength={15}
-                                onKeyDown={handleDecimalInputKeyDown}
-                                onPaste={handleDecimalInputPaste}
+                                placeholder="Example: 33.5226784, 73.0944155"
+                                maxLength={60}
                               />
                             </Form.Item>
                           </div>
