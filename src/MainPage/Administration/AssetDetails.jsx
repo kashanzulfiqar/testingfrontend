@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { Button, Empty, Spin, Table, message } from "antd";
+import { Button, Empty, Spin, Table, Tooltip, message } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import moment from "moment";
@@ -67,6 +67,15 @@ const AssetDetails = () => {
     return moment(dateString).format("DD MMM YYYY, HH:mm");
   };
 
+  const NOTE_ELLIPSIS_STYLE = {
+    maxWidth: 220,
+    display: "inline-block",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    verticalAlign: "middle",
+  };
+
   const assignmentColumns = [
     {
       title: "#",
@@ -122,7 +131,14 @@ const AssetDetails = () => {
       key: "assignmentNote",
       render: (_, record) => {
         const assignmentNote = record?.assignmentNote;
-        return assignmentNote ? assignmentNote : "-";
+        if (!assignmentNote) {
+          return "-";
+        }
+        return (
+          <Tooltip title={assignmentNote} placement="topLeft">
+            <span style={NOTE_ELLIPSIS_STYLE}>{assignmentNote}</span>
+          </Tooltip>
+        );
       },
     },
   ];
@@ -131,7 +147,6 @@ const AssetDetails = () => {
       title: "#",
       dataIndex: "index",
       key: "index",
-      width: 60,
       render: (text, record, index) => index + 1,
     },
     {
@@ -144,7 +159,9 @@ const AssetDetails = () => {
       title: "Date & Time",
       dataIndex: "date",
       key: "date",
-      render: (val) => formatDateTime(val),
+      render: (val) => (
+        <span style={{ whiteSpace: "nowrap" }}>{formatDateTime(val)}</span>
+      ),
     },
   ];
 
@@ -210,53 +227,53 @@ const AssetDetails = () => {
                   </h5>
                   <ul className="other-info">
                   <li>
-                      <label className="other-title">Category</label>
+                      <h5 className="other-title">Category</h5>
                       <label>{asset?.assetCategoryId?.categoryname || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Sub Category</label>
+                      <h5 className="other-title">Sub Category</h5>
                       <label>{asset?.assetSubCategoryId?.subcategoryname || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Manufacturer</label>
+                      <h5 className="other-title">Manufacturer</h5>
                       <label>{asset?.manufacturer || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Condition</label>
+                      <h5 className="other-title">Condition</h5>
                       <label>{asset?.condition || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Status</label>
+                      <h5 className="other-title">Status</h5>
                       <label>{asset?.status || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Price</label>
+                      <h5 className="other-title">Price</h5>
                       <label>{asset?.price != null ? asset?.price : "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Quantity</label>
+                      <h5 className="other-title">Quantity</h5>
                       <label>{asset?.quantity != null ? asset?.quantity : "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Purchased Date</label>
+                      <h5 className="other-title">Purchased Date</h5>
                       <label>{formatDate(asset?.purchasedDate)}</label>
                     </li>
                     <li>
-                      <label className="other-title">Purchased By</label>
+                      <h5 className="other-title">Purchased By</h5>
                       <label>{asset?.purchasedByEmployeeId?.fullName || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Assignable</label>
+                      <h5 className="other-title">Assignable</h5>
                       <label>{asset?.isAssignable ? "Yes" : "No"}</label>
                     </li>
                     {asset?.assignedEmployeeId && (
                       <li>
-                        <label className="other-title">Assigned To</label>
+                        <h5 className="other-title">Assigned To</h5>
                         <label>{asset?.assignedEmployeeId?.fullName}</label>
                       </li>
                     )}
                     <li>
-                      <label className="other-title">Last Updated</label>
+                      <h5 className="other-title">Last Updated</h5>
                       <label>{formatDate(asset?.updatedAt)}</label>
                     </li>
                   </ul>
