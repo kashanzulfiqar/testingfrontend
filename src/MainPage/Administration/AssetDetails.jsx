@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { Button, Empty, Spin, Table, message } from "antd";
+import { Button, Empty, Spin, Table, Tooltip, message } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
 import { apiServices } from "../../Services/apiServices";
 import { user_icon } from "../../Entryfile/imagepath";
+
+const HISTORY_TABS = {
+  ASSIGNMENT: "assignment",
+  ASSET: "asset",
+};
 
 const AssetDetails = () => {
   const { t, i18n } = useTranslation();
@@ -17,12 +22,17 @@ const AssetDetails = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
 
   const [asset, setAsset] = useState(location?.state?.asset || null);
+
   const [isLoading, setIsLoading] = useState(false);
+  const [activeHistoryTab, setActiveHistoryTab] = useState(HISTORY_TABS.ASSIGNMENT);
 
   const antIcon = (
     <LoadingOutlined style={{ fontSize: 24, color: "#fff" }} spin />
   );
 
+  useEffect(() => {
+    console.log("asset !!!! !", asset);
+  }, [asset]);
   useEffect(() => {
     if (!asset && id) {
       setIsLoading(true);
@@ -52,6 +62,19 @@ const AssetDetails = () => {
     if (!dateString) return "-";
     return moment(dateString).format("DD MMM YYYY");
   };
+  const formatDateTime = (dateString) => {
+    if (!dateString) return "-";
+    return moment(dateString).format("DD MMM YYYY, HH:mm");
+  };
+
+  const NOTE_ELLIPSIS_STYLE = {
+    maxWidth: 220,
+    display: "inline-block",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    verticalAlign: "middle",
+  };
 
   const assignmentColumns = [
     {
@@ -76,16 +99,69 @@ const AssetDetails = () => {
       ),
     },
     {
-      title: "From",
-      dataIndex: "from",
-      key: "from",
-      render: (val) => formatDate(val),
+      title: "Assigned Date",
+      dataIndex: "assignedDate",
+      key: "assignedDate",
+      render: (_, record) => {
+        const assignedDate = record?.assignedDate;
+        return assignedDate ? moment(assignedDate).format("DD-MM-YYYY") : "-";
+      },
     },
     {
-      title: "To",
-      dataIndex: "to",
-      key: "to",
-      render: (val) => (val ? formatDate(val) : "Present"),
+      title: "Expected Return Date",
+      dataIndex: "expectedReturnDate",
+      key: "expectedReturnDate",
+      render: (_, record) => {
+        const expectedReturnDate = record?.expectedReturnDate;
+        return expectedReturnDate ? moment(expectedReturnDate).format("DD-MM-YYYY") : "-";
+      },
+    },
+    {
+      title: "Return Date",
+      dataIndex: "returnDate",
+      key: "returnDate",
+      render: (_, record) => {
+        const returnDate = record?.returnedDate;
+        return returnDate ? moment(returnDate).format("DD-MM-YYYY") : "-";
+      },
+    },
+    {
+      title: "Assignment Note",
+      dataIndex: "assignmentNote",
+      key: "assignmentNote",
+      render: (_, record) => {
+        const assignmentNote = record?.assignmentNote;
+        if (!assignmentNote) {
+          return "-";
+        }
+        return (
+          <Tooltip title={assignmentNote} placement="topLeft">
+            <span style={NOTE_ELLIPSIS_STYLE}>{assignmentNote}</span>
+          </Tooltip>
+        );
+      },
+    },
+  ];
+  const assetHistoryColumns = [
+    {
+      title: "#",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => index + 1,
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (val) => val || "-",
+    },
+    {
+      title: "Date & Time",
+      dataIndex: "date",
+      key: "date",
+      render: (val) => (
+        <span style={{ whiteSpace: "nowrap" }}>{formatDateTime(val)}</span>
+      ),
     },
   ];
 
@@ -150,50 +226,54 @@ const AssetDetails = () => {
                     <label>Asset Information</label>
                   </h5>
                   <ul className="other-info">
-                    <li>
-                      <label className="other-title">Category</label>
-                      <label>{asset?.assetSubCategoryId?.subcategoryname || asset?.subCategory?.assetSubCategoryName || "-"}</label>
+                  <li>
+                      <h5 className="other-title">Category</h5>
+                      <label>{asset?.assetCategoryId?.categoryname || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Manufacturer</label>
+                      <h5 className="other-title">Sub Category</h5>
+                      <label>{asset?.assetSubCategoryId?.subcategoryname || "-"}</label>
+                    </li>
+                    <li>
+                      <h5 className="other-title">Manufacturer</h5>
                       <label>{asset?.manufacturer || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Condition</label>
+                      <h5 className="other-title">Condition</h5>
                       <label>{asset?.condition || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Status</label>
+                      <h5 className="other-title">Status</h5>
                       <label>{asset?.status || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Price</label>
+                      <h5 className="other-title">Price</h5>
                       <label>{asset?.price != null ? asset?.price : "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Quantity</label>
+                      <h5 className="other-title">Quantity</h5>
                       <label>{asset?.quantity != null ? asset?.quantity : "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Purchased Date</label>
+                      <h5 className="other-title">Purchased Date</h5>
                       <label>{formatDate(asset?.purchasedDate)}</label>
                     </li>
                     <li>
-                      <label className="other-title">Purchased By</label>
+                      <h5 className="other-title">Purchased By</h5>
                       <label>{asset?.purchasedByEmployeeId?.fullName || "-"}</label>
                     </li>
                     <li>
-                      <label className="other-title">Assignable</label>
+                      <h5 className="other-title">Assignable</h5>
                       <label>{asset?.isAssignable ? "Yes" : "No"}</label>
                     </li>
                     {asset?.assignedEmployeeId && (
                       <li>
-                        <label className="other-title">Assigned To</label>
+                        <h5 className="other-title">Assigned To</h5>
                         <label>{asset?.assignedEmployeeId?.fullName}</label>
                       </li>
                     )}
                     <li>
-                      <label className="other-title">Last Updated</label>
+                      <h5 className="other-title">Last Updated</h5>
                       <label>{formatDate(asset?.updatedAt)}</label>
                     </li>
                   </ul>
@@ -204,18 +284,64 @@ const AssetDetails = () => {
             <div className="col-xl-9">
               <div className="contact-tab-wrap">
                 <div className="contact-tab-view">
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      marginBottom: "20px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <Button
+                      type={activeHistoryTab === HISTORY_TABS.ASSIGNMENT ? "primary" : "default"}
+                      onClick={() => setActiveHistoryTab(HISTORY_TABS.ASSIGNMENT)}
+                    >
+                      Assignment History
+                    </Button>
+                    <Button
+                      type={activeHistoryTab === HISTORY_TABS.ASSET ? "primary" : "default"}
+                      onClick={() => setActiveHistoryTab(HISTORY_TABS.ASSET)}
+                    >
+                      Asset History
+                    </Button>
+                  </div>
                   <div className="tab-content pt-0">
                     <div className="view-header d-flex align-items-center justify-content-between">
-                      <h3>Assignment History</h3>
+                      <h3>
+                        {activeHistoryTab === HISTORY_TABS.ASSIGNMENT
+                          ? "Assignment History"
+                          : "Asset History"}
+                      </h3>
                     </div>
                     <div className="table-responsive">
                       <Table
-                        className={asset?.assignmentHistory?.length > 0 ? "table-striped" : ""}
-                        locale={{ emptyText: <Empty description="No assignment history" /> }}
+                        className={
+                          (activeHistoryTab === HISTORY_TABS.ASSIGNMENT
+                            ? asset?.assignmentHistory
+                            : asset?.assetsHistory)?.length > 0
+                            ? "table-striped"
+                            : ""
+                        }
+                        locale={{
+                          emptyText:
+                            activeHistoryTab === HISTORY_TABS.ASSIGNMENT ? (
+                              <Empty description="No assignment history" />
+                            ) : (
+                              <Empty description="No asset history" />
+                            ),
+                        }}
                         style={{ overflowX: "auto" }}
                         pagination={false}
-                        columns={assignmentColumns}
-                        dataSource={asset?.assignmentHistory || []}
+                        columns={
+                          activeHistoryTab === HISTORY_TABS.ASSIGNMENT
+                            ? assignmentColumns
+                            : assetHistoryColumns
+                        }
+                        dataSource={
+                          activeHistoryTab === HISTORY_TABS.ASSIGNMENT
+                            ? asset?.assignmentHistory || []
+                            : asset?.assetsHistory || []
+                        }
                         rowKey={(record, index) => record?._id || index}
                         components={
                           i18n.dir() === "rtl"

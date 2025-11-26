@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, Input, Empty, Spin, message } from 'antd';
 import { Modal } from '@mui/material';
 import { useSelector } from 'react-redux';
@@ -6,19 +6,18 @@ import { useTranslation } from 'react-i18next';
 import { LoadingOutlined } from '@ant-design/icons';
 import { apiServices } from '../../../Services/apiServices';
 import EmptyTable from '../../../files/Icons/EmptyTable.svg';
-import { itemRender } from '../../paginationfunction';
 
-const AssetsTag = () => {
+const AssetsCounter = () => {
   const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const [form] = Form.useForm();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [tags, setTags] = useState([]);
-  const [tagsObj, setTagsObj] = useState();
+  const [counters, setCounters] = useState([]);
+  const [countersObj, setCountersObj] = useState();
   const [loader, setLoader] = useState(false);
   const [flag, setFlag] = useState(false);
-  // no pagination needed for single tag scenario
+  // no pagination needed for single counter scenario
 
   const [open, setOpen] = useState({ isAddOpen: false, isDelOpen: false, data: '' });
 
@@ -32,7 +31,7 @@ const AssetsTag = () => {
   useEffect(() => {
     if (open.isAddOpen) {
       form.setFieldsValue({
-        assetTagName: open?.data ? (open?.data?.assetTag || open?.data?.assetTagName || open?.data?.tagName || open?.data?.name || '') : ''
+        assetCount: open?.data ? (open?.data?.assetCount || open?.data?.assetCounter || open?.data?.assetCounterName || open?.data?.counterName || open?.data?.name || '') : ''
       });
     } else {
       form.resetFields();
@@ -43,18 +42,18 @@ const AssetsTag = () => {
   useEffect(() => {
     if (!flag) {
       setIsLoading(true);
-      fetchTags();
+      fetchCounters();
     }
   }, []);
 
-  const fetchTags = () => {
-    apiServices('GET', `assets-tag`, null, user_state)
+  const fetchCounters = () => {
+    apiServices('GET', `assets-counter`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          const container = res?.data?.Tags || res?.data?.tags || res?.data;
-          setTagsObj(container);
+          const container = res?.data?.Counters || res?.data?.counters || res?.data;
+          setCountersObj(container);
           const docs = container?.docs || container?.data || container || [];
-          setTags(docs);
+          setCounters(docs);
           setFlag(true);
         }
       })
@@ -65,7 +64,7 @@ const AssetsTag = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : 'Failed to fetch asset tags'
+              : 'Failed to fetch asset counters'
           }`
         );
       })
@@ -81,12 +80,12 @@ const AssetsTag = () => {
     setLoader(true);
     if (info) {
       const payload = { ...values, companyId: info?.companyId, _id: info?._id };
-      apiServices('PUT', 'assets-tag', payload, user_state)
+      apiServices('PUT', 'assets-counter', payload, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
-            fetchTags();
+            fetchCounters();
             handleClose();
-            message.success('Asset tag updated');
+            message.success('Asset counter updated');
             setLoader(false);
           }
         })
@@ -98,17 +97,17 @@ const AssetsTag = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : 'Failed to update asset tag'
+                : 'Failed to update asset counter'
             }!`
           );
         });
     } else {
-      apiServices('POST', 'assets-tag', values, user_state)
+      apiServices('POST', 'assets-counter', values, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
-            fetchTags();
+            fetchCounters();
             handleClose();
-            message.success('Asset tag added');
+            message.success('Asset counter added');
             setLoader(false);
           }
         })
@@ -120,7 +119,7 @@ const AssetsTag = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : 'Failed to add asset tag'
+                : 'Failed to add asset counter'
             }!`
           );
         });
@@ -129,12 +128,12 @@ const AssetsTag = () => {
 
   const onHandleDelete = (rowData) => {
     setLoader(true);
-    apiServices('DELETE', 'assets-tag', rowData, user_state)
+    apiServices('DELETE', 'assets-counter', rowData, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          fetchTags();
+          fetchCounters();
           handleClose();
-          message.success('Asset tag deleted');
+          message.success('Asset counter deleted');
           setLoader(false);
         }
       })
@@ -146,7 +145,7 @@ const AssetsTag = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : 'Failed to delete asset tag'
+              : 'Failed to delete asset counter'
           }!`
         );
       });
@@ -159,10 +158,10 @@ const AssetsTag = () => {
       description={
         <div>
           <div style={{ color: '#34343F', fontWeight: '500', fontSize: '14px', margin: '7px 0px 4px 0px' }}>
-            No Asset Tags
+            No Asset Counters
           </div>
           <div style={{ color: '#464665', fontWeight: '300', fontSize: '13px' }}>
-            Click to add a new asset tag.
+            Click to add a new asset counter.
           </div>
         </div>
       }
@@ -178,9 +177,9 @@ const AssetsTag = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: 'Tag Name',
-      dataIndex: 'assetTagName',
-      render: (_, row) => row?.assetTag || row?.assetTagName || row?.tagName || row?.name,
+      title: 'Counter Number',
+      dataIndex: 'assetCount',
+      render: (_, row) => row?.assetCount || row?.assetCounter || row?.assetCounterName || row?.counterName || row?.name || '-',
     },
     {
       title: t('holiday.actions'),
@@ -208,11 +207,11 @@ const AssetsTag = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Assets Tag</h3>
+              <h3 className="page-title">Assets Counter</h3>
             </div>
             <div className="col-auto float-end ms-auto">
                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => setOpen({ isAddOpen: true, isDelOpen: false, data: '' })}>
-                  <i className="fa fa-plus" /> Add Asset Tag
+                  <i className="fa fa-plus" /> Add Asset Counter
                 </a>
             </div>
           </div>
@@ -223,13 +222,13 @@ const AssetsTag = () => {
             <div className="table-responsive">
               <Table
                 loading={isLoading}
-                className={tags?.length > 0 ? 'table-striped' : ''}
+                className={counters?.length > 0 ? 'table-striped' : ''}
                 locale={{ emptyText: isLoading ? null : customEmptyText }}
                 pagination={false}
                 style={{ minHeight: '200px' }}
                 columns={columns}
                 bordered
-                dataSource={tags}
+                dataSource={counters}
                 rowKey={(record) => record._id || record.id}
                 components={
                   i18n.dir() === 'rtl'
@@ -243,7 +242,7 @@ const AssetsTag = () => {
                 }
               />
             </div>
-            {/* No pagination for single-tag policy */}
+            {/* No pagination for single-counter policy */}
           </div>
         </div>
       </div>
@@ -252,7 +251,7 @@ const AssetsTag = () => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">{open?.data ? t('holiday.update') : t('holiday.add')} Assets Tag</h5>
+              <h5 className="modal-title">{open?.data ? t('holiday.update') : t('holiday.add')} Assets Counter</h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
@@ -260,7 +259,7 @@ const AssetsTag = () => {
             <div className="modal-body">
               <Form
                 form={form}
-                name="assets-tag-form"
+                name="assets-counter-form"
                 onFinish={(val) => onFinish(val, open?.data)}
                 onFinishFailed={({ errorFields }) => {
                   const consecutiveSpacesError = errorFields.find((field) => field.errors.toString().includes('consecutive spaces'));
@@ -270,22 +269,22 @@ const AssetsTag = () => {
                     message.error(t('allEmp.errors.fillRequiredFields'));
                   }
                 }}
-                initialValues={{ assetTagName: open?.data ? (open?.data?.assetTag || open?.data?.assetTagName || open?.data?.tagName || open?.data?.name) : '' }}
+                initialValues={{ assetCount: open?.data ? (open?.data?.assetCount || open?.data?.assetCounter || open?.data?.assetCounterName || open?.data?.counterName || open?.data?.name) : '' }}
                 autoComplete="off"
               >
                 <div className="form-group">
                   <label>
-                    Tag Name <span className="text-danger">*</span>
+                    Counter Number <span className="text-danger">*</span>
                   </label>
                   <Form.Item
-                    name="assetTagName"
+                    name="assetCount"
                     rules={[
                       {
                         whitespace: true,
                         required: true,
                         validator: (_, value) => {
                           if (!value || value.trim() === '') {
-                            return Promise.reject('Please enter tag name');
+                            return Promise.reject('Please enter counter name');
                           } else if (/\s{2,}/.test(value)) {
                             return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                           }
@@ -295,7 +294,30 @@ const AssetsTag = () => {
                     ]}
                     className="custom-border"
                   >
-                    <Input className="form-control" maxLength={50} />
+                    <Input
+                      className="form-control"
+                      maxLength={5}
+                      inputMode="numeric"
+                      onKeyPress={(e) => {
+                        if (!/[0-9]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const paste = (e.clipboardData || window.clipboardData).getData('text') || '';
+                        const onlyNumbers = paste.replace(/\D/g, '');
+                        const current = form.getFieldValue('assetCount') || '';
+                        const next = (current + onlyNumbers).slice(0, 5);
+                        form.setFieldsValue({ assetCount: next });
+                      }}
+                      onChange={(e) => {
+                        const onlyNumbers = (e.target.value || '').replace(/\D/g, '');
+                        if (onlyNumbers !== e.target.value) {
+                          form.setFieldsValue({ assetCount: onlyNumbers });
+                        }
+                      }}
+                    />
                   </Form.Item>
                 </div>
                 <div className="submit-section">
@@ -316,9 +338,9 @@ const AssetsTag = () => {
           <div className="modal-content" style={{ height: '280px' }}>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <div className="form-header">
-                <h3 style={{ marginBottom: '30px' }}>{t('delete')} Assets Tag</h3>
+                <h3 style={{ marginBottom: '30px' }}>{t('delete')} Assets Counter</h3>
                 <p>
-                  Are you sure you want to delete "{open?.data?.assetTag || open?.data?.assetTagName || open?.data?.tagName || open?.data?.name}"?
+                  Are you sure you want to delete "{open?.data?.assetCount || open?.data?.assetCounter || open?.data?.assetCounterName || open?.data?.counterName || open?.data?.name || 'this counter'}"?
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -344,6 +366,5 @@ const AssetsTag = () => {
   );
 };
 
-export default AssetsTag;
-
+export default AssetsCounter;
 

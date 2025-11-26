@@ -3290,6 +3290,26 @@ const AssetsByEmployee = ({ employeeId }) => {
       key: "manufacturer",
       render: (val) => val || "-",
     },
+    {
+      title: "Assigned Date",
+      dataIndex: "assignedDate",
+      key: "assignedDate",
+      render: (_, record) => {
+        const history = record?.assignmentHistory;
+        const latestEntry =
+          Array.isArray(history) && history.length
+            ? history[history.length - 1]
+            : null;
+        const assignedDate = latestEntry?.assignedDate;
+        return assignedDate ? moment(assignedDate).format("DD-MM-YYYY") : "-";
+      },
+    },
+    {
+      title: "Condition",
+      dataIndex: "condition",
+      key: "condition",
+      render: (val) => val || "-",
+    },
   ];
 
   return (
