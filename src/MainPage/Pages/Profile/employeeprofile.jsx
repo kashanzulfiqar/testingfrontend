@@ -138,10 +138,9 @@ const EmployeeProfile = () => {
           setDataLoading(false);
           setLoader(false);
           message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : t("empProfile.errors.getEmployeeInfoError")
             }!`
@@ -162,10 +161,9 @@ const EmployeeProfile = () => {
           setDataLoading(false);
           setLoader(false);
           message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : t("empProfile.errors.getEmployeeInfoError")
             }!`
@@ -303,10 +301,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.updateProfileDetailsError")
           }!`
@@ -340,10 +337,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.updatebankDetailsError")
           }!`
@@ -374,10 +370,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.updateEmergencyContactError")
           }!`
@@ -408,10 +403,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.updateEducationDetailsError")
           }!`
@@ -442,10 +436,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.updateExperienceDetailsError")
           }!`
@@ -537,10 +530,9 @@ const EmployeeProfile = () => {
             );
             nav("/profile", { state: { updated_user: { imageUrl: "" } } });
             message.error(
-              `${
-                err?.response?.data?.msg
-                  ? err?.response?.data?.msg
-                  : err?.response?.data?.validation?.body?.message
+              `${err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
                   ? err?.response?.data?.validation?.body?.message
                   : t("empProfile.errors.updateProfilePictureError")
               }!`
@@ -550,10 +542,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setImageLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("allEmp.errors.uploadImageError")
           }!`
@@ -605,10 +596,9 @@ const EmployeeProfile = () => {
         nav("/profile", { state: { updated_user: { imageUrl: null } } });
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.removeProfilePictureError")
           }!`
@@ -745,10 +735,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setVerifyEmpLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : "Failed to send verification email"
           }!`
@@ -916,6 +905,11 @@ const EmployeeProfile = () => {
                                 {t("empProfile.dateOfJoin")}:{" "}
                                 {formatDate(allData?.joiningDate || "")}
                               </div>
+                              {allData?.userStatus === 'In-Active' && allData?.employeeExitDate && (
+                                <div className="small doj text-muted" style={{ color: '#ff6b6b', fontWeight: '600' }}>
+                                  {t('allEmp.employeeExitDate')}: {formatDate(allData?.employeeExitDate || '')}
+                                </div>
+                              )}
                               <div
                                 style={{ color: "transparent", height: "98px" }}
                               >
@@ -991,11 +985,11 @@ const EmployeeProfile = () => {
                                       {" "}
                                       {showSalary
                                         ? `${allData?.salary
-                                            ?.toString()
-                                            .replace(
-                                              /\B(?=(\d{3})+(?!\d))/g,
-                                              ","
-                                            )} ${allData?.salaryType}` // Show salary and salaryType with a space
+                                          ?.toString()
+                                          .replace(
+                                            /\B(?=(\d{3})+(?!\d))/g,
+                                            ","
+                                          )} ${allData?.salaryType}` // Show salary and salaryType with a space
                                         : "******"}
                                       <button
                                         onClick={() =>
@@ -1101,9 +1095,8 @@ const EmployeeProfile = () => {
                   <li className="nav-item">
                     <a
                       href="javascript:void(0)"
-                      className={`nav-link ${
-                        activeTab === "profile" ? "active" : ""
-                      }`}
+                      className={`nav-link ${activeTab === "profile" ? "active" : ""
+                        }`}
                       onClick={() => {
                         setActiveTab("profile");
                       }}
@@ -1115,9 +1108,8 @@ const EmployeeProfile = () => {
                   <li className="nav-item">
                     <a
                       href="javascript:void(0)"
-                      className={`nav-link ${
-                        activeTab === "projects" ? "active" : ""
-                      }`}
+                      className={`nav-link ${activeTab === "projects" ? "active" : ""
+                        }`}
                       onClick={() => {
                         setActiveTab("projects");
                       }}
@@ -1129,9 +1121,8 @@ const EmployeeProfile = () => {
                   <li className="nav-item">
                     <a
                       href="javascript:void(0)"
-                      className={`nav-link ${
-                        activeTab === "requests" ? "active" : ""
-                      }`}
+                      className={`nav-link ${activeTab === "requests" ? "active" : ""
+                        }`}
                       onClick={() => {
                         setActiveTab("requests");
                       }}
@@ -1142,9 +1133,8 @@ const EmployeeProfile = () => {
                   <li className="nav-item">
                     <a
                       href="javascript:void(0)"
-                      className={`nav-link ${
-                        activeTab === "incrementhistory" ? "active" : ""
-                      }`}
+                      className={`nav-link ${activeTab === "incrementhistory" ? "active" : ""
+                        }`}
                       onClick={() => {
                         setActiveTab("incrementhistory");
                       }}
@@ -1155,9 +1145,8 @@ const EmployeeProfile = () => {
                   <li className="nav-item">
                     <a
                       href="javascript:void(0)"
-                      className={`nav-link ${
-                        activeTab === "assets" ? "active" : ""
-                      }`}
+                      className={`nav-link ${activeTab === "assets" ? "active" : ""
+                        }`}
                       onClick={() => {
                         setActiveTab("assets");
                       }}
@@ -1196,29 +1185,29 @@ const EmployeeProfile = () => {
                               {t("empProfile.bankInformation")}
                               {(role === "admin" ||
                                 permissions?.updateUser) && (
-                                <a
-                                  href="javascript:void(0)"
-                                  className="edit-icon"
-                                  style={{
-                                    float:
-                                      i18n.dir() === "rtl" ? "left" : "right",
-                                  }}
-                                  onClick={() =>
-                                    setOpen({
-                                      isFamilyInfoOpen: false,
-                                      isEduInfoOpen: false,
-                                      isExpInfoOpen: false,
-                                      isBankInfoOpen: true,
-                                      isEmergInfoOpen: false,
-                                      isprofileInfoOpen: false,
-                                      isDelOpen: false,
-                                      data: "",
-                                    })
-                                  }
-                                >
-                                  <i className="fa fa-pencil" />
-                                </a>
-                              )}
+                                  <a
+                                    href="javascript:void(0)"
+                                    className="edit-icon"
+                                    style={{
+                                      float:
+                                        i18n.dir() === "rtl" ? "left" : "right",
+                                    }}
+                                    onClick={() =>
+                                      setOpen({
+                                        isFamilyInfoOpen: false,
+                                        isEduInfoOpen: false,
+                                        isExpInfoOpen: false,
+                                        isBankInfoOpen: true,
+                                        isEmergInfoOpen: false,
+                                        isprofileInfoOpen: false,
+                                        isDelOpen: false,
+                                        data: "",
+                                      })
+                                    }
+                                  >
+                                    <i className="fa fa-pencil" />
+                                  </a>
+                                )}
                             </h3>
                             {allData?.bankName ? (
                               <ul className="personal-info">
@@ -2054,12 +2043,12 @@ const EmployeeProfile = () => {
                   components={
                     i18n.dir() === "rtl"
                       ? {
-                          header: {
-                            cell: ({ children }) => (
-                              <th style={{ textAlign: "right" }}>{children}</th>
-                            ),
-                          },
-                        }
+                        header: {
+                          cell: ({ children }) => (
+                            <th style={{ textAlign: "right" }}>{children}</th>
+                          ),
+                        },
+                      }
                       : null
                   }
                   onRow={(record, rowIndex) => {
@@ -2139,12 +2128,12 @@ const EmployeeProfile = () => {
                   components={
                     i18n.dir() === "rtl"
                       ? {
-                          header: {
-                            cell: ({ children }) => (
-                              <th style={{ textAlign: "right" }}>{children}</th>
-                            ),
-                          },
-                        }
+                        header: {
+                          cell: ({ children }) => (
+                            <th style={{ textAlign: "right" }}>{children}</th>
+                          ),
+                        },
+                      }
                       : null
                   }
                   onRow={(record, rowIndex) => {
@@ -2326,11 +2315,11 @@ const EmployeeProfile = () => {
                                 <Input
                                   className="form-control"
                                   maxLength={50}
-                                  // onKeyPress={(e) => {
-                                  //   if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
-                                  //     e.preventDefault();
-                                  //   }
-                                  // }}
+                                // onKeyPress={(e) => {
+                                //   if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
+                                //     e.preventDefault();
+                                //   }
+                                // }}
                                 />
                               </Form.Item>
                             </div>
@@ -2446,13 +2435,13 @@ const EmployeeProfile = () => {
                       message.error(t("allEmp.errors.fillRequiredFields"));
                     }
                   }}
-                  // initialValues={{
-                  //   name: open?.data?.name ? open?.data?.name : "",
-                  //   relationship: open?.data?.relationship
-                  //     ? open?.data?.relationship
-                  //     : "",
-                  //   phoneNo: open?.data?.phoneNo ? open?.data?.phoneNo : "",
-                  // }}
+                // initialValues={{
+                //   name: open?.data?.name ? open?.data?.name : "",
+                //   relationship: open?.data?.relationship
+                //     ? open?.data?.relationship
+                //     : "",
+                //   phoneNo: open?.data?.phoneNo ? open?.data?.phoneNo : "",
+                // }}
                 >
                   <>
                     <div className="card">
@@ -2570,11 +2559,11 @@ const EmployeeProfile = () => {
                                   phoneLengthError?.emp
                                     ? "please enter phone number"
                                     : phoneLengthError?.len
-                                    ? "phone length must be at least 5 digits long"
-                                    : ""
+                                      ? "phone length must be at least 5 digits long"
+                                      : ""
                                 }
-                                // validateStatus="error"
-                                // help={open?.data[0]?.phoneNo?.length !== emergValue?.phoneNo?.length ? '' : !emergValue?.phoneNo ? 'please enter phone number' : emergValue?.phoneNo?.length < 6 ? "phone length must be at least 5 digits long" : ''}
+                              // validateStatus="error"
+                              // help={open?.data[0]?.phoneNo?.length !== emergValue?.phoneNo?.length ? '' : !emergValue?.phoneNo ? 'please enter phone number' : emergValue?.phoneNo?.length < 6 ? "phone length must be at least 5 digits long" : ''}
                               >
                                 <Input
                                   style={{ display: "none" }}
@@ -3263,10 +3252,9 @@ const AssetsByEmployee = ({ employeeId }) => {
       })
       .catch((err) => {
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : "Failed to fetch employee assets"
           }`
@@ -3319,12 +3307,12 @@ const AssetsByEmployee = ({ employeeId }) => {
             components={
               i18n.dir() === "rtl"
                 ? {
-                    header: {
-                      cell: ({ children }) => (
-                        <th style={{ textAlign: "right" }}>{children}</th>
-                      ),
-                    },
-                  }
+                  header: {
+                    cell: ({ children }) => (
+                      <th style={{ textAlign: "right" }}>{children}</th>
+                    ),
+                  },
+                }
                 : null
             }
             onRow={

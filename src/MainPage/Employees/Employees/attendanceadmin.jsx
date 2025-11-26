@@ -112,7 +112,7 @@ const AttendanceAdmin = () => {
   }, []);
 
   const fetchEmployees = () => {
-    apiServices("GET", `user/all-employees`, null, user_state)
+    apiServices("GET", `user/all-employees?includeInactive=true`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const emps = res?.data?.User;
@@ -122,10 +122,9 @@ const AttendanceAdmin = () => {
       })
       .catch((err) => {
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t('aAttend.errors.getEmployeesError')
           }`
@@ -189,21 +188,21 @@ const AttendanceAdmin = () => {
   const openModal = (dayRecord, abbreviation) => {
     if (abbreviation !== "-") {
       setIsModalVisible(true);
-      if (dayRecord?.attendanceRecords){
+      if (dayRecord?.attendanceRecords) {
         console.log(dayRecord?.attendanceRecords)
         setMultiple(dayRecord?.attendanceRecords);
         setAStatus(dayRecord?.status);
         const len = dayRecord?.attendanceRecords?.length
         const checkIn = dayRecord?.attendanceRecords[0]?.checkInTime
-        const checkOut = dayRecord?.attendanceRecords[len-1]?.checkOutTime
+        const checkOut = dayRecord?.attendanceRecords[len - 1]?.checkOutTime
         const update = {
           ...dayRecord,
           checkInTime: checkIn,
           checkOutTime: checkOut
         }
-        setDayRecord(update); 
+        setDayRecord(update);
       }
-      else{
+      else {
         setMultiple([{
           checkInTime: dayRecord?.checkInTime,
           checkOutTime: dayRecord?.checkOutTime,
@@ -368,11 +367,11 @@ const AttendanceAdmin = () => {
     },
     ...Array.from({ length: daysInMonth }, (_, index) => {
       // Get the date for the current column based on the selected month and year
-      const currentDate = filters.month 
-      ? 
-      moment().year(filters.year).month(filters.month).date(index + 1)
-      : 
-      moment().date(index + 1);
+      const currentDate = filters.month
+        ?
+        moment().year(filters.year).month(filters.month).date(index + 1)
+        :
+        moment().date(index + 1);
 
       // Determine if the current column represents a Saturday or Sunday
       const isSaturday = currentDate.isoWeekday() === 6;
@@ -576,10 +575,9 @@ const AttendanceAdmin = () => {
         setLoader(false);
         // console.log(err);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t('aAttend.errors.updateAttendanceError')
           }!`
@@ -617,50 +615,50 @@ const AttendanceAdmin = () => {
               <div className="row">
                 <div className="col-sm-12">
                   <h3 className="page-title">{t('attendance')}</h3>
-                  
+
                 </div>
               </div>
             </div>
             {/* STATS */}
-            {isStatLoading ? 
-            <div className="row" style={{minHeight: '83px', display: 'grid', placeItems: 'center', background: '#ebebeb', borderRadius: '5px', marginBottom: '20px', marginInline: '0px'}}>
-              <Spin />
-            </div> :
-            <div className="row">
-              <div className="col-md-3">
-                <div className="stats-info">
-                  <label>{t('aAttend.todayPresent')}</label>
-                  <h4>
-                    {statdata?.todayPresent}
-                  </h4>
+            {isStatLoading ?
+              <div className="row" style={{ minHeight: '83px', display: 'grid', placeItems: 'center', background: '#ebebeb', borderRadius: '5px', marginBottom: '20px', marginInline: '0px' }}>
+                <Spin />
+              </div> :
+              <div className="row">
+                <div className="col-md-3">
+                  <div className="stats-info">
+                    <label>{t('aAttend.todayPresent')}</label>
+                    <h4>
+                      {statdata?.todayPresent}
+                    </h4>
+                  </div>
                 </div>
-              </div>
-              <div className="col-md-3">
-                <div className="stats-info">
-                  <label>{t('aAttend.todayLate')}</label>
-                  <h4>
-                    {statdata?.todayLate}
-                  </h4>
+                <div className="col-md-3">
+                  <div className="stats-info">
+                    <label>{t('aAttend.todayLate')}</label>
+                    <h4>
+                      {statdata?.todayLate}
+                    </h4>
+                  </div>
                 </div>
-              </div>
-              <div className="col-md-3">
-                <div className="stats-info">
-                  <label>{t('aAttend.todayAbsent')}</label>
-                  <h4>
-                    {statdata?.todayAbsent}
-                  </h4>
+                <div className="col-md-3">
+                  <div className="stats-info">
+                    <label>{t('aAttend.todayAbsent')}</label>
+                    <h4>
+                      {statdata?.todayAbsent}
+                    </h4>
+                  </div>
                 </div>
-              </div>
-              <div className="col-md-3">
-                <div className="stats-info">
-                  <label>{t('aAttend.workFromHome')}</label>
+                <div className="col-md-3">
+                  <div className="stats-info">
+                    <label>{t('aAttend.workFromHome')}</label>
 
-                  <h4>
-                    {statdata?.wfhToday}
-                  </h4>
+                    <h4>
+                      {statdata?.wfhToday}
+                    </h4>
+                  </div>
                 </div>
               </div>
-            </div>
             }
             {/* Search Filter */}
 
@@ -745,8 +743,8 @@ const AttendanceAdmin = () => {
                       role === "admin"
                         ? false
                         : permissions?.attendanceManagement
-                        ? false
-                        : true
+                          ? false
+                          : true
                     }
                   >
                     {t('search')}
@@ -760,8 +758,8 @@ const AttendanceAdmin = () => {
                       role === "admin"
                         ? false
                         : permissions?.attendanceManagement
-                        ? false
-                        : true
+                          ? false
+                          : true
                     }
                     style={{
                       backgroundColor: "#616161",
@@ -798,21 +796,21 @@ const AttendanceAdmin = () => {
                         // y: 310,
                       }
                     }
-                    components={i18n.dir()==="rtl" ?
+                    components={i18n.dir() === "rtl" ?
                       {
-                      header: {
-                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
-                      },
-                    } :
-                    null
+                        header: {
+                          cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                        },
+                      } :
+                      null
                     }
-                    onRow={ i18n.dir()==="rtl" ?
+                    onRow={i18n.dir() === "rtl" ?
                       (record, rowIndex) => {
-                      return {
-                        style: { textAlign: 'right' }, // Align table data to the right
-                      };
-                    } :
-                    null
+                        return {
+                          style: { textAlign: 'right' }, // Align table data to the right
+                        };
+                      } :
+                      null
                     }
                   />
                 </div>
@@ -861,10 +859,10 @@ const AttendanceAdmin = () => {
                           <div className="card punch-status">
                             <div className="card-body">
                               <h5 className="card-title d-flex gap-1">
-                              {t('timesheet')}
+                                {t('timesheet')}
                                 <h5
                                   className="text-muted"
-                                  style={{ fontSize: "20px", unicodeBidi:'plaintext' }}
+                                  style={{ fontSize: "20px", unicodeBidi: 'plaintext' }}
                                 >
                                   {moment(dayRecord.attendanceDate).format(
                                     "DD MMM YYYY"
@@ -899,8 +897,8 @@ const AttendanceAdmin = () => {
                                   <label>
                                     {dayRecord.checkOutTime
                                       ? formatHoursMinutes(
-                                          dayRecord.hoursWorked
-                                        )
+                                        dayRecord.hoursWorked
+                                      )
                                       : "--"}
                                   </label>
                                 </div>
@@ -914,11 +912,11 @@ const AttendanceAdmin = () => {
                                   <label>
                                     {dayRecord.checkOutTime
                                       ? `${moment(
-                                          dayRecord.attendanceDate
-                                        ).format("ddd, Do MMM YYYY")}  ${moment(
-                                          dayRecord.checkOutTime,
-                                          "HH:mm"
-                                        ).format("h:mm A")}`
+                                        dayRecord.attendanceDate
+                                      ).format("ddd, Do MMM YYYY")}  ${moment(
+                                        dayRecord.checkOutTime,
+                                        "HH:mm"
+                                      ).format("h:mm A")}`
                                       : "--"}
                                   </label>
                                 </p>
@@ -943,14 +941,14 @@ const AttendanceAdmin = () => {
                                               dayRecord.status === "Late"
                                                 ? "red"
                                                 : dayRecord.status === "Absent"
-                                                ? "red"
-                                                : dayRecord.status === "Present"
-                                                ? "green"
-                                                : dayRecord.status === "On-Leave"
-                                                ? "orange"
-                                                : dayRecord.status === "Holiday"
-                                                ? "blue"
-                                                : "black",
+                                                  ? "red"
+                                                  : dayRecord.status === "Present"
+                                                    ? "green"
+                                                    : dayRecord.status === "On-Leave"
+                                                      ? "orange"
+                                                      : dayRecord.status === "Holiday"
+                                                        ? "blue"
+                                                        : "black",
                                           }}
                                         >
                                           {dayRecord.status}
@@ -966,8 +964,8 @@ const AttendanceAdmin = () => {
                                         <label>
                                           {dayRecord.checkOutTime
                                             ? formatHoursMinutes(
-                                                dayRecord.overTime
-                                              )
+                                              dayRecord.overTime
+                                            )
                                             : "--"}
                                         </label>
                                       </h6>
@@ -985,7 +983,7 @@ const AttendanceAdmin = () => {
                               <h5 className="card-title">{t('aAttend.Modal.todayActivity')}</h5>
                               <div
                                 className="stats-list"
-                                style={{ height: "365px",overflowY: "auto"  }}
+                                style={{ height: "365px", overflowY: "auto" }}
                               >
                                 <p className="mb-0"
                                   style={{
@@ -993,105 +991,105 @@ const AttendanceAdmin = () => {
                                     flexDirection: "row",
                                     justifyContent: "space-between",
                                   }}>
-                                    <label
-                                    style={{paddingLeft:'29px'}}>
-                                      CheckIn:
-                                    </label>
-                                    <label
-                                    style={{paddingRight:'11px',paddingLeft:'20px'}}>
-                                      CheckOut:
-                                    </label>
-                                    <label
-                                    style={{paddingRight:'19px'}}>
-                                      Duration:
-                                    </label>
-                                  </p>
+                                  <label
+                                    style={{ paddingLeft: '29px' }}>
+                                    CheckIn:
+                                  </label>
+                                  <label
+                                    style={{ paddingRight: '11px', paddingLeft: '20px' }}>
+                                    CheckOut:
+                                  </label>
+                                  <label
+                                    style={{ paddingRight: '19px' }}>
+                                    Duration:
+                                  </label>
+                                </p>
                                 {(multiple?.length >= 1 && aStatus !== "Absent" && aStatus !== "On-Leave" && aStatus !== "Holiday") ?
-                                multiple?.slice().reverse().map((attendance, index) => (
-                          <ul
-                          className="res-activity-list"
-                          style={{ 
-                            marginRight: (i18n.dir() === 'rtl') ? "unset" : "10px", 
-                            marginLeft: (i18n.dir() === 'rtl') ? "10px" : "unset",
-                            
-                           }}
-                        >
-                          <li key={index}>
-                            <p
-                              className="res-activity-time"
-                              style={{
-                                display: "flex",
-                                flexDirection: "row",
-                                justifyContent: "space-between",
-                              }}
-                            >
-                              {attendance.checkInTime ? (
-                                <a style={{width:'75px', textAlign:'left'}}>
-                                  <i className="fa fa-clock-o" />{" "}
-                                  <label>
-                                    {attendance.checkInTime
-                                      ? moment(
-                                          attendance.checkInTime,
-                                          "HH:mm"
-                                        ).format("h:mm A")
-                                      : "--"}
-                                  </label>
-                                </a>
-                              ) : (
-                                ""
-                              )}
+                                  multiple?.slice().reverse().map((attendance, index) => (
+                                    <ul
+                                      className="res-activity-list"
+                                      style={{
+                                        marginRight: (i18n.dir() === 'rtl') ? "unset" : "10px",
+                                        marginLeft: (i18n.dir() === 'rtl') ? "10px" : "unset",
 
-                              {attendance.checkInTime ? (
-                                <a style={{width:'70px', textAlign:'left'}}>
-                                  <i className="fa fa-clock-o" />{" "}
-                                  <label>
-                                    {attendance.checkOutTime
-                                      ? moment(
-                                          attendance.checkOutTime,
-                                          "HH:mm"
-                                        ).format("h:mm A")
-                                      : "--"}
-                                  </label>
-                                </a>
-                              ) : (
-                                ""
-                              )}
+                                      }}
+                                    >
+                                      <li key={index}>
+                                        <p
+                                          className="res-activity-time"
+                                          style={{
+                                            display: "flex",
+                                            flexDirection: "row",
+                                            justifyContent: "space-between",
+                                          }}
+                                        >
+                                          {attendance.checkInTime ? (
+                                            <a style={{ width: '75px', textAlign: 'left' }}>
+                                              <i className="fa fa-clock-o" />{" "}
+                                              <label>
+                                                {attendance.checkInTime
+                                                  ? moment(
+                                                    attendance.checkInTime,
+                                                    "HH:mm"
+                                                  ).format("h:mm A")
+                                                  : "--"}
+                                              </label>
+                                            </a>
+                                          ) : (
+                                            ""
+                                          )}
 
-                              <a style={{paddingLeft:'9px',width:'75px', textAlign:'left'}}>
-                                <label>
-                                  {(!attendance?.checkInTime && !attendance?.checkOutTime) ? "" : formatHoursMinutes(attendance?.hoursWorked)}
-                                </label>
-                              </a>
-                            </p>
-                          </li>
-                          
-                      </ul>
-                        ))
-                        : customEmptyText
-                        }
+                                          {attendance.checkInTime ? (
+                                            <a style={{ width: '70px', textAlign: 'left' }}>
+                                              <i className="fa fa-clock-o" />{" "}
+                                              <label>
+                                                {attendance.checkOutTime
+                                                  ? moment(
+                                                    attendance.checkOutTime,
+                                                    "HH:mm"
+                                                  ).format("h:mm A")
+                                                  : "--"}
+                                              </label>
+                                            </a>
+                                          ) : (
+                                            ""
+                                          )}
+
+                                          <a style={{ paddingLeft: '9px', width: '75px', textAlign: 'left' }}>
+                                            <label>
+                                              {(!attendance?.checkInTime && !attendance?.checkOutTime) ? "" : formatHoursMinutes(attendance?.hoursWorked)}
+                                            </label>
+                                          </a>
+                                        </p>
+                                      </li>
+
+                                    </ul>
+                                  ))
+                                  : customEmptyText
+                                }
                               </div>
                             </div>
                           </div>
                         </div>
-                        <div className="submit-section" style={{marginTop:"0"}}>
-                        <Form.Item>
-                          <Button
-                            className="btn btn-primary submit-btn"
-                            onClick={() => {
-                              setOpen({
-                                isAddOpen: true,
-                                isDelOpen: false,
-                                data: dayRecord,
-                              });
-                              setSelectedStatus(dayRecord.status);
-                              //console.log(dayRecord);
-                              //console.log(specific);
-                            }}
-                          >
-                            {t('aAttend.Modal.editAttendance')}
-                          </Button>
-                        </Form.Item>
-                      </div>
+                        <div className="submit-section" style={{ marginTop: "0" }}>
+                          <Form.Item>
+                            <Button
+                              className="btn btn-primary submit-btn"
+                              onClick={() => {
+                                setOpen({
+                                  isAddOpen: true,
+                                  isDelOpen: false,
+                                  data: dayRecord,
+                                });
+                                setSelectedStatus(dayRecord.status);
+                                //console.log(dayRecord);
+                                //console.log(specific);
+                              }}
+                            >
+                              {t('aAttend.Modal.editAttendance')}
+                            </Button>
+                          </Form.Item>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1165,14 +1163,14 @@ const AttendanceAdmin = () => {
                               ({ getFieldValue }) => ({
                                 validator(_, value) {
                                   const status = getFieldValue("status");
-                      
+
                                   if (
                                     (selectedStatus === "Absent" || selectedStatus === "Holiday" || selectedStatus === "On-Leave") &&
                                     value
                                   ) {
                                     return Promise.reject(
                                       //`Check In Time cannot be set while the status is ${selectedStatus}.`
-                                      t('aAttend.errors.checkInNotAllowed', { selectedStatus: selectedStatus})
+                                      t('aAttend.errors.checkInNotAllowed', { selectedStatus: selectedStatus })
                                     );
                                   }
 
@@ -1191,13 +1189,13 @@ const AttendanceAdmin = () => {
                                     );
                                   }
 
-                                  if (selectedStatus === "Present" && value && moment(value, "HH:mm").isAfter(moment(specific?.shiftMaxStart, "HH:mm"))){
+                                  if (selectedStatus === "Present" && value && moment(value, "HH:mm").isAfter(moment(specific?.shiftMaxStart, "HH:mm"))) {
                                     return Promise.reject(
                                       //`Check-in time must be earlier than shift max start time: ${moment(specific?.shiftMaxStart, "HH:mm").format("HH:mm")}`
                                       t('aAttend.errors.checkInTimeAfterMaxStart', { shiftMaxStart: moment(specific?.shiftMaxStart, "HH:mm").format("HH:mm") })
-                                      );
+                                    );
                                   }
-                      
+
                                   // If status allows or if value is empty, no issue
                                   return Promise.resolve();
                                 },
@@ -1276,7 +1274,7 @@ const AttendanceAdmin = () => {
                         </div>
                       </div>
                       <div className="form-group form-focus">
-                          <label>{t('status')}</label>
+                        <label>{t('status')}</label>
                         <Form.Item
                           name="status"
                           className="custom-border"
@@ -1285,17 +1283,17 @@ const AttendanceAdmin = () => {
                               validator(_, value) {
                                 const checkInTime = getFieldValue("checkInTime");
                                 const checkOutTime = getFieldValue("checkOutTime");
-                    
+
                                 // Define the statuses that should not be allowed when check-in or check-out time is present
                                 const disallowedStatuses = ["Absent", "On-Leave", "Holiday"];
-                    
+
                                 // Check if either check-in or check-out time is present and the selected status is in the disallowed list
                                 if ((checkInTime || checkOutTime) && disallowedStatuses.includes(value)) {
                                   return Promise.reject(
                                     t('aAttend.errors.statusWithTimePresent', { value: value })
                                   );
                                 }
-                    
+
                                 // If not in the disallowed statuses or if both check-in and check-out time are empty, no issue
                                 return Promise.resolve();
                               },
@@ -1310,15 +1308,15 @@ const AttendanceAdmin = () => {
                             onChange={(value) => setSelectedStatus(value)}
                           >
                             <Select.Option value="Present">
-                            {t('present')}
+                              {t('present')}
                             </Select.Option>
                             <Select.Option value="Late">{t('late')}</Select.Option>
                             <Select.Option value="Absent">{t('absent')}</Select.Option>
                             <Select.Option value="On-Leave">
-                            {t('on-Leave')}
+                              {t('on-Leave')}
                             </Select.Option>
                             <Select.Option value="Holiday">
-                            {t('holiDay')}
+                              {t('holiDay')}
                             </Select.Option>
                           </Select>
                         </Form.Item>
