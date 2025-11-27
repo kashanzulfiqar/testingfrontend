@@ -111,7 +111,7 @@ const AttendanceAdmin = () => {
       navigate("/restricted", { state: { unAuthorize: true } });
     }
   }, []);
-  // This is JavaScript, typically used inside a functional component's body.
+
   const selectedMonthStart = filters.month && filters.year
     ? moment(`${filters.year}-${filters.month}-01`)
     : null;
