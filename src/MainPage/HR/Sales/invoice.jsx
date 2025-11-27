@@ -212,7 +212,7 @@ const onFinish = (values) => {
         dataIndex: 'invoiceNo',
         fixed: 'left',
         render: (text, record) => (
-          <Link to="/invoices/view-invoice" state={{invoice_data: record}} style={{color: '#333333'}}>{text}</Link>
+          <Link to={{ pathname: "/invoices/view-invoice", search: `?id=${record?._id}` }} state={{invoice_data: record}} style={{color: '#333333'}}>{text}</Link>
           ),
       },     
       {
@@ -303,7 +303,7 @@ const onFinish = (values) => {
                 <a href="javascript:void(0)" style={{minWidth: '60px'}} className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                         <div className="dropdown-menu dropdown-menu-right">
                           <Link className="dropdown-item" to="/invoices/edit-invoice" state={{edit_invoice_data: record}}><i className="fa fa-pencil m-r-5" /> {t('edit')}</Link>
-                          <Link className="dropdown-item" to="/invoices/view-invoice" state={{invoice_data: record}}><i className="fa fa-eye m-r-5" /> {t('view')}</Link>
+                          <Link className="dropdown-item" to={{ pathname: "/invoices/view-invoice", search: `?id=${record?._id}` }} state={{invoice_data: record}}><i className="fa fa-eye m-r-5" /> {t('view')}</Link>
                           <a className="dropdown-item" href="javascript:void(0)" onClick={() => { invoicePDF(record); }}><i className="fa fa-file-pdf-o m-r-5" /> {t('finance.Invoices.download')}</a>
                           <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: record }) }}><i className="fa fa-trash-o m-r-5" /> {t('delete')}</a>
                         </div>

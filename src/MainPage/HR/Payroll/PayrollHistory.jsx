@@ -289,7 +289,6 @@ const PayrollHistory = () => {
                               payrollCreationDate: moment(record?.createdAt, 'YYYY-MM-DD'),
                             }
                             Detailform.setFieldsValue(d);
-                            console.log(record);
                           }}><i className="fa fa-eye m-r-5" /> {t('view')}</a>
                         {/* <a className="dropdown-item" href="javascript:void(0)" onClick={()=> downloadPDF(record)}><i className="fa fa-download m-r-5" /> Export to PDF</a> */}
                         <a className="dropdown-item" href="javascript:void(0)" onClick={()=> GenerateSalaryPDF(record, false, 'history', false)}><i className="fa fa-download m-r-5" /> {t('payroll.currentPayroll.exportPayslip')}</a>
@@ -608,58 +607,49 @@ const PayrollHistory = () => {
              <div className="row">
                <div className="col-md-12">
                  <div className="table-responsive payrollHistoryTable">
-                 <Table
-                    loading={tableLoader}
-                    className={data?.length > 0 ? "table-striped" : ""}
-                    locale={{
-                      emptyText: tableLoader ? null : customEmptyText,
-                    }}
-                    // style = {{overflowX : 'auto'}}
-                    style = {{overflowX : 'auto', height: '485px'}}
-                    columns={columns}
-                    dataSource={data}
-                    pagination={false}
-                    components={i18n.dir()==="rtl" ?
-                      {
-                      header: {
-                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
-                      },
-                    } :
-                    null
-                    }
-                    onRow={ i18n.dir()==="rtl" ?
-                      (record, rowIndex) => {
-                      return {
-                        style: { textAlign: 'right' }, // Align table data to the right
-                      };
-                    } :
-                    null
-                    }
-                  />
-                  {
-                    data?.length > 0 &&
-                    <div>
-                      <Pagination
-                        style={{display: 'flex', float: 'right'}}
-                        total={paginationDetail?.totalCount}
-                        pageSize={pageSize}
-                        defaultCurrent={1}
-                        current={currentPage}
-                        showTotal={(total, range) =>
-                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
-                        onChange={(page, size) => {
-                          console.log(page, size);
-                          setPageSize(size); setCurrentPage(page);
-                          getEmployeeSalary(filterValues, page, size)
-                        }}
-                        showSizeChanger={true}
-                        pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={(current, type, originalElement) =>
-                          itemRender(current, type, originalElement, t)
-                        }
-                      />
-                    </div>
-                  }
+                <Table
+                   loading={tableLoader}
+                   className={data?.length > 0 ? "table-striped" : ""}
+                   locale={{
+                     emptyText: tableLoader ? null : customEmptyText,
+                   }}
+                   style = {{overflowX : 'auto'}}
+                   columns={columns}
+                   dataSource={data}
+                   pagination={{
+                     total: paginationDetail?.totalCount,
+                     pageSize: pageSize,
+                     current: currentPage,
+                     showTotal: (total, range) =>
+                       t('paginationShow', { range1: range[0], range2: range[1], total: total }),
+                     onChange: (page, size) => {
+                       console.log(page, size);
+                       setPageSize(size); setCurrentPage(page);
+                       getEmployeeSalary(filterValues, page, size)
+                     },
+                     showSizeChanger: true,
+                     pageSizeOptions: ['20', '30', '40', '50'],
+                     position: ['bottomCenter'],
+                     itemRender: (current, type, originalElement) =>
+                       itemRender(current, type, originalElement, t),
+                   }}
+                   components={i18n.dir()==="rtl" ?
+                     {
+                     header: {
+                       cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                     },
+                   } :
+                   null
+                   }
+                   onRow={ i18n.dir()==="rtl" ?
+                     (record, rowIndex) => {
+                     return {
+                       style: { textAlign: 'right' },
+                     };
+                   } :
+                   null
+                   }
+                 />
                  </div>
                </div>
              </div>

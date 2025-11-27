@@ -1,8 +1,10 @@
 import React, { Suspense } from 'react';
+import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import App from '../initialpage/App';
 import config from 'config';
 import 'bootstrap'
+import StripeWrapper from '../Components/StripeWrapper.jsx';
 
 import 'bootstrap/dist/js/bootstrap.bundle';
 // import 'font-awesome/css/font-awesome.min.css';
@@ -55,6 +57,8 @@ import { getDefaultMiddleware } from '@reduxjs/toolkit';
 import permissionsSlice from '../Redux/Reducer/permissions/permissionSlice';
 import pendingCounterSlice from '../Redux/Reducer/permissions/pendingCounterSlice';
 import superAdminSlice from '../Redux/Reducer/permissions/superAdminSlice.js';
+import resumePresetSlice  from '../Redux/Reducer/permissions/resumePresetSlice.js';
+import aiConfigSlice from '../Redux/Reducer/permissions/aiConfigSlice.js';
 
 
 // const store =configureStore({
@@ -72,7 +76,9 @@ const persistConfig = {
   user: userReducer,
   permissionsSlice: permissionsSlice,
   counter: pendingCounterSlice,
-  superAdmin: superAdminSlice
+  superAdmin: superAdminSlice,
+  resumePreset: resumePresetSlice,
+  aiConfig: aiConfigSlice
 });
  
  const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -90,29 +96,26 @@ const persistConfig = {
  const persistor = persistStore(store);
 
 const MainApp = () => (
-  // <Router basename={`${config.publicPath}`}>
-  //    <Routes>
-  //       <Provider store={store}>
-  //          <Route path="/" component={App} />
-  //       </Provider>
-
-  //    </Routes>
-  // </Router>
-
-    <Router basename={`${config.publicPath}`}>
-      {/* <Router basename={config.publicPath}> */}
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <I18nextProvider i18n={i18n}>
-            <Suspense fallback="...loading">
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <I18nextProvider i18n={i18n}>
+        <StripeWrapper>
+          <Router basename={`${config.publicPath}`}>
+            <Suspense fallback={<div>Loading...</div>}>
               <Routes>
                 <Route path="/*" element={<App />} />
               </Routes>
             </Suspense>
-          </I18nextProvider>
-        </PersistGate>
-      </Provider>
-    </Router>
+          </Router>
+        </StripeWrapper>
+      </I18nextProvider>
+    </PersistGate>
+  </Provider>
 );
+
+const root = document.getElementById('app');
+if (root) {
+  ReactDOM.createRoot(root).render(<MainApp />);
+}
 
 export default MainApp;

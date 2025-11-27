@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { apiServices } from '../../../Services/apiServices';
 import {Applogo} from "../../../Entryfile/imagepath"
 import { useSelector } from 'react-redux';
 import invoicePDF from './invoicePDF';
@@ -11,6 +12,8 @@ const Invoiceview = () => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const invoice_data = location?.state?.invoice_data;
+  const searchParams = new URLSearchParams(location.search);
+  const invoiceIdFromQuery = searchParams.get('id');
   const nav = useNavigate();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
 
@@ -20,13 +23,25 @@ const Invoiceview = () => {
   const [invoiceInfo, setInvoiceInfo] = useState()
 
   useEffect(() => {
-    if((role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.managePayrolls) && invoice_data) {
-      console.log(role)
-      setInvoiceInfo(invoice_data)
-      console.log(invoice_data);
-    }else{
-      console.log("in else")
-      //nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
+    if (role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.managePayrolls) {
+      if (invoice_data) {
+        setInvoiceInfo(invoice_data);
+      } else if (invoiceIdFromQuery) {
+        // Fallback: fetch invoice by id when opened in a new tab without state
+        apiServices('GET', `invoices/${invoiceIdFromQuery}`, null, user_state)
+          .then((res) => {
+            if (res?.data?.success === true) {
+              console.log(res);
+              setInvoiceInfo(res?.data?.invoice);
+            }
+          })
+          .catch((err) => {
+            // silently fail; page can render placeholders
+            console.error('Failed to fetch invoice by id', err);
+          });
+      }
+    } else {
+      // unauthorized roles handled by outer routing usually
     }
   }, [])
   
@@ -193,7 +208,7 @@ const calculateDiscountAmount = () => {
                               <li>A/C No: <label>{invoiceInfo?.bankDetail?.accountNo}</label></li>
                               <li>IBAN No: <label>{invoiceInfo?.bankDetail?.iban}</label></li>
                               <li>SWIFT: <label>{invoiceInfo?.bankDetail?.swiftCode}</label></li>
-                              <li>STRN/TRN: <label>{invoiceInfo?.company?.taxRegNo ? invoiceInfo?.company?.taxRegNo : 'N/A'}</label></li>
+                              <li>STRN/TRN/NTN: <label>{invoiceInfo?.company?.taxRegNo ? invoiceInfo?.company?.taxRegNo : 'N/A'}</label></li>
                               <li>Bank Address: <label>{invoiceInfo?.bankDetail?.address}</label></li>
                             </ul>
                           </div>

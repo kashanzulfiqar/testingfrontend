@@ -44,7 +44,6 @@ const WorkingDays = () => {
             Sunday: workingDays.includes('Sunday')
           }];
           setData(dataSource);
-          console.log('This is',dataSource)
         }
         setTableLoader(false);
       })

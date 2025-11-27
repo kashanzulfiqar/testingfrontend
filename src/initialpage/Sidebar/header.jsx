@@ -86,10 +86,14 @@ const Header = (props) => {
 
   const handlesidebar = () => {
     document.body.classList.toggle('mini-sidebar');
-    props.onBarToggle()
+    if (typeof props.onBarToggle === 'function') {
+      props.onBarToggle();
+    }
   }
   const onMenuClik = () => {
-    props.onMenuClick()
+    if (typeof props.onMenuClick === 'function') {
+      props.onMenuClick();
+    }
   }
   useEffect(() => {
     // Update direction when language changes
@@ -150,17 +154,17 @@ const Header = (props) => {
       {/* Header Menu */}
       <ul className="nav user-menu" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }}>
         {/* Search */}
-        <li className="nav-item">
-          <div className="top-nav-search">
+        {/* <li className="nav-item">
+          <div className="top-nav-search"> */}
             {/* <a href="" className="responsive-search">
               <i className="fa fa-search" />
             </a> */}
-            <form>
+            {/* <form>
               <input className="form-control" type="text" placeholder={t('header.searchHere')} />
               <button className="btn" type="submit"><i className="fa fa-search" /></button>
             </form>
           </div>
-        </li>
+        </li> */}
 
         {/* <li className="nav-item dropdown has-arrow main-drop"
         style={{display:"flex", flexDirection:"row", alignItems:"center"}}>

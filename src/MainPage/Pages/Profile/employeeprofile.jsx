@@ -80,6 +80,7 @@ const EmployeeProfile = () => {
   const [loader, setLoader] = useState(false);
   const [imageLoader, setImageLoader] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
+  const [verifyEmpLoader, setVerifyEmpLoader] = useState(false);
   const [image, setImage] = useState("");
   const [emergValue, setEmergValue] = useState(null);
   const [allData, setAllData] = useState();
@@ -118,7 +119,6 @@ const EmployeeProfile = () => {
   const getEmployeeOverview = () => {
     if (location.pathname.startsWith("/profile/employee-profile")) {
       const userId = location.pathname.split("/")[3]; // extract the userId from the pathname
-      console.log("no data", allDataLocal, user_data, userId);
       setDataLoading(true);
       apiServices(
         "GET",
@@ -138,17 +138,15 @@ const EmployeeProfile = () => {
           setDataLoading(false);
           setLoader(false);
           message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : t("empProfile.errors.getEmployeeInfoError")
             }!`
           );
         });
     } else if (location.pathname === "/profile") {
-      console.log("all data available", allDataLocal, user_data);
       setDataLoading(true);
       apiServices("GET", `user/employee-overview`, null, user_state)
         .then((res) => {
@@ -163,10 +161,9 @@ const EmployeeProfile = () => {
           setDataLoading(false);
           setLoader(false);
           message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : t("empProfile.errors.getEmployeeInfoError")
             }!`
@@ -272,9 +269,7 @@ const EmployeeProfile = () => {
         delete d[key];
       }
     });
-    console.log("allData", allData, user_state);
     if (allData?._id === user_state?.user?._id) {
-      console.log("inside ===");
       localStorage.setItem(
         "updated_user",
         JSON.stringify({ imageUrl: d?.imageUrl, fullName: d?.fullName })
@@ -285,7 +280,6 @@ const EmployeeProfile = () => {
           user_data: user_data,
         },
       });
-      console.log("inside ===", user_data);
     }
     const newData = { ...allData };
     delete newData.password;
@@ -307,10 +301,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.updateProfileDetailsError")
           }!`
@@ -344,10 +337,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.updatebankDetailsError")
           }!`
@@ -378,10 +370,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.updateEmergencyContactError")
           }!`
@@ -412,10 +403,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.updateEducationDetailsError")
           }!`
@@ -446,10 +436,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.updateExperienceDetailsError")
           }!`
@@ -541,10 +530,9 @@ const EmployeeProfile = () => {
             );
             nav("/profile", { state: { updated_user: { imageUrl: "" } } });
             message.error(
-              `${
-                err?.response?.data?.msg
-                  ? err?.response?.data?.msg
-                  : err?.response?.data?.validation?.body?.message
+              `${err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
                   ? err?.response?.data?.validation?.body?.message
                   : t("empProfile.errors.updateProfilePictureError")
               }!`
@@ -554,10 +542,9 @@ const EmployeeProfile = () => {
       .catch((err) => {
         setImageLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("allEmp.errors.uploadImageError")
           }!`
@@ -609,10 +596,9 @@ const EmployeeProfile = () => {
         nav("/profile", { state: { updated_user: { imageUrl: null } } });
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("empProfile.errors.removeProfilePictureError")
           }!`
@@ -731,6 +717,33 @@ const EmployeeProfile = () => {
       key: "remaining",
     },
   ];
+
+  const verifyEmployee = () => {
+    setVerifyEmpLoader(true);
+    apiServices(
+      "PUT",
+      "user/resend-verification-mail",
+      { email: allData?.email },
+      user_state
+    )
+      .then((res) => {
+        if (res?.data?.success === true) {
+          message.success("Verification email sent successfully!");
+          setVerifyEmpLoader(false);
+        }
+      })
+      .catch((err) => {
+        setVerifyEmpLoader(false);
+        message.error(
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Failed to send verification email"
+          }!`
+        );
+      });
+  };
 
   return (
     <>
@@ -892,6 +905,11 @@ const EmployeeProfile = () => {
                                 {t("empProfile.dateOfJoin")}:{" "}
                                 {formatDate(allData?.joiningDate || "")}
                               </div>
+                              {allData?.userStatus === 'In-Active' && allData?.employeeExitDate && (
+                                <div className="small doj text-muted" style={{ color: '#ff6b6b', fontWeight: '600' }}>
+                                  {t('allEmp.employeeExitDate')}: {formatDate(allData?.employeeExitDate || '')}
+                                </div>
+                              )}
                               <div
                                 style={{ color: "transparent", height: "98px" }}
                               >
@@ -967,11 +985,11 @@ const EmployeeProfile = () => {
                                       {" "}
                                       {showSalary
                                         ? `${allData?.salary
-                                            ?.toString()
-                                            .replace(
-                                              /\B(?=(\d{3})+(?!\d))/g,
-                                              ","
-                                            )} ${allData?.salaryType}` // Show salary and salaryType with a space
+                                          ?.toString()
+                                          .replace(
+                                            /\B(?=(\d{3})+(?!\d))/g,
+                                            ","
+                                          )} ${allData?.salaryType}` // Show salary and salaryType with a space
                                         : "******"}
                                       <button
                                         onClick={() =>
@@ -1021,6 +1039,22 @@ const EmployeeProfile = () => {
                                   </Link> */}
                                 </div>
                               </li>
+                              {location?.pathname !== "/profile" &&
+                                (role === "admin" || permissions?.updateUser) &&
+                                allData?.verified === false && (
+                                  <a
+                                    href="javascript:void(0)"
+                                    className="btn add-btn"
+                                    // style={{ marginLeft: "5px" }}
+                                    onClick={() => verifyEmployee()}
+                                  >
+                                    {verifyEmpLoader ? (
+                                      <Spin size="small" indicator={antIcon} />
+                                    ) : (
+                                      t("Re-send Verification Code")
+                                    )}
+                                  </a>
+                                )}
                             </ul>
                           </div>
                         </div>
@@ -1061,9 +1095,8 @@ const EmployeeProfile = () => {
                   <li className="nav-item">
                     <a
                       href="javascript:void(0)"
-                      className={`nav-link ${
-                        activeTab === "profile" ? "active" : ""
-                      }`}
+                      className={`nav-link ${activeTab === "profile" ? "active" : ""
+                        }`}
                       onClick={() => {
                         setActiveTab("profile");
                       }}
@@ -1075,9 +1108,8 @@ const EmployeeProfile = () => {
                   <li className="nav-item">
                     <a
                       href="javascript:void(0)"
-                      className={`nav-link ${
-                        activeTab === "projects" ? "active" : ""
-                      }`}
+                      className={`nav-link ${activeTab === "projects" ? "active" : ""
+                        }`}
                       onClick={() => {
                         setActiveTab("projects");
                       }}
@@ -1089,9 +1121,8 @@ const EmployeeProfile = () => {
                   <li className="nav-item">
                     <a
                       href="javascript:void(0)"
-                      className={`nav-link ${
-                        activeTab === "requests" ? "active" : ""
-                      }`}
+                      className={`nav-link ${activeTab === "requests" ? "active" : ""
+                        }`}
                       onClick={() => {
                         setActiveTab("requests");
                       }}
@@ -1102,9 +1133,8 @@ const EmployeeProfile = () => {
                   <li className="nav-item">
                     <a
                       href="javascript:void(0)"
-                      className={`nav-link ${
-                        activeTab === "incrementhistory" ? "active" : ""
-                      }`}
+                      className={`nav-link ${activeTab === "incrementhistory" ? "active" : ""
+                        }`}
                       onClick={() => {
                         setActiveTab("incrementhistory");
                       }}
@@ -1115,9 +1145,8 @@ const EmployeeProfile = () => {
                   <li className="nav-item">
                     <a
                       href="javascript:void(0)"
-                      className={`nav-link ${
-                        activeTab === "assets" ? "active" : ""
-                      }`}
+                      className={`nav-link ${activeTab === "assets" ? "active" : ""
+                        }`}
                       onClick={() => {
                         setActiveTab("assets");
                       }}
@@ -1156,29 +1185,29 @@ const EmployeeProfile = () => {
                               {t("empProfile.bankInformation")}
                               {(role === "admin" ||
                                 permissions?.updateUser) && (
-                                <a
-                                  href="javascript:void(0)"
-                                  className="edit-icon"
-                                  style={{
-                                    float:
-                                      i18n.dir() === "rtl" ? "left" : "right",
-                                  }}
-                                  onClick={() =>
-                                    setOpen({
-                                      isFamilyInfoOpen: false,
-                                      isEduInfoOpen: false,
-                                      isExpInfoOpen: false,
-                                      isBankInfoOpen: true,
-                                      isEmergInfoOpen: false,
-                                      isprofileInfoOpen: false,
-                                      isDelOpen: false,
-                                      data: "",
-                                    })
-                                  }
-                                >
-                                  <i className="fa fa-pencil" />
-                                </a>
-                              )}
+                                  <a
+                                    href="javascript:void(0)"
+                                    className="edit-icon"
+                                    style={{
+                                      float:
+                                        i18n.dir() === "rtl" ? "left" : "right",
+                                    }}
+                                    onClick={() =>
+                                      setOpen({
+                                        isFamilyInfoOpen: false,
+                                        isEduInfoOpen: false,
+                                        isExpInfoOpen: false,
+                                        isBankInfoOpen: true,
+                                        isEmergInfoOpen: false,
+                                        isprofileInfoOpen: false,
+                                        isDelOpen: false,
+                                        data: "",
+                                      })
+                                    }
+                                  >
+                                    <i className="fa fa-pencil" />
+                                  </a>
+                                )}
                             </h3>
                             {allData?.bankName ? (
                               <ul className="personal-info">
@@ -1981,44 +2010,7 @@ const EmployeeProfile = () => {
             )}
             {activeTab === "assets" && allData?._id && (
               <div className="tab-pane fade show active" id="emp_assets">
-                {/* <div className="table-responsive table-newdatatable">
-                        <table className="table table-new custom-table mb-0 datatable">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Name</th>
-                              <th>Asset ID</th>
-                              <th>Assigned Date</th>
-                              <th>Assignee</th>
-                              <th>Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td colSpan="6">
-                                
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div> */}
-                <div
-                  className="error-box"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <h1 style={{ fontSize: "29px", color: "#ff9b44" }}>
-                    <i className="fa fa-warning" style={{ color: "#ff9b44" }} />{" "}
-                    Under Construction
-                  </h1>
-                  <h3 className="mb-5 mt-3" style={{ color: "#1F1F1F" }}>
-                    {" "}
-                    {t("visitLater")}
-                  </h3>
-                </div>
+                <AssetsByEmployee employeeId={allData?._id} />
               </div>
             )}
 
@@ -2051,12 +2043,12 @@ const EmployeeProfile = () => {
                   components={
                     i18n.dir() === "rtl"
                       ? {
-                          header: {
-                            cell: ({ children }) => (
-                              <th style={{ textAlign: "right" }}>{children}</th>
-                            ),
-                          },
-                        }
+                        header: {
+                          cell: ({ children }) => (
+                            <th style={{ textAlign: "right" }}>{children}</th>
+                          ),
+                        },
+                      }
                       : null
                   }
                   onRow={(record, rowIndex) => {
@@ -2136,12 +2128,12 @@ const EmployeeProfile = () => {
                   components={
                     i18n.dir() === "rtl"
                       ? {
-                          header: {
-                            cell: ({ children }) => (
-                              <th style={{ textAlign: "right" }}>{children}</th>
-                            ),
-                          },
-                        }
+                        header: {
+                          cell: ({ children }) => (
+                            <th style={{ textAlign: "right" }}>{children}</th>
+                          ),
+                        },
+                      }
                       : null
                   }
                   onRow={(record, rowIndex) => {
@@ -2323,11 +2315,11 @@ const EmployeeProfile = () => {
                                 <Input
                                   className="form-control"
                                   maxLength={50}
-                                  // onKeyPress={(e) => {
-                                  //   if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
-                                  //     e.preventDefault();
-                                  //   }
-                                  // }}
+                                // onKeyPress={(e) => {
+                                //   if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
+                                //     e.preventDefault();
+                                //   }
+                                // }}
                                 />
                               </Form.Item>
                             </div>
@@ -2443,13 +2435,13 @@ const EmployeeProfile = () => {
                       message.error(t("allEmp.errors.fillRequiredFields"));
                     }
                   }}
-                  // initialValues={{
-                  //   name: open?.data?.name ? open?.data?.name : "",
-                  //   relationship: open?.data?.relationship
-                  //     ? open?.data?.relationship
-                  //     : "",
-                  //   phoneNo: open?.data?.phoneNo ? open?.data?.phoneNo : "",
-                  // }}
+                // initialValues={{
+                //   name: open?.data?.name ? open?.data?.name : "",
+                //   relationship: open?.data?.relationship
+                //     ? open?.data?.relationship
+                //     : "",
+                //   phoneNo: open?.data?.phoneNo ? open?.data?.phoneNo : "",
+                // }}
                 >
                   <>
                     <div className="card">
@@ -2567,11 +2559,11 @@ const EmployeeProfile = () => {
                                   phoneLengthError?.emp
                                     ? "please enter phone number"
                                     : phoneLengthError?.len
-                                    ? "phone length must be at least 5 digits long"
-                                    : ""
+                                      ? "phone length must be at least 5 digits long"
+                                      : ""
                                 }
-                                // validateStatus="error"
-                                // help={open?.data[0]?.phoneNo?.length !== emergValue?.phoneNo?.length ? '' : !emergValue?.phoneNo ? 'please enter phone number' : emergValue?.phoneNo?.length < 6 ? "phone length must be at least 5 digits long" : ''}
+                              // validateStatus="error"
+                              // help={open?.data[0]?.phoneNo?.length !== emergValue?.phoneNo?.length ? '' : !emergValue?.phoneNo ? 'please enter phone number' : emergValue?.phoneNo?.length < 6 ? "phone length must be at least 5 digits long" : ''}
                               >
                                 <Input
                                   style={{ display: "none" }}
@@ -3233,3 +3225,124 @@ const EmployeeProfile = () => {
   );
 };
 export default EmployeeProfile;
+
+// List assets assigned to an employee
+const AssetsByEmployee = ({ employeeId }) => {
+  const { t, i18n } = useTranslation();
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const [isLoading, setIsLoading] = useState(false);
+  const [assets, setAssets] = useState([]);
+
+  useEffect(() => {
+    if (!employeeId) return;
+    setIsLoading(true);
+    // Fetch assets assigned to this employee. Backend should support this filter.
+    apiServices(
+      "GET",
+      `assets?assignedEmployeeId=${employeeId}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res?.data?.success === true) {
+          const container = res?.data?.Assets || res?.data?.assets || res?.data;
+          const docs = container?.docs || container?.data || container || [];
+          setAssets(docs);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Failed to fetch employee assets"
+          }`
+        );
+      })
+      .finally(() => setIsLoading(false));
+  }, [employeeId]);
+
+  const columns = [
+    {
+      title: "Serial No",
+      dataIndex: "serialNumber",
+      key: "serialNumber",
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      render: (text, record) => (
+        <>
+          <img className="avatar" alt="" src={record?.imageUrl || user_icon} />
+          <span>{record?.name}</span>
+        </>
+      ),
+    },
+    {
+      title: "Model",
+      dataIndex: "model",
+      key: "model",
+    },
+    {
+      title: "Manufacturer",
+      dataIndex: "manufacturer",
+      key: "manufacturer",
+      render: (val) => val || "-",
+    },
+    {
+      title: "Assigned Date",
+      dataIndex: "assignedDate",
+      key: "assignedDate",
+      render: (_, record) => {
+        const history = record?.assignmentHistory;
+        const latestEntry =
+          Array.isArray(history) && history.length
+            ? history[history.length - 1]
+            : null;
+        const assignedDate = latestEntry?.assignedDate;
+        return assignedDate ? moment(assignedDate).format("DD-MM-YYYY") : "-";
+      },
+    },
+    {
+      title: "Condition",
+      dataIndex: "condition",
+      key: "condition",
+      render: (val) => val || "-",
+    },
+  ];
+
+  return (
+    <div className="row">
+      <div className="col-md-12">
+        <div className="table-responsive">
+          <Table
+            loading={isLoading}
+            className={assets?.length > 0 ? "table-striped" : ""}
+            style={{ overflowX: "auto" }}
+            pagination={false}
+            columns={columns}
+            dataSource={assets}
+            rowKey={(record) => record?._id || record?.id}
+            components={
+              i18n.dir() === "rtl"
+                ? {
+                  header: {
+                    cell: ({ children }) => (
+                      <th style={{ textAlign: "right" }}>{children}</th>
+                    ),
+                  },
+                }
+                : null
+            }
+            onRow={
+              i18n.dir() === "rtl"
+                ? (record, rowIndex) => ({ style: { textAlign: "right" } })
+                : null
+            }
+          />
+        </div>
+      </div>
+    </div>
+  );
+};

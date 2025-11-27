@@ -381,7 +381,28 @@ const AttendanceEmployee = () => {
     return `${hours}h ${minutes}m`;
   };
 
-  const handleCheckIn = () => {
+ const getDeviceLocation = () => {
+   return new Promise((resolve, reject) => {
+     if (!navigator || !navigator.geolocation) {
+       return reject(new Error('Geolocation not supported'));
+     }
+     navigator.geolocation.getCurrentPosition(
+       (pos) => {
+         resolve({
+           deviceLatitude: pos.coords.latitude,
+           deviceLongitude: pos.coords.longitude,
+           deviceAccuracy: pos.coords.accuracy,
+         });
+       },
+       (err) => {
+         reject(err);
+       },
+       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+     );
+   });
+ };
+
+ const handleCheckIn = async () => {
     setBdisbale(false);
     //let current = new Date(Date.now());
     const moment = require("moment");
@@ -390,9 +411,19 @@ const AttendanceEmployee = () => {
     //let attendanceDate = "2023-08-10"
     let attendanceDate = moment(datebn).format("YYYY-MM-DD");
     try {
+      let location;
+      try {
+        location = await getDeviceLocation();
+      } catch (e) {
+        message.error(t('locationPermissionDenied') || 'Location permission denied or unavailable');
+        setBdisbale(true);
+        return;
+      }
+
       let data = {
         attendanceDate: attendanceDate,
         checkInTime: checkInTime,
+        ...location,
       };
       apiServices("POST", "attendance/", data, user_state)
         .then((res) => {
@@ -451,13 +482,21 @@ const AttendanceEmployee = () => {
     }
   };
 
-  const handleCheckOut = () => {
+  const handleCheckOut = async () => {
     setBdisbale(false);
     const moment = require("moment");
     let datebn = new Date(Date.now());
     let checkOutTime = moment(datebn).format("HH:mm");
 
     try {
+      let location;
+      try {
+        location = await getDeviceLocation();
+      } catch (e) {
+        message.error(t('locationPermissionDenied') || 'Location permission denied or unavailable');
+        setBdisbale(true);
+        return;
+      }
       apiServices(
         "PUT",
         `attendance/`,
@@ -465,6 +504,7 @@ const AttendanceEmployee = () => {
           _id: checkIn?.attendanceId,
           attendanceRecordId: checkIn?.attendanceRecordId,
           checkOutTime: checkOutTime,
+          ...location,
         },
         user_state
       )

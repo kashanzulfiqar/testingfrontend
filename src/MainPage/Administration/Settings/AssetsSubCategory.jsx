@@ -1,0 +1,378 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { Table, Button, Form, Input, Empty, Pagination, Spin, Select, message } from 'antd';
+import { Modal } from '@mui/material';
+import AssetsSubCategoryModal from './AssetsSubCategoryModal';
+import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { LoadingOutlined } from '@ant-design/icons';
+import { apiServices } from '../../../Services/apiServices';
+import EmptyTable from '../../../files/Icons/EmptyTable.svg';
+import { itemRender } from '../../paginationfunction';
+
+const AssetsSubCategory = () => {
+  const { t, i18n } = useTranslation();
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const [form] = Form.useForm();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [subCategories, setSubCategories] = useState([]);
+  const [subCategoryObj, setSubCategoryObj] = useState();
+  const [categories, setCategories] = useState([]);
+  const [loader, setLoader] = useState(false);
+  const [flag, setFlag] = useState(false);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 20, total: 0 });
+
+  const [open, setOpen] = useState({ isAddOpen: false, isDelOpen: false, data: '' });
+
+  const handleClose = () => {
+    setOpen({ isAddOpen: false, isDelOpen: false, data: '' });
+    setLoader(false);
+    form.resetFields();
+  };
+
+  useEffect(() => {
+    if ($('.select').length > 0) {
+      $('.select').select2({ minimumResultsForSearch: -1, width: '100%' });
+    }
+  });
+
+  useEffect(() => {
+    // fetch categories list for dropdown (large limit to cover all)
+    apiServices('GET', `assets-category/?page=1&limit=9999`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          const list = res?.data?.data?.docs || [];
+          setCategories(list);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : 'Failed to fetch categories'
+          }`
+        );
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!flag) {
+      setIsLoading(true);
+      fetchSubCategories();
+    }
+  }, [pagination.current, pagination.pageSize]);
+
+  const fetchSubCategories = (page, pageSize) => {
+    const params = { page: page || pagination.current, limit: pageSize ? pageSize : pagination.pageSize };
+    apiServices('GET', `assets-sub-category/?page=${params.page}&limit=${params.limit}`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          const container = res?.data?.SubCategories || res?.data?.subCategories || res?.data?.data;
+          setSubCategoryObj(container);
+          const docs = container?.docs || [];
+          setSubCategories(docs);
+          setFlag(true);
+          if (container) {
+            setPagination({ ...pagination, current: container.page || params.page, total: container.total || docs.length });
+          }
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : 'Failed to fetch asset sub-categories'
+          }`
+        );
+      })
+      .then(() => {
+        setIsLoading(false);
+        setFlag(false);
+      });
+  };
+
+  const antIcon = <LoadingOutlined style={{ fontSize: 24, color: '#fff' }} spin />;
+
+  const onFinish = (values, info) => {
+    setLoader(true);
+    if (info) {
+      const payload = { ...values, companyId: info?.companyId, _id: info?._id };
+      apiServices('PUT', 'assets-sub-category', payload, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            fetchSubCategories();
+            handleClose();
+            message.success('Asset sub-category updated');
+            setLoader(false);
+          }
+        })
+        .catch((err) => {
+          setLoader(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : 'Failed to update asset sub-category'
+            }!`
+          );
+        });
+    } else {
+      apiServices('POST', 'assets-sub-category', values, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            fetchSubCategories();
+            handleClose();
+            message.success('Asset sub-category added');
+            setLoader(false);
+          }
+        })
+        .catch((err) => {
+          setLoader(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : 'Failed to add asset sub-category'
+            }!`
+          );
+        });
+    }
+  };
+
+  const onHandleDelete = (rowData) => {
+    setLoader(true);
+    apiServices('DELETE', 'assets-sub-category', rowData, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          if (subCategoryObj?.docs?.length === 1) {
+            fetchSubCategories(subCategoryObj.totalPages - 1, null);
+          } else {
+            fetchSubCategories();
+          }
+          handleClose();
+          message.success('Asset sub-category deleted');
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : 'Failed to delete asset sub-category'
+          }!`
+        );
+      });
+  };
+
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      style={{ height: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+      description={
+        <div>
+          <div style={{ color: '#34343F', fontWeight: '500', fontSize: '14px', margin: '7px 0px 4px 0px' }}>
+            No Asset Sub-Categories
+          </div>
+          <div style={{ color: '#464665', fontWeight: '300', fontSize: '13px' }}>
+            Click to add a new asset sub-category.
+          </div>
+        </div>
+      }
+    />
+  );
+
+  const columns = [
+    {
+      title: '#',
+      dataIndex: 'index',
+      key: 'index',
+      width: 50,
+      render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+    },
+    {
+      title: 'Sub-Category Name',
+      dataIndex: 'assetSubCategoryName',
+      render: (_, row) => row?.assetSubCategoryName || row?.subcategoryname || row?.name,
+    },
+    {
+      title: 'Category Name',
+      dataIndex: 'assetCategoryName',
+      render: (_, row) => row?.assetCategoryName || row?.categoryId?.categoryname || row?.categoryName,
+    },
+    {
+      title: t('holiday.actions'),
+      render: (record, row) => (
+        <div className="dropdown dropdown-action text-end">
+          <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i className="material-icons">more_vert</i>
+          </a>
+          <div className="dropdown-menu dropdown-menu-right">
+            <a
+              className="dropdown-item"
+              href="javascript:void(0)"
+              onClick={() => setOpen({ isAddOpen: true, isDelOpen: false, data: row })}
+            >
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
+            </a>
+            <a
+              className="dropdown-item"
+              href="javascript:void(0)"
+              onClick={() => setOpen({ isAddOpen: false, isDelOpen: true, data: row })}
+            >
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
+            </a>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  // Prefill form when modal opens for edit
+  useEffect(() => {
+    if (open.isAddOpen) {
+      form.setFieldsValue({
+        assetCategoryId: open?.data
+          ? (open?.data?.assetCategoryId || open?.data?.category?._id || open?.data?.categoryId?.categoryname || '')
+          : '',
+        assetSubCategoryName: open?.data
+          ? (open?.data?.assetSubCategoryName || open?.data?.subcategoryname || open?.data?.name || '')
+          : ''
+      });
+    } else {
+      form.resetFields();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open.isAddOpen, open.data]);
+
+  const categoryOptions = useMemo(() => {
+    return (categories || []).map((c) => ({
+      label: c?.categoryname || c?.name,
+      value: c?._id || c?.id,
+    }));
+  }, [categories]);
+
+  return (
+    <>
+      <div>
+        <div className="page-header">
+          <div className="row align-items-center pt-3 pb-3">
+            <div className="col">
+              <h3 className="page-title">Assets Sub-Category</h3>
+            </div>
+            <div className="col-auto float-end ms-auto">
+              <a
+                href="javascript:void(0)"
+                className="btn add-btn"
+                onClick={() => setOpen({ isAddOpen: true, isDelOpen: false, data: '' })}
+              >
+                <i className="fa fa-plus" /> Add Sub-Category
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-md-12">
+            <div className="table-responsive">
+              <Table
+                loading={isLoading}
+                className={subCategories?.length > 0 ? 'table-striped' : ''}
+                locale={{ emptyText: isLoading ? null : customEmptyText }}
+                pagination={false}
+                style={{ overflowX: 'auto' }}
+                columns={columns}
+                bordered
+                dataSource={subCategories}
+                rowKey={(record) => record._id || record.id}
+                components={
+                  i18n.dir() === 'rtl'
+                    ? {
+                        header: { cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th> },
+                      }
+                    : null
+                }
+                onRow={
+                  i18n.dir() === 'rtl'
+                    ? (record, rowIndex) => {
+                        return { style: { textAlign: 'right' } };
+                      }
+                    : null
+                }
+              />
+            </div>
+            {subCategories?.length > 0 && (
+              <div>
+                <Pagination
+                  style={{ display: 'flex', float: 'right' }}
+                  current={pagination.current}
+                  pageSize={pagination.pageSize}
+                  total={pagination.total}
+                  showTotal={(total, range) => t('paginationShow', { range1: range[0], range2: range[1], total: total })}
+                  pageSizeOptions={["20", "30", "40", "50"]}
+                  showSizeChanger
+                  onChange={(page, pageSize) => setPagination({ ...pagination, current: page, pageSize })}
+                  itemRender={(current, type, originalElement) => itemRender(current, type, originalElement, t)}
+                  disabled={isLoading}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <AssetsSubCategoryModal
+        open={open.isAddOpen}
+        onClose={handleClose}
+        onSuccess={() => fetchSubCategories()}
+        initialData={open.data}
+      />
+
+      <Modal open={open.isDelOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description" disableRestoreFocus BackdropProps={{ style: { backgroundColor: 'rgb(0 0 0 / 87%)' } }}>
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content" style={{ height: '280px' }}>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div className="form-header">
+                <h3 style={{ marginBottom: '30px' }}>{t('delete')} Assets Sub-Category</h3>
+                <p>
+                  Are you sure you want to delete "{open?.data?.assetSubCategoryName || open?.data?.subcategoryname}"?
+                </p>
+              </div>
+              <div className="modal-btn delete-action">
+                <div className="row">
+                  <div className="col-6">
+                    <Button onClick={handleClose} className="btn btn-primary submit-btn" style={{ width: '100%' }}>
+                      {t('cancel')}
+                    </Button>
+                  </div>
+                  <div className="col-6">
+                    <Button htmlType="submit" className="btn btn-primary continue-btn" onClick={() => onHandleDelete(open?.data)} disabled={loader} style={{ width: '100%' }}>
+                      {loader ? <Spin size="small" indicator={antIcon} /> : t('delete')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
+};
+
+export default AssetsSubCategory;
+
+

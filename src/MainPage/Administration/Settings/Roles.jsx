@@ -11,6 +11,7 @@ import { apiServices } from "../../../Services/apiServices";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { LoadingOutlined } from "@ant-design/icons";
 import PermissionsTable from "../../../Components/PermissionsTable";
+import RolePermissionsModal from "../../../Components/RolePermissionsModal";
 import { useTranslation } from "react-i18next";
 
 const Roles = () => {
@@ -35,6 +36,16 @@ const Roles = () => {
   const [openPermissions, setOpenPermissions] = useState({
     isOpen: false,
     data: "",
+  });
+  const [openViewUsers, setOpenViewUsers] = useState({
+    isOpen: false,
+    data: null,
+    users: [],
+    loading: false,
+  });
+  const [openNewPermissions, setOpenNewPermissions] = useState({
+    isOpen: false,
+    data: null,
   });
   const [data, setData] = useState([]);
 
@@ -357,6 +368,124 @@ const Roles = () => {
       });
   };
 
+  const handleViewUsers = (roleData) => {
+    setOpenViewUsers({
+      isOpen: true,
+      data: roleData,
+      users: [],
+      loading: true,
+    });
+
+    apiServices("GET", `user/view-user?userRole=${roleData._id}&deleted=false`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setOpenViewUsers((prev) => ({
+            ...prev,
+            users: res?.data?.users?.docs || [],
+            loading: false,
+          }));
+        }
+      })
+      .catch((err) => {
+        setOpenViewUsers((prev) => ({
+          ...prev,
+          loading: false,
+        }));
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t('allEmp.errors.getEmployeesError')
+          }`
+        );
+      });
+  };
+
+  const handleViewUsersClose = () => {
+    setOpenViewUsers({
+      isOpen: false,
+      data: null,
+      users: [],
+      loading: false,
+    });
+  };
+
+  const handleNewPermissionsOpen = (roleData) => {
+    setOpenNewPermissions({
+      isOpen: true,
+      data: roleData,
+    });
+  };
+
+  const handleNewPermissionsClose = () => {
+    setOpenNewPermissions({
+      isOpen: false,
+      data: null,
+    });
+  };
+
+  const handleNewPermissionsSave = (backendPermissions, backendPermissionsData) => {
+    setLoader(true);
+
+    const allpermissions = backendPermissions.every((item) =>
+      item.subPermissions.every((subObj) => subObj.checked === true)
+    );
+
+    let updated_data = {
+      ...backendPermissionsData,
+      permissions: backendPermissions,
+    };
+
+    apiServices("PUT", "permissions", updated_data, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          let role_data = {
+            _id: openNewPermissions.data?._id,
+            companyId: openNewPermissions.data?.companyId,
+            roleName: openNewPermissions.data?.roleName,
+            customPermissions: allpermissions,
+          };
+
+          return apiServices("PUT", "role/update-role", role_data, user_state);
+        }
+      })
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setData(
+            data.map((role) => {
+              if (role._id === openNewPermissions.data._id) {
+                return {
+                  ...role,
+                  customPermissions: allpermissions,
+                };
+              } else {
+                return {
+                  ...role,
+                };
+              }
+            })
+          );
+          handleNewPermissionsClose();
+          message.success(t('settings.Roles.rolePermissionsUpdated'));
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t('settings.Roles.updatePermissionsInfoError')
+          }`
+        );
+      });
+  };
+
   const columns = [
     {
       title: "#",
@@ -372,10 +501,30 @@ const Roles = () => {
     {
       title: t('settings.Roles.moduleAccess'),
       dataIndex: "customPermissions",
-      // sorter: (a, b) => a.maxStartTime.length - b.maxStartTime.length,
       render: (record, row) => {
         return <>{record ? "Full Permissions" : "Custom Permissions"}</>;
       },
+    },
+    {
+      title: "",
+      width: 60,
+      align: "center",
+      render: (record, row) => (
+        <a
+          href="javascript:void(0)"
+          onClick={() => handleViewUsers(row)}
+          style={{
+            color: "#ff9b44",
+            fontSize: "18px",
+            transition: "color 0.3s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#e76f51")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#ff9b44")}
+          title="View Users"
+        >
+          <i className="fa fa-eye" />
+        </a>
+      ),
     },
     {
       title: t('settings.Roles.actions'),
@@ -404,6 +553,14 @@ const Roles = () => {
               }}
             >
               <i className="fa fa-pencil m-r-5" /> {t('edit')}
+            </a>
+            <a
+              className="dropdown-item"
+              href="javascript:void(0)"
+              onClick={() => handleNewPermissionsOpen(row)}
+              style={{ borderTop: "1px solid #e5e7eb", marginTop: "4px", paddingTop: "8px" }}
+            >
+              <i className="fa fa-shield m-r-5" style={{ color: "#ff9b44" }} /> Manage Permissions (New)
             </a>
             <a
               className="dropdown-item"
@@ -935,6 +1092,180 @@ const Roles = () => {
           </div>
         </div>
       </Modal>
+
+      <Modal
+        open={openViewUsers.isOpen}
+        onClose={handleViewUsersClose}
+        aria-labelledby="view-users-modal"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">
+                {openViewUsers.data?.roleName} - Users
+              </h5>
+              <button type="button" className="close" onClick={handleViewUsersClose}>
+                <span aria-hidden="true">×</span>
+              </button>
+    </div>
+            <div className="modal-body" style={{ minHeight: "300px" }}>
+              {openViewUsers.loading ? (
+                <Spin
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginTop: "100px",
+                  }}
+                />
+              ) : openViewUsers.users.length === 0 ? (
+                <Empty
+                  image={<img src={EmptyTable} />}
+                  imageStyle={{}}
+                  style={{
+                    height: "250px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                  description={
+                    <div>
+                      <div
+                        style={{
+                          color: "#34343F",
+                          fontWeight: "500",
+                          fontSize: "14px",
+                          margin: "7px 0px 4px 0px",
+                        }}
+                      >
+                        No users found
+                      </div>
+                      <div
+                        style={{
+                          color: "#464665",
+                          fontWeight: "300",
+                          fontSize: "13px",
+                        }}
+                      >
+                        There are no users assigned to this role.
+                      </div>
+                    </div>
+                  }
+                />
+              ) : (
+                <div className="table-responsive">
+                  <Table
+                    className="table-striped"
+                    pagination={false}
+                    style={{ overflowX: "auto" }}
+                    columns={[
+                      {
+                        title: "#",
+                        width: 50,
+                        render: (text, record, index) => index + 1,
+                      },
+                      {
+                        title: "Employee Name",
+                        dataIndex: "fullName",
+                        render: (text, record) => {
+                          const displayName = record?.fullName || record?.email || "N/A";
+                          const initial = (record?.fullName || record?.email)?.charAt(0)?.toUpperCase() || "U";
+                          
+                          return (
+                            <h2 className="table-avatar">
+                              <a href="javascript:void(0)" className="avatar">
+                                {record?.imageUrl ? (
+                                  <img
+                                    alt="User"
+                                    src={record.imageUrl}
+                                  />
+                                ) : (
+                                  <span
+                                    className="avatar"
+                                    style={{
+                                      backgroundColor: "#ff9b44",
+                                      color: "white",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                    }}
+                                  >
+                                    {initial}
+                                  </span>
+                                )}
+                              </a>
+                              <a href="javascript:void(0)">
+                                {displayName}
+                              </a>
+                            </h2>
+                          );
+                        },
+                      },
+                      {
+                        title: "Employee ID",
+                        dataIndex: "employeeId",
+                      },
+                      {
+                        title: "Email",
+                        dataIndex: "email",
+                      },
+                      {
+                        title: "Status",
+                        dataIndex: "userStatus",
+                        render: (status) => (
+                          <span
+                            style={{
+                              padding: "4px 12px",
+                              borderRadius: "4px",
+                              fontSize: "12px",
+                              fontWeight: "500",
+                              backgroundColor:
+                                status === "Active" ? "#e8f5e9" : "#ffebee",
+                              color: status === "Active" ? "#2e7d32" : "#c62828",
+                            }}
+                          >
+                            {status}
+                          </span>
+                        ),
+                      },
+                    ]}
+                    dataSource={openViewUsers.users}
+                    rowKey={(record) => record._id}
+                    bordered
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' },
+                      };
+                    } :
+                    null
+                    }
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <RolePermissionsModal
+        open={openNewPermissions.isOpen}
+        onClose={handleNewPermissionsClose}
+        roleData={openNewPermissions.data}
+        onSave={handleNewPermissionsSave}
+        loading={loader}
+      />
     </div>
   );
 };

@@ -51,10 +51,10 @@ const EmployeeSalary = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const role = user_state?.user?.role
-  console.log(permissions,user_state)
   const nav = useNavigate();
 
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [genModal, setGenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -115,6 +115,39 @@ const EmployeeSalary = () => {
       setDownAvailable(true);
     }
   },[downloadData]);
+
+  useEffect(() => {
+    if (editModal && selectedRecord) {
+      editForm.resetFields();
+      editForm.setFieldsValue({
+        deduction: selectedRecord?.deduction || "0",
+        deductionReason: selectedRecord?.deductionReason || "",
+        tax: selectedRecord?.tax || "0",
+        totalDeduction: selectedRecord?.totalDeduction || "0",
+        bonus: selectedRecord?.bonus || "0",
+        bonusReason: selectedRecord?.bonusReason || "",
+        totalAddition: selectedRecord?.totalAddition || "0.00",
+        creditSalary: selectedRecord?.creditSalary || "0.00",
+        modeOfPayment: selectedRecord?.modeOfPayment || "",
+        transactionId: selectedRecord?.transactionId || "",
+        extraPayment: selectedRecord?.extraPayment || "0",
+        extraPaymentReason: selectedRecord?.extraPaymentReason || "",
+        absentFine: selectedRecord?.absentFine || "0",
+        payMonth: moment(selectedRecord?.payMonth, 'MMMM'),
+        payYear: moment(selectedRecord?.payYear, 'YYYY'),
+        processed: selectedRecord?.processed || false,
+        status: selectedRecord?.status || "Unpaid",
+        createdAt: moment(selectedRecord?.createdAt).format("D MMM YYYY"),
+        updatedAt: moment(selectedRecord?.updatedAt).format("D MMM YYYY"),
+        employeeId: selectedRecord?.user?.employeeId || "",
+        fullName: selectedRecord?.user?.fullName || "",
+        salary: selectedRecord?.basicSalary ? selectedRecord?.basicSalary : selectedRecord?.user?.salary ? selectedRecord?.user?.salary : "0.00",
+        email: selectedRecord?.user?.email || "",
+        bankAccountNumber: selectedRecord?.user?.bankAccountNumber || "-",
+        bankName: selectedRecord?.user?.bankName || "-",
+      });
+    }
+  }, [editModal, selectedRecord, editForm]);
 
   const isdownDisabled = !downAvailable;
   const isDisabled = !dataAvailable;
@@ -1131,23 +1164,42 @@ const EmployeeSalary = () => {
   //   doc.save("payroll_export.pdf");
   // };
 
+  const handleFormValuesChange = (changedValues, allValues) => {
+    const salary = parseFloat(allValues.salary) || 0;
+    const tax = parseFloat(allValues.tax) || 0;
+    const deduction = parseFloat(allValues.deduction) || 0;
+    const absentFine = parseFloat(allValues.absentFine) || 0;
+    const bonus = parseFloat(allValues.bonus) || 0;
+    const extraPayment = parseFloat(allValues.extraPayment) || 0;
+
+    const totalDeduction = tax + deduction + absentFine;
+    const totalAddition = bonus + extraPayment;
+    const creditSalary = salary - totalDeduction;
+
+    editForm.setFieldsValue({
+      totalDeduction: totalDeduction.toFixed(2),
+      totalAddition: totalAddition.toFixed(2),
+      creditSalary: creditSalary.toFixed(2),
+    });
+  };
+
   const updatePayroll = (values) => {
     setEditLoader(true);
     const updateData = {
       _id: selectedRecord?._id,
       companyId: selectedRecord?.companyId,
-      deduction: values.deduction, // Use values from the form
-      deductionReason: values.deductionReason, // Use values from the form
-      totalDeduction: values.totalDeduction, // Use values from the form
-      bonus: values.bonus, // Use values from the form
-      bonusReason: values.bonusReason, // Use values from the form
-      totalAddition: values.totalAddition, // Use values from the form
-      creditSalary: values.creditSalary, // Use values from the form
-      modeOfPayment: values.modeOfPayment, // Use values from the form
-      transactionId: values.transactionId, // Use values from the form
-      extraPayment: values.extraPayment, // Use values from the form
+      deduction: parseFloat(values.deduction) || 0,
+      deductionReason: values.deductionReason,
+      totalDeduction: parseFloat(values.totalDeduction) || 0,
+      bonus: parseFloat(values.bonus) || 0,
+      bonusReason: values.bonusReason,
+      totalAddition: parseFloat(values.totalAddition) || 0,
+      creditSalary: parseFloat(values.creditSalary) || 0,
+      modeOfPayment: values.modeOfPayment,
+      transactionId: values.transactionId,
+      extraPayment: parseFloat(values.extraPayment) || 0,
       extraPaymentReason: values.extraPaymentReason,
-      processed : false // Use values from the form
+      processed : false
     };
 
     console.log(updateData);
@@ -1588,12 +1640,31 @@ const EmployeeSalary = () => {
                   }}
                   className="fixedTableHeader2"
                   loading={isLoading}
-                  style={{ height: "400px", background: "white" }}
+                  style={{ background: "white" }}
                   columns={columns}
                   // bordered
                   dataSource={data}
                   rowKey={(record) => record?._id}
-                  pagination={false}
+                  pagination={{
+                    total: pagination.total,
+                    pageSize: pagination.pageSize,
+                    current: pagination.current,
+                    showTotal: (total, range) =>
+                      t('paginationShow', { range1: range[0], range2: range[1], total: total }),
+                    onChange: (page, pageSize) => {
+                      setPagination({
+                        ...pagination,
+                        current: page,
+                        pageSize: pageSize,
+                      });
+                    },
+                    showSizeChanger: true,
+                    pageSizeOptions: ['20', '30', '40', '50'],
+                    position: ['bottomCenter'],
+                    itemRender: (current, type, originalElement) =>
+                      itemRender(current, type, originalElement, t),
+                    disabled: isLoading,
+                  }}
                   components={i18n.dir()==="rtl" ?
                       {
                       header: {
@@ -1614,36 +1685,6 @@ const EmployeeSalary = () => {
                 />
                 
               </div>
-              {
-                    data?.length > 0 &&
-                    <div>
-                      <Pagination
-                        style={{display: 'flex', float: 'right'}}
-                        total={pagination.total}
-                        pageSize={pagination.pageSize}
-                        defaultCurrent={1}
-                        current={pagination.current}
-                        showTotal={(total, range) =>
-                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
-                        onChange={(page, pageSize) => {
-                          setPagination({
-                            ...pagination,
-                            current: page,
-                            pageSize: pageSize,
-                          });
-                          //console.log(page, size);
-                          //setPageSize(size); setCurrentPage(page);
-                          //getEmployeeSalary(filterValues, page, size)
-                        }}
-                        showSizeChanger={true}
-                        pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={(current, type, originalElement) =>
-                          itemRender(current, type, originalElement, t)
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                  }
             </div>
           </div>
 
@@ -1713,10 +1754,15 @@ const EmployeeSalary = () => {
                           }}
                           className="fixedTableHeader"
                           loading={isLoading}
-                          style={{ height: "400px", background: "white" }}
+                          style={{ background: "white" }}
                           columns={columns2}
                           // bordered
-                          pagination={false}
+                          pagination={{
+                            pageSize: 20,
+                            showSizeChanger: false,
+                            showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                            position: ['bottomCenter'],
+                          }}
                           dataSource={downloadData}
                           rowKey={(record) => record.id}
                           components={i18n.dir()==="rtl" ?
@@ -1774,38 +1820,10 @@ const EmployeeSalary = () => {
 
                 <div className="modal-body">
                   <Form
+                  form={editForm}
                   onFinish={updatePayroll}
-
+                  onValuesChange={handleFormValuesChange}
                   name="control-hooks"
-
-                  initialValues={{
-                    deduction: selectedRecord?.deduction || "0",
-                    deductionReason: selectedRecord?.deductionReason || "",
-                    tax: selectedRecord?.tax || "0",
-                    totalDeduction: selectedRecord?.totalDeduction || "0",
-                    bonus: selectedRecord?.bonus || "0",
-                    bonusReason: selectedRecord?.bonusReason || "",
-                    totalAddition: selectedRecord?.totalAddition || "0.00",
-                    creditSalary: selectedRecord?.creditSalary || "0.00",
-                    modeOfPayment: selectedRecord?.modeOfPayment || "",
-                    transactionId: selectedRecord?.transactionId || "",
-                    extraPayment: selectedRecord?.extraPayment || "0",
-                    extraPaymentReason: selectedRecord?.extraPaymentReason || "",
-                    absentFine: selectedRecord?.absentFine || "0",
-                    payMonth: moment(selectedRecord?.payMonth, 'MMMM') || "",
-                    payYear: moment(selectedRecord?.payYear, 'YYYY') || "",
-                    processed: selectedRecord?.processed || false,
-                    status: selectedRecord?.status || "Unpaid",
-                    createdAt: moment(selectedRecord?.createdAt).format("D MMM YYYY") || "",
-                    updatedAt: moment(selectedRecord?.updatedAt).format("D MMM YYYY") || "",
-                    employeeId: selectedRecord?.user?.employeeId || "",
-                    fullName: selectedRecord?.user?.fullName || "",
-                    salary: selectedRecord?.basicSalary ? selectedRecord?.basicSalary : selectedRecord?.user?.salary ? selectedRecord?.user?.salary : "0.00",
-                    email: selectedRecord?.user?.email || "",
-                    bankAccountNumber: selectedRecord?.user?.bankAccountNumber || "-",
-                    bankName: selectedRecord?.user?.bankName || "-",
-
-                  }}
                   >
                     <div className="row">
                       <div className="col-sm-6">

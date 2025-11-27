@@ -36,6 +36,7 @@ import { apiServices } from "../../../Services/apiServices.js";
 import { getAllISOCodes } from "iso-country-currency";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
+import { NotificationBox } from "./stripeNotification.jsx";
 
 const amountFormatter = (value) => {
   // Handle zero separately
@@ -656,8 +657,9 @@ const AdminDashboard = () => {
             <title>{t("aDash.pageTitle")}</title>
             <meta name="description" content="Dashboard" />
           </Helmet>
-          {/* Page Content */}
+          {/* Page Content */}<NotificationBox user_state={user_state} />
           <div className="content container-fluid">
+          
             {/* Page Header */}
             <div className="page-header">
               <div className="row">
@@ -1033,7 +1035,7 @@ const AdminDashboard = () => {
                               className="d-block"
                               style={{ fontWeight: "600" }}
                             >
-                              {t("aDash.earnings")}
+                              Earnings (Last Month)
                             </span>
                           </div>
                           <div>
@@ -1056,7 +1058,7 @@ const AdminDashboard = () => {
                           </div>
                         </div>
                         <h3 className="mb-3">
-                          {allData?.currentMonthEarning
+                          {allData?.previousMonthEarning
                             ?.toString()
                             .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
                           {allData?.preferredCurrency}
@@ -1077,15 +1079,11 @@ const AdminDashboard = () => {
                           />
                         </div>
                         <p className="mb-0 text-start">
-                          <label>{t("aDash.previousMonth")}</label>{" "}
                           <label
                             className="text-muted"
                             style={{ unicodeBidi: "plaintext" }}
                           >
-                            {allData?.previousMonthEarning
-                              ?.toString()
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                            {allData?.preferredCurrency}
+                            {allData?.previousMonthClearedInvoices} Invoices Cleared
                           </label>
                         </p>
                       </div>
@@ -1177,7 +1175,7 @@ const AdminDashboard = () => {
                               className="d-block"
                               style={{ fontWeight: "600" }}
                             >
-                              {t("aDash.profit")}
+                              Profit (Last Month)
                             </span>
                           </div>
                           <div>
@@ -1200,7 +1198,7 @@ const AdminDashboard = () => {
                           </div>
                         </div>
                         <h3 className="mb-3">
-                          {allData?.currentMonthProfitLoss
+                          {allData?.previousMonthProfitLoss
                             ?.toString()
                             .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
                           {allData?.preferredCurrency}
@@ -1221,15 +1219,11 @@ const AdminDashboard = () => {
                           />
                         </div>
                         <p className="mb-0 text-start">
-                          <label>{t("aDash.previousMonth")}</label>{" "}
                           <label
                             className="text-muted"
                             style={{ unicodeBidi: "plaintext" }}
                           >
-                            {allData?.previousMonthProfitLoss
-                              ?.toString()
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                            {allData?.preferredCurrency}
+                            {allData?.previousMonthClearedInvoices} Invoices Cleared
                           </label>
                         </p>
                       </div>
@@ -1725,7 +1719,7 @@ const AdminDashboard = () => {
                               <tr key={invoice?._id}>
                                 <td>
                                   <Link
-                                    to="/invoices/view-invoice"
+                                    to={{ pathname: "/invoices/view-invoice", search: `?id=${invoice?._id}` }}
                                     state={{ invoice_data: invoice }}
                                   >
                                     {invoice?.invoiceNo}
@@ -1840,7 +1834,7 @@ const AdminDashboard = () => {
                               <tr key={payment?._id}>
                                 <td>
                                   <Link
-                                    to="/invoices/view-invoice"
+                                    to={{ pathname: "/invoices/view-invoice", search: `?id=${payment?._id}` }}
                                     state={{ invoice_data: payment }}
                                   >
                                     {payment?.invoiceNo}

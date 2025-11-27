@@ -110,6 +110,41 @@ const Projects = () => {
     },
   ]);
 
+  const DEADLINE_COLORS = {
+    overdue: "#ff4d4f",
+    upcoming: "#faad14",
+    default: "#6f6f6f",
+  };
+
+  const getDeadlineColor = (endDate) => {
+    if (!endDate) {
+      return DEADLINE_COLORS.default;
+    }
+    const deadline = moment(endDate, ["YYYY-MM-DD", moment.ISO_8601], true);
+    if (!deadline.isValid()) {
+      return DEADLINE_COLORS.default;
+    }
+    const today = moment().startOf("day");
+    const diffDays = deadline.diff(today, "days");
+    if (diffDays < 0) {
+      return DEADLINE_COLORS.overdue;
+    }
+
+    if (diffDays <= 7) {
+      return DEADLINE_COLORS.upcoming;
+    }
+
+    return DEADLINE_COLORS.default;
+  };
+
+  const getDeadlineStyle = (endDate) => {
+    const color = getDeadlineColor(endDate);
+    return {
+      color,
+      fontWeight: color === DEADLINE_COLORS.default ? "normal" : 600,
+    };
+  };
+
   const addPaymentSchedule = () => {
     setPaymentSchedules([
       ...paymentSchedules,
@@ -244,9 +279,11 @@ const Projects = () => {
 
   };
 
-  // useEffect(() => {
-  //   getAllDomain();
-  // }, []);
+  useEffect(() => {
+    if(role !== 'client' && role !== 'focalperson') {
+      getAllDomain();
+    }
+  }, []);
 
   useEffect(() => {
     //if(role === 'admin' || permissions?.projectManagement ) { 
@@ -335,19 +372,17 @@ const Projects = () => {
   // };
 
   const GetListProjects = (page, pageSize) => {
-    //setLoader(true);
-    
     setIsLoading(true);
     const params = {
-      ...filters,
       page: page || pagination.current,
       limit: pageSize ? pageSize : pagination.pageSize,
     };
 
+    // If user is a client, fetch only that client's projects using project-by-id API
+    if (role === 'client' || role === 'focalperson') {
     apiServices(
       "GET",
-      // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
-      `project-management/?status=${filters.status}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&costType=${filters.costType}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
+        `project-management/project-by-id?role=${role}&id=${user_state?.user?._id}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -355,16 +390,51 @@ const Projects = () => {
         if (res.data.success === true) {
           setCategoryObj(res?.data?.projects);
           setTableData(res?.data?.projects?.docs);
- 
+            setIsLoading(false);
+            setFlag(true);
+            setPagination({
+              ...pagination,
+              current: res.data.projects.pages,
+              total: res.data.projects.total,
+            });
+          }
+        })
+        .catch((err) => {
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t('projectScreen.errors.getEmployeeProjectsError')
+            }`
+          );
           setIsLoading(false);
-          // setPagination({
-          //   ...pagination,
-          //   total: res.data.projects.totalDocs,
-          // });
+        })
+        .then(() => {
+          setFlag(false);
+        });
+      return;
+    }
+
+    // Default behavior for admin/employee views
+    const query = `project-management/?status=${filters.status}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&costType=${filters.costType}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`;
+
+    apiServices(
+      "GET",
+      query,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          setCategoryObj(res?.data?.projects);
+          setTableData(res?.data?.projects?.docs);
+          setIsLoading(false);
           setFlag(true);
           setPagination({
             ...pagination,
-            current : res.data.projects.page,
+            current: res.data.projects.page,
             total: res.data.projects.totalDocs,
           });
       }
@@ -380,7 +450,8 @@ const Projects = () => {
           }`
         );
         setIsLoading(false);
-      }).then(()=>{
+      })
+      .then(() => {
         setFlag(false);
       });
   };
@@ -696,7 +767,16 @@ const Projects = () => {
       title: t('projectScreen.deadline'),
       dataIndex: "endDate",
       key: "endDate",
-      render: (text, record) => <label style={{minWidth: 'max-content'}}>{text}</label> 
+      render: (text) => (
+        <label
+          style={{
+            minWidth: "max-content",
+            ...getDeadlineStyle(text),
+          }}
+        >
+          {text}
+        </label>
+      ),
     },
     {
       title: t('projectScreen.Modal.priority'),
@@ -1521,6 +1601,67 @@ const filteredColumns = columns.filter(column => {
                       </button>
                     </div>
                   </div>
+                : (role === 'client' || role === 'focalperson') ?
+                <div className="row filter-row">
+                    <div className="col-sm-6 col-md-3">
+                      <div className="form-group">
+                        <Form.Item name="projectName" className="custom-border">
+                          <Input
+                            className="form-control"
+                            allowClear={false}
+                            placeholder={t('projectScreen.Modal.projectName')}
+                            style={{height:'50px'}}
+                            onChange={(e) =>
+                              handleFilterChange(e.target.value, "projectName")
+                            }
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <div className="form-group">
+                        <Form.Item name="status" className="custom-border">
+                          <Select
+                              className="custom-select searchCenter"
+                              placeholder={t('projectScreen.Modal.projectStatus')}
+                              style={{height:'50px'}}
+                              dropdownStyle={{ zIndex: 1 }}
+                              onChange={(value) => {
+                                handleFilterChange(value, "status");
+                              }}
+                            >
+                              <Select.Option value="On-Going">{t('projectScreen.Modal.onGoing')}</Select.Option>
+                              <Select.Option value="Completed">{t('projectScreen.Modal.completed')}</Select.Option>
+                              <Select.Option value="Paused">{t('projectScreen.Modal.paused')}</Select.Option>
+                              <Select.Option value="Scheduled">{t('projectScreen.Modal.scheduled')}</Select.Option>
+                              <Select.Option value="Archived">{t('projectScreen.Modal.archived')}</Select.Option>
+                            </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <button
+                        type="primary"
+                        htmlType="submit"
+                        className="btn btn-success btn-block w-100"
+                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                        style={{marginBottom: '24px'}}
+                      >
+                        <span className="d-flex justify-content-center">{t('search')}</span>
+                      </button>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <button
+                        htmlType="button"
+                        className="btn btn-success btn-block w-100"
+                        onClick={handleReset}
+                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                        style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
+                      >
+                        <span className="d-flex justify-content-center">{t('reset')}</span>
+                      </button>
+                    </div>
+                  </div>
                 :
                 <div className="row filter-row">
                   <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
@@ -1773,7 +1914,12 @@ const filteredColumns = columns.filter(column => {
                         </div>
                         <div className="pro-deadline m-b-15">
                           <div className="sub-title">{t('projectScreen.deadline')}:</div>
-                          <div className="text-muted">{project?.endDate}</div>
+                          <div
+                            // className="text-muted"
+                            style={getDeadlineStyle(project?.endDate)}
+                          >
+                            {project?.endDate || "-"}
+                          </div>
                         </div>
                         <div className="pro-deadline m-b-15">
                           <div className="sub-title">{t('projectScreen.status')}:</div>

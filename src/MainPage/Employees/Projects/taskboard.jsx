@@ -23,6 +23,8 @@ import {
   LoadingOutlined,
   MinusCircleFilled,
   PlusOutlined,
+  CheckOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { Modal } from "@mui/material";
@@ -31,6 +33,9 @@ import { useSelector } from "react-redux";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useForm } from "react-hook-form";
 import TaskModal from "./taskModal";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import moment from 'moment';
 
 const TaskBoard = () => {
   const [form] = Form.useForm();
@@ -75,6 +80,12 @@ const TaskBoard = () => {
   const [employees, setEmployees] = useState([]);
   const [allEmployees, setAllEmployees] = useState([]);
   const [loadingAllEmployees, setLoadingAllEmployees] = useState(false);
+  const [descValue, setDescValue] = useState('');
+  const [editingDueDate, setEditingDueDate] = useState(false);
+  const [dueDateValue, setDueDateValue] = useState(null);
+  const [originalDueDate, setOriginalDueDate] = useState(null);
+  const [selectedAssigneeFilter, setSelectedAssigneeFilter] = useState([]);
+  const [filteredColumns, setFilteredColumns] = useState([]);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -96,10 +107,9 @@ const TaskBoard = () => {
       })
       .catch((err) => {
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : "Error editing name"
           }!`
@@ -113,7 +123,7 @@ const TaskBoard = () => {
     event.stopPropagation(); // Prevent event bubbling
     setActiveDropdown(activeDropdown === taskId ? null : taskId); // Toggle state
   };
-  
+
   const handleCancel = () => {
     // Revert to original project name
     console.log("called");
@@ -151,6 +161,10 @@ const TaskBoard = () => {
     if (!result.destination) {
       return;
     }
+    // Prevent drag-and-drop for client and focalperson roles
+    // if (role === 'client' || role === 'focalperson') {
+    //   return;
+    // }
     setDisableDrag(true);
     const { source, destination, type } = result;
     if (type === "column") {
@@ -178,10 +192,9 @@ const TaskBoard = () => {
         .catch((err) => {
           //setIsLoading(false);
           message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : "Error Moving Column"
             }!`
@@ -231,10 +244,9 @@ const TaskBoard = () => {
           .catch((err) => {
             //setIsLoading(false);
             message.error(
-              `${
-                err?.response?.data?.msg
-                  ? err?.response?.data?.msg
-                  : err?.response?.data?.validation?.body?.message
+              `${err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
                   ? err?.response?.data?.validation?.body?.message
                   : "Error Moving task"
               }!`
@@ -271,10 +283,9 @@ const TaskBoard = () => {
           .catch((err) => {
             //setIsLoading(false);
             message.error(
-              `${
-                err?.response?.data?.msg
-                  ? err?.response?.data?.msg
-                  : err?.response?.data?.validation?.body?.message
+              `${err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
                   ? err?.response?.data?.validation?.body?.message
                   : "Error Moving task"
               }!`
@@ -357,15 +368,15 @@ const TaskBoard = () => {
       BoardData?._id
         ? BoardData?._id
         : BoardData?.board?.project
-        ? BoardData?.board?.project?._id
-        : BoardData?.board?._id
+          ? BoardData?.board?.project?._id
+          : BoardData?.board?._id
     );
     getTaskBoard(
       BoardData?._id
         ? BoardData?._id
         : BoardData?.board?.project
-        ? BoardData?.board?.project?._id
-        : BoardData?.board?._id
+          ? BoardData?.board?.project?._id
+          : BoardData?.board?._id
     );
     setSelectedTeamMembers([]); // Clear selected team members
     setEditId("");
@@ -411,12 +422,75 @@ const TaskBoard = () => {
     return task ? task.description : "";
   };
 
+  const getTaskPriority = (taskId) => {
+    const task = allTasks.find((task) => task._id === taskId);
+    return task ? task.priority : "";
+  };
+
+  const getTaskAssignee = (taskId) => {
+    const task = allTasks.find((task) => task._id === taskId);
+    if (!task) return null;
+
+    if (task.assignee) {
+      const assignee = employees.find(emp => emp._id === task.assignee);
+      return assignee;
+    }
+
+    if (task.assignedDevelopers && task.assignedDevelopers.length > 0) {
+      return task.assignedDevelopers[0];
+    }
+
+    return null;
+  };
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    const words = name.trim().split(' ');
+    if (words.length === 1) {
+      return words[0].substring(0, 2).toUpperCase();
+    }
+    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  };
+
   const getAllTasks = (id) => {
+    const taskId = id;
+
+    // Client/Focalperson: fetch tasks via role-specific endpoint with taskboardId
+    if (role === 'client' || role === 'focalperson') {
+      apiServices(
+        "GET",
+        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&taskId=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}&populate=assignedDevelopers`,
+        null,
+        user_state
+      )
+        .then((res) => {
+          if (res?.data?.success === true) {
+            const docs = res?.data?.Task?.docs || res?.data?.Task || [];
+            const sortedData = docs?.slice()?.sort((a, b) => a.title.localeCompare(b.title));
+            setAllTasks(sortedData);
+            setIsLoading(false);
+            setIsTaskLoading(false);
+          }
+        })
+        .catch((err) => {
+          setIsLoading(false);
+          setIsTaskLoading(false);
+          message.error(
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t("Timesheetemployee.getAllTasksError")
+            }!`
+          );
+        });
+      return;
+    }
+
     apiServices(
       "GET",
-      `tasks?id=${id}&page=${1}&limit=${99999}&isArchived=${
-        BoardData?.board?.isArchived
-      }`,
+      `tasks?id=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived
+      }&populate=assignedDevelopers`,
       null,
       user_state
     )
@@ -434,10 +508,9 @@ const TaskBoard = () => {
         setIsLoading(false);
         setIsTaskLoading(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("Timesheetemployee.getAllTasksError")
           }!`
@@ -448,8 +521,7 @@ const TaskBoard = () => {
   const getTasksOptions = (id) => {
     apiServices(
       "GET",
-      `tasks?id=${id}&lane=empty&page=${1}&limit=${99999}&isArchived=${
-        BoardData?.board?.isArchived
+      `tasks?id=${id}&lane=empty&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived
       }`,
       null,
       user_state
@@ -466,10 +538,9 @@ const TaskBoard = () => {
       .catch((err) => {
         setIsLoading(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("Timesheetemployee.getAllTasksError")
           }!`
@@ -478,26 +549,71 @@ const TaskBoard = () => {
   };
 
   const getTaskBoard = (id) => {
+    setIsLoading(true);
+    const taskboardId = id;
+
+    // Client/Focalperson: use role-specific endpoint with clientId and taskboardId
+    if (role === 'client' || role === 'focalperson') {
+      apiServices(
+        "GET",
+        `taskBoard/taskboard-by-id?role=${role}&id=${user_state?.user?._id}&taskboardId=${taskboardId}`,
+        null,
+        user_state
+      )
+        .then((res) => {
+          if (res?.data?.success === true) {
+            const boards = res?.data?.taskBoards?.docs || res?.data?.taskBoards || (res?.data?.taskBoard ? [res?.data?.taskBoard] : []);
+            boards?.map((board) => {
+              setBoardId(board?._id);
+              setBoardTitle(
+                board?.boardTitle
+                  ? board?.boardTitle
+                  : BoardData?.board?.boardTitle
+                    ? BoardData?.board?.boardTitle
+                    : BoardData?.board?.project?.projectName
+                      ? BoardData?.board?.project?.projectName
+                      : BoardData?.projectName
+              );
+              setEmployees(board?.assignedDevelopers);
+              setSelectedDevelopers(board?.assignedDevelopers);
+              setColumns(board?.columns);
+            });
+          }
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          setIsLoading(false);
+          message.error(
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Error getting taskboard data"
+            }!`
+          );
+        });
+      return;
+    }
+
+    // Default: existing endpoint
     apiServices(
       "GET",
-      `taskBoard/view-taskBoard?id=${id}&isArchived=${BoardData?.board?.isArchived}`,
+      `taskBoard/view-taskBoard?id=${taskboardId}&isArchived=${BoardData?.board?.isArchived}`,
       null,
       user_state
     )
       .then((res) => {
         if (res?.data?.success === true) {
-          //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
-          //setAllTasks(sortedData);
           res?.data?.taskBoards?.map((board) => {
             setBoardId(board?._id);
             setBoardTitle(
               board?.boardTitle
                 ? board?.boardTitle
                 : BoardData?.board?.boardTitle
-                ? BoardData?.board?.boardTitle
-                : BoardData?.board?.project?.projectName
-                ? BoardData?.board?.project?.projectName
-                : BoardData?.projectName
+                  ? BoardData?.board?.boardTitle
+                  : BoardData?.board?.project?.projectName
+                    ? BoardData?.board?.project?.projectName
+                    : BoardData?.projectName
             );
             setEmployees(board?.assignedDevelopers);
             setSelectedDevelopers(board?.assignedDevelopers);
@@ -509,10 +625,9 @@ const TaskBoard = () => {
       .catch((err) => {
         setIsLoading(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : "Error getting taskboard data"
           }!`
@@ -541,22 +656,22 @@ const TaskBoard = () => {
       BoardData?._id
         ? BoardData?._id
         : BoardData?.board?.project
-        ? BoardData?.board?.project?._id
-        : BoardData?.board?._id
+          ? BoardData?.board?.project?._id
+          : BoardData?.board?._id
     );
     getTaskBoard(
       BoardData?._id
         ? BoardData?._id
         : BoardData?.board?.project
-        ? BoardData?.board?.project?._id
-        : BoardData?.board?._id
+          ? BoardData?.board?.project?._id
+          : BoardData?.board?._id
     );
     const handleClickOutside = (event) => {
       if (!event.target.closest(".kanban-task-action")) {
         setActiveDropdown(null); // Close dropdown when clicking outside
       }
     };
-  
+
     document.addEventListener("click", handleClickOutside);
     return () => {
       document.removeEventListener("click", handleClickOutside);
@@ -586,10 +701,9 @@ const TaskBoard = () => {
         .catch((err) => {
           setIsLoading(false);
           message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : "Error updating column"
             }!`
@@ -624,10 +738,9 @@ const TaskBoard = () => {
         .catch((err) => {
           setIsLoading(false);
           message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : "Error adding column"
             }!`
@@ -676,8 +789,8 @@ const TaskBoard = () => {
               BoardData?._id
                 ? BoardData?._id
                 : BoardData?.board?.project
-                ? BoardData?.board?.project?._id
-                : BoardData?.board?._id
+                  ? BoardData?.board?.project?._id
+                  : BoardData?.board?._id
             );
 
             setIsLoading(false);
@@ -689,10 +802,9 @@ const TaskBoard = () => {
         .catch((err) => {
           setIsLoading(false);
           message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : "Error adding task"
             }!`
@@ -721,15 +833,15 @@ const TaskBoard = () => {
             BoardData?._id
               ? BoardData?._id
               : BoardData?.board?.project
-              ? BoardData?.board?.project?._id
-              : BoardData?.board?._id
+                ? BoardData?.board?.project?._id
+                : BoardData?.board?._id
           );
           getTaskBoard(
             BoardData?._id
               ? BoardData?._id
               : BoardData?.board?.project
-              ? BoardData?.board?.project?._id
-              : BoardData?.board?._id
+                ? BoardData?.board?.project?._id
+                : BoardData?.board?._id
           );
           setLoader(false);
         }
@@ -738,10 +850,9 @@ const TaskBoard = () => {
         setLoader(false);
         // console.log(err);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : "Error deleting column"
           }!`
@@ -793,10 +904,9 @@ const TaskBoard = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : "Error removing task"
           }!`
@@ -806,17 +916,17 @@ const TaskBoard = () => {
 
   const onFinishAdd = (values) => {
     // Find the column to get its title
-    const currentColumn = columns.find(col => col._id === columnId); 
-    console.log("currentColumn",currentColumn)
+    const currentColumn = columns.find(col => col._id === columnId);
+    console.log("currentColumn", currentColumn)
     let updated_data = {
       ...values,
       ...(BoardData?.board?.project
         ? { projectId: BoardData?.board?.project?._id }
         : BoardData?._id
-        ? { projectId: BoardData?._id }
-        : { boardId: BoardData?.board?._id }),
-        columnId: columnId,
-        lane: currentColumn?.title,
+          ? { projectId: BoardData?._id }
+          : { boardId: BoardData?.board?._id }),
+      columnId: columnId,
+      lane: currentColumn?.title,
     };
     setLoader(true);
     apiServices("POST", "tasks", updated_data, user_state)
@@ -832,10 +942,9 @@ const TaskBoard = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("Tasks.addTaskError")
           }!`
@@ -1034,8 +1143,8 @@ const TaskBoard = () => {
             BoardData?._id
               ? BoardData?._id
               : BoardData?.board?.project
-              ? BoardData?.board?.project?._id
-              : BoardData?.board?._id
+                ? BoardData?.board?.project?._id
+                : BoardData?.board?._id
           );
           setLoader(false);
         }
@@ -1043,10 +1152,9 @@ const TaskBoard = () => {
       .catch((err) => {
         setLoader(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : "Error updating board members"
           }!`
@@ -1070,10 +1178,9 @@ const TaskBoard = () => {
       .catch((err) => {
         setLoadingAllEmployees(false);
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t("aAttend.errors.getEmployeesError")
           }`
@@ -1124,6 +1231,59 @@ const TaskBoard = () => {
       });
     }
   };
+
+  useEffect(() => {
+    if (addTask.isAddOpen) {
+      setDescValue(addTask.data?.description || '');
+      setDueDateValue(addTask.data?.dueDate ? moment(addTask.data.dueDate) : null);
+      setOriginalDueDate(addTask.data?.dueDate ? moment(addTask.data.dueDate) : null);
+      if (allEmployees.length === 0) {
+        apiServices("GET", `user/all-employees`, null, user_state)
+          .then(res => {
+            if (res?.data?.success) setAllEmployees(res.data.User || []);
+          });
+      }
+    }
+  }, [addTask.isAddOpen]);
+
+  useEffect(() => {
+    if (!selectedAssigneeFilter || selectedAssigneeFilter.length === 0) {
+      setFilteredColumns(columns);
+      return;
+    }
+
+    const filtered = columns.map(column => {
+      const filteredTasks = column.tasks.filter(task => {
+        const taskDetails = allTasks.find(t => t._id === task.taskId);
+
+        if (!taskDetails) {
+          return false;
+        }
+
+        // Check if task's assignee is in the selected filters
+        if (taskDetails.assignee && selectedAssigneeFilter.includes(taskDetails.assignee)) {
+          return true;
+        }
+
+        // Check if any of the task's assigned developers are in the selected filters
+        if (taskDetails.assignedDevelopers && taskDetails.assignedDevelopers.length > 0) {
+          return taskDetails.assignedDevelopers.some(dev => {
+            const devId = typeof dev === 'string' ? dev : (dev?._id || dev?.userId || dev?.id);
+            return selectedAssigneeFilter.includes(devId);
+          });
+        }
+
+        return false;
+      });
+
+      return {
+        ...column,
+        tasks: filteredTasks
+      };
+    });
+
+    setFilteredColumns(filtered);
+  }, [selectedAssigneeFilter, columns, allTasks]);
 
   return (
     <>
@@ -1205,10 +1365,10 @@ const TaskBoard = () => {
                       {boardTitle
                         ? boardTitle
                         : BoardData?.board?.boardTitle
-                        ? BoardData?.board?.boardTitle
-                        : BoardData?._id
-                        ? BoardData?.projectName
-                        : BoardData?.board?.project?.projectName}
+                          ? BoardData?.board?.boardTitle
+                          : BoardData?._id
+                            ? BoardData?.projectName
+                            : BoardData?.board?.project?.projectName}
                     </h3>
                     {(role === "admin" || permissions?.projectManagement) && (
                       <h3 style={{ marginLeft: "1%" }}>
@@ -1242,11 +1402,21 @@ const TaskBoard = () => {
                     >
                       {employees?.slice(0, 4).map((developer, index) => (
                         <li key={index}>
-                          <Tooltip title={developer?.fullName}>
+                          <Tooltip title={`${developer?.fullName} - Click to ${selectedAssigneeFilter.includes(developer._id) ? 'remove from' : 'add to'} filter`}>
                             <Avatar
                               size={24}
-                              style={{ cursor: "pointer" }}
+                              style={{
+                                cursor: "pointer",
+                                border: selectedAssigneeFilter.includes(developer._id) ? "2px solid #ff902f" : "none"
+                              }}
                               src={developer?.imageUrl || user_icon}
+                              onClick={() => {
+                                if (selectedAssigneeFilter.includes(developer._id)) {
+                                  setSelectedAssigneeFilter(selectedAssigneeFilter.filter(id => id !== developer._id));
+                                } else {
+                                  setSelectedAssigneeFilter([...selectedAssigneeFilter, developer._id]);
+                                }
+                              }}
                             />
                           </Tooltip>
                         </li>
@@ -1272,11 +1442,21 @@ const TaskBoard = () => {
                                 <a
                                   className="avatar avatar-xs projectTeamMember"
                                   key={index}
+                                  onClick={() => {
+                                    if (selectedAssigneeFilter.includes(developer._id)) {
+                                      setSelectedAssigneeFilter(selectedAssigneeFilter.filter(id => id !== developer._id));
+                                    } else {
+                                      setSelectedAssigneeFilter([...selectedAssigneeFilter, developer._id]);
+                                    }
+                                  }}
                                 >
-                                  <Tooltip title={developer?.fullName}>
+                                  <Tooltip title={`${developer?.fullName} - Click to ${selectedAssigneeFilter.includes(developer._id) ? 'remove from' : 'add to'} filter`}>
                                     <Avatar
                                       src={developer?.imageUrl || user_icon}
-                                      style={{ cursor: "pointer" }}
+                                      style={{
+                                        cursor: "pointer",
+                                        border: selectedAssigneeFilter.includes(developer._id) ? "2px solid #ff902f" : "none"
+                                      }}
                                     />
                                   </Tooltip>
                                 </a>
@@ -1286,6 +1466,42 @@ const TaskBoard = () => {
                         </li>
                       )}
                     </ul>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ display: "none", position: "relative", minWidth: "200px" }} id="assignee-filter-area">
+                      <Select
+                        showSearch
+                        allowClear
+                        placeholder="Filter by Assignee"
+                        value={selectedAssigneeFilter}
+                        onChange={(value) => setSelectedAssigneeFilter(value)}
+                        filterOption={(input, option) =>
+                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                        style={{ width: "100%", minWidth: "200px" }}
+                        className="custom-select custom-normal"
+                        getPopupContainer={() => document.getElementById("assignee-filter-area")}
+                      >
+                        {employees?.map((employee) => (
+                          <Select.Option key={employee._id} value={employee._id}>
+                            {employee.fullName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </div>
+                    {selectedAssigneeFilter && selectedAssigneeFilter.length > 0 && (
+                      <Button
+                        onClick={() => setSelectedAssigneeFilter([])}
+                        style={{
+                          height: "38px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center"
+                        }}
+                      >
+                        Clear Filter {selectedAssigneeFilter.length > 1 && `(${selectedAssigneeFilter.length})`}
+                      </Button>
+                    )}
                   </div>
                   {(role === "admin" || permissions?.projectManagement) &&
                     !BoardData?._id &&
@@ -1302,14 +1518,14 @@ const TaskBoard = () => {
                         Edit Members
                       </a>
                     )}
-                  <a
+                  {!(role === 'client' || role === 'focalperson') && <a
                     className="btn add-btn"
                     onClick={() => {
                       setOpen({ isAddOpen: true, isEditOpen: true, data: "" });
                     }}
                   >
                     <i className="fa fa-plus" /> Add Column
-                  </a>
+                  </a>}
                 </div>
               </div>
             </div>
@@ -1331,10 +1547,10 @@ const TaskBoard = () => {
                     <div className="col-md-12 text-center">
                       <Spin size="large" tip="Loading..." />
                     </div>
-                  ) : columns?.length > 0 ? (
+                  ) : filteredColumns?.length > 0 ? (
                     <div className="card-body">
                       <div className="kanban-cont">
-                        {columns.map((column, index) => (
+                        {filteredColumns.map((column, index) => (
                           <Draggable
                             key={column._id}
                             draggableId={column._id}
@@ -1349,9 +1565,8 @@ const TaskBoard = () => {
                                 {...provided.draggableProps}
                               >
                                 <div
-                                  className={`kanban-list kanban-${
-                                    column.color ? column.color : "primary"
-                                  }`}
+                                  className={`kanban-list kanban-${column.color ? column.color : "primary"
+                                    }`}
                                   style={{
                                     marginRight: "10px",
                                   }}
@@ -1361,9 +1576,9 @@ const TaskBoard = () => {
                                     {...provided.dragHandleProps}
                                   >
                                     <label className="status-title longText3">
-                                      {column.title}
+                                      {column.title} <span style={{ marginLeft: '8px', color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', fontWeight: '500' }}>{column.tasks.length}</span>
                                     </label>
-                                    {column.title !== "Backlog" && (
+                                    {column.title !== "Backlog" && !(role === 'client' || role === 'focalperson') && (
                                       <div className="dropdown kanban-action">
                                         <a
                                           data-bs-toggle="dropdown"
@@ -1474,15 +1689,15 @@ const TaskBoard = () => {
                                                           ProjectData:
                                                             BoardData?._id
                                                               ? {
-                                                                  projectName:
-                                                                    BoardData?.projectName,
-                                                                  _id: BoardData?._id,
-                                                                  assignedDevelopers:
-                                                                    employees,
-                                                                }
+                                                                projectName:
+                                                                  BoardData?.projectName,
+                                                                _id: BoardData?._id,
+                                                                assignedDevelopers:
+                                                                  employees,
+                                                              }
                                                               : BoardData?.board
-                                                                  ?.project
-                                                              ? {
+                                                                ?.project
+                                                                ? {
                                                                   projectName:
                                                                     BoardData
                                                                       ?.board
@@ -1495,7 +1710,7 @@ const TaskBoard = () => {
                                                                   assignedDevelopers:
                                                                     employees,
                                                                 }
-                                                              : {
+                                                                : {
                                                                   boardTitle:
                                                                     BoardData
                                                                       ?.board
@@ -1552,99 +1767,104 @@ const TaskBoard = () => {
                                                             style={{
                                                               wordBreak:
                                                                 "break-word",
+                                                              display: "block",
+                                                              overflow: "hidden",
+                                                              textOverflow: "ellipsis",
+                                                              whiteSpace: "nowrap",
+                                                              maxWidth: "100%"
                                                             }}
-                                                            // onClick={() => {
-                                                            //   const title =
-                                                            //     getTaskTitle(
-                                                            //       task.taskId
-                                                            //     );
-                                                            //   const tags =
-                                                            //     getTaskTags(
-                                                            //       task.taskId
-                                                            //     );
-                                                            //   const description =
-                                                            //     getTaskDescription(
-                                                            //       task.taskId
-                                                            //     );
-                                                            //   const status =
-                                                            //     column.title;
-                                                            //   const taskAssignedDevelopers =
-                                                            //     getTaskAssignedDevelopers(
-                                                            //       task.taskId
-                                                            //     );
+                                                          // onClick={() => {
+                                                          //   const title =
+                                                          //     getTaskTitle(
+                                                          //       task.taskId
+                                                          //     );
+                                                          //   const tags =
+                                                          //     getTaskTags(
+                                                          //       task.taskId
+                                                          //     );
+                                                          //   const description =
+                                                          //     getTaskDescription(
+                                                          //       task.taskId
+                                                          //     );
+                                                          //   const status =
+                                                          //     column.title;
+                                                          //   const taskAssignedDevelopers =
+                                                          //     getTaskAssignedDevelopers(
+                                                          //       task.taskId
+                                                          //     );
 
-                                                            //   setSelectedTask({
-                                                            //     _id: task.taskId,
-                                                            //     title,
-                                                            //     tags,
-                                                            //     description,
-                                                            //     ProjectData:
-                                                            //       BoardData?._id
-                                                            //         ? {
-                                                            //             projectName:
-                                                            //               BoardData?.projectName,
-                                                            //             _id: BoardData?._id,
-                                                            //             assignedDevelopers:
-                                                            //               employees,
-                                                            //           }
-                                                            //         : BoardData
-                                                            //             ?.board
-                                                            //             ?.project
-                                                            //         ? {
-                                                            //             projectName:
-                                                            //               BoardData
-                                                            //                 ?.board
-                                                            //                 ?.project
-                                                            //                 ?.projectName,
-                                                            //             _id: BoardData
-                                                            //               ?.board
-                                                            //               ?.project
-                                                            //               ?._id,
-                                                            //             assignedDevelopers:
-                                                            //               employees,
-                                                            //           }
-                                                            //         : {
-                                                            //             boardTitle:
-                                                            //               BoardData
-                                                            //                 ?.board
-                                                            //                 ?.boardTitle,
-                                                            //             _id: BoardData
-                                                            //               ?.board
-                                                            //               ?._id,
-                                                            //             project:
-                                                            //               null,
-                                                            //             assignedDevelopers:
-                                                            //               employees,
-                                                            //           },
-                                                            //     status,
-                                                            //     boardId:
-                                                            //       boardId,
-                                                            //     columnId:
-                                                            //       column._id,
-                                                            //     columnName:
-                                                            //       column.title,
-                                                            //     assignedDevelopers:
-                                                            //       taskAssignedDevelopers,
-                                                            //     columnColor:
-                                                            //       column.color ||
-                                                            //       "primary", // Add column color
-                                                            //     allColumns:
-                                                            //       columns.map(
-                                                            //         (col) => ({
-                                                            //           // Add all columns data
-                                                            //           id: col._id,
-                                                            //           title:
-                                                            //             col.title,
-                                                            //           color:
-                                                            //             col.color ||
-                                                            //             "primary",
-                                                            //         })
-                                                            //       ),
-                                                            //   });
-                                                            //   setViewModal(
-                                                            //     true
-                                                            //   );
-                                                            // }}
+                                                          //   setSelectedTask({
+                                                          //     _id: task.taskId,
+                                                          //     title,
+                                                          //     tags,
+                                                          //     description,
+                                                          //     ProjectData:
+                                                          //       BoardData?._id
+                                                          //         ? {
+                                                          //             projectName:
+                                                          //               BoardData?.projectName,
+                                                          //             _id: BoardData?._id,
+                                                          //             assignedDevelopers:
+                                                          //               employees,
+                                                          //           }
+                                                          //         : BoardData
+                                                          //             ?.board
+                                                          //             ?.project
+                                                          //         ? {
+                                                          //             projectName:
+                                                          //               BoardData
+                                                          //                 ?.board
+                                                          //                 ?.project
+                                                          //                 ?.projectName,
+                                                          //             _id: BoardData
+                                                          //               ?.board
+                                                          //               ?.project
+                                                          //               ?._id,
+                                                          //             assignedDevelopers:
+                                                          //               employees,
+                                                          //           }
+                                                          //         : {
+                                                          //             boardTitle:
+                                                          //               BoardData
+                                                          //                 ?.board
+                                                          //                 ?.boardTitle,
+                                                          //             _id: BoardData
+                                                          //               ?.board
+                                                          //               ?._id,
+                                                          //             project:
+                                                          //               null,
+                                                          //             assignedDevelopers:
+                                                          //               employees,
+                                                          //           },
+                                                          //     status,
+                                                          //     boardId:
+                                                          //       boardId,
+                                                          //     columnId:
+                                                          //       column._id,
+                                                          //     columnName:
+                                                          //       column.title,
+                                                          //     assignedDevelopers:
+                                                          //       taskAssignedDevelopers,
+                                                          //     columnColor:
+                                                          //       column.color ||
+                                                          //       "primary", // Add column color
+                                                          //     allColumns:
+                                                          //       columns.map(
+                                                          //         (col) => ({
+                                                          //           // Add all columns data
+                                                          //           id: col._id,
+                                                          //           title:
+                                                          //             col.title,
+                                                          //           color:
+                                                          //             col.color ||
+                                                          //             "primary",
+                                                          //         })
+                                                          //       ),
+                                                          //   });
+                                                          //   setViewModal(
+                                                          //     true
+                                                          //   );
+                                                          // }}
                                                           >
                                                             {getTaskTitle(
                                                               task.taskId
@@ -1658,7 +1878,7 @@ const TaskBoard = () => {
                                                               gap: "4px",
                                                             }}
                                                           >
-                                                            <div
+                                                            {/* <div
                                                               className="project-members"
                                                               style={{
                                                                 margin:
@@ -1779,7 +1999,7 @@ const TaskBoard = () => {
                                                                   </li>
                                                                 )}
                                                               </ul>
-                                                            </div>
+                                                            </div> */}
                                                             <div className="dropdown kanban-task-action" onClick={(e) => e.stopPropagation()}>
                                                               <a
                                                                 data-bs-toggle="dropdown"
@@ -1827,16 +2047,16 @@ const TaskBoard = () => {
                                                                         ProjectData:
                                                                           BoardData?._id
                                                                             ? {
-                                                                                projectName:
-                                                                                  BoardData?.projectName,
-                                                                                _id: BoardData?._id,
-                                                                                assignedDevelopers:
-                                                                                  employees,
-                                                                              }
+                                                                              projectName:
+                                                                                BoardData?.projectName,
+                                                                              _id: BoardData?._id,
+                                                                              assignedDevelopers:
+                                                                                employees,
+                                                                            }
                                                                             : BoardData
-                                                                                ?.board
-                                                                                ?.project
-                                                                            ? {
+                                                                              ?.board
+                                                                              ?.project
+                                                                              ? {
                                                                                 projectName:
                                                                                   BoardData
                                                                                     ?.board
@@ -1849,7 +2069,7 @@ const TaskBoard = () => {
                                                                                 assignedDevelopers:
                                                                                   employees,
                                                                               }
-                                                                            : {
+                                                                              : {
                                                                                 boardTitle:
                                                                                   BoardData
                                                                                     ?.board
@@ -1887,7 +2107,7 @@ const TaskBoard = () => {
                                                                                 "primary",
                                                                             })
                                                                           ),
-                                                                          isEditing: true,
+                                                                        isEditing: true,
                                                                       }
                                                                     );
                                                                     setViewModal(
@@ -1898,34 +2118,36 @@ const TaskBoard = () => {
                                                                   Edit
                                                                 </a>
                                                                 {/* )} */}
-                                                                <a
-                                                                  className="dropdown-item"
-                                                                  onClick={() => {
-                                                                    const title =
-                                                                      getTaskTitle(
-                                                                        task.taskId
+                                                                {!(role === 'client' || role === 'focalperson') && (
+                                                                  <a
+                                                                    className="dropdown-item"
+                                                                    onClick={() => {
+                                                                      const title =
+                                                                        getTaskTitle(
+                                                                          task.taskId
+                                                                        );
+                                                                      setAddTask({
+                                                                        isDelOpen: true,
+                                                                        isAddOpen: false,
+                                                                        data: task,
+                                                                        title:
+                                                                          title,
+                                                                      });
+                                                                      setColumnId(
+                                                                        column._id
                                                                       );
-                                                                    setAddTask({
-                                                                      isDelOpen: true,
-                                                                      isAddOpen: false,
-                                                                      data: task,
-                                                                      title:
-                                                                        title,
-                                                                    });
-                                                                    setColumnId(
-                                                                      column._id
-                                                                    );
-                                                                  }}
-                                                                >
-                                                                  Remove
-                                                                </a>
+                                                                    }}
+                                                                  >
+                                                                    Remove
+                                                                  </a>)}
                                                               </div>
                                                             </div>
+
                                                           </div>
                                                         </span>
                                                       </div>
                                                       <div className="task-board-body">
-                                                        <div className="kanban-footer">
+                                                        <div className="kanban-footer" style={{ position: "relative" }}>
                                                           <span
                                                             className="task-info-cont"
                                                             style={{
@@ -1934,29 +2156,122 @@ const TaskBoard = () => {
                                                                 "hidden",
                                                             }}
                                                           >
-                                                            <span className="task-date">
-                                                              {" "}
+                                                            <div
+                                                              className="task-tags"
+                                                              style={{
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                gap: "4px",
+                                                                flexWrap: "nowrap"
+                                                              }}
+                                                            >
                                                               {getTaskTags(
                                                                 task.taskId
-                                                              )?.map((tag) => (
+                                                              )?.slice(0, 1).map((tag) => (
                                                                 <Tag
                                                                   key={tag}
                                                                   color={
                                                                     colorMapping[
-                                                                      column
-                                                                        .color
+                                                                    column
+                                                                      .color
                                                                     ]
                                                                   }
                                                                   style={{
-                                                                    marginBottom:
-                                                                      "4px",
+                                                                    marginBottom: 0,
+                                                                    maxWidth: "100px",
+                                                                    overflow: "hidden",
+                                                                    textOverflow: "ellipsis",
+                                                                    whiteSpace: "nowrap",
+                                                                    display: "inline-block"
                                                                   }}
                                                                 >
                                                                   {tag}
                                                                 </Tag>
                                                               ))}
-                                                            </span>
+                                                              {getTaskTags(task.taskId)?.length > 1 && (
+                                                                <Tag
+                                                                  color="default"
+                                                                  style={{
+                                                                    marginBottom: 0,
+                                                                    fontSize: "11px",
+                                                                    padding: "0 4px",
+                                                                    height: "22px",
+                                                                    lineHeight: "20px"
+                                                                  }}
+                                                                >
+                                                                  +{getTaskTags(task.taskId).length - 1}
+                                                                </Tag>
+                                                              )}
+                                                            </div>
                                                           </span>
+                                                          {getTaskPriority(task.taskId) && (
+                                                            <div
+                                                              style={{
+                                                                position: "absolute",
+                                                                bottom: "2px",
+                                                                right: "44px",
+                                                                fontSize: "10px",
+                                                                fontWeight: "500",
+                                                                padding: "2px 6px",
+                                                                borderRadius: "4px",
+                                                                backgroundColor:
+                                                                  getTaskPriority(task.taskId) === "Highest" ? "#ff4d4f" :
+                                                                    getTaskPriority(task.taskId) === "High" ? "#ff7a45" :
+                                                                      getTaskPriority(task.taskId) === "Medium" ? "#faad14" :
+                                                                        getTaskPriority(task.taskId) === "Low" ? "#52c41a" :
+                                                                          getTaskPriority(task.taskId) === "Lowest" ? "#1890ff" : "#d9d9d9",
+                                                                color: "#fff",
+                                                                textTransform: "uppercase",
+                                                                letterSpacing: "0.5px"
+                                                              }}
+                                                            >
+                                                              {getTaskPriority(task.taskId)}
+                                                            </div>
+                                                          )}
+                                                          {/* Assignee Avatar */}
+                                                          {(() => {
+                                                            const assignee = getTaskAssignee(task.taskId);
+                                                            if (!assignee) return null;
+
+                                                            return (
+                                                              <Tooltip title={assignee?.fullName || 'Assignee'}>
+                                                                <div
+                                                                  style={{
+                                                                    position: "absolute",
+                                                                    bottom: "0px",
+                                                                    right: "8px",
+                                                                    width: "28px",
+                                                                    height: "28px",
+                                                                    borderRadius: "50%",
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "center",
+                                                                    fontSize: "11px",
+                                                                    fontWeight: "600",
+                                                                    cursor: "pointer",
+                                                                    border: "2px solid white",
+                                                                    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                                                                    backgroundColor: assignee?.imageUrl ? "transparent" : "#4285f4",
+                                                                    color: "white",
+                                                                    backgroundImage: assignee?.imageUrl ? `url(${assignee.imageUrl})` : "none",
+                                                                    backgroundSize: "cover",
+                                                                    backgroundPosition: "center"
+                                                                  }}
+                                                                  onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    // Toggle filter for this assignee
+                                                                    if (selectedAssigneeFilter.includes(assignee._id)) {
+                                                                      setSelectedAssigneeFilter(selectedAssigneeFilter.filter(id => id !== assignee._id));
+                                                                    } else {
+                                                                      setSelectedAssigneeFilter([...selectedAssigneeFilter, assignee._id]);
+                                                                    }
+                                                                  }}
+                                                                >
+                                                                  {!assignee?.imageUrl && getInitials(assignee?.fullName)}
+                                                                </div>
+                                                              </Tooltip>
+                                                            );
+                                                          })()}
                                                         </div>
                                                       </div>
                                                     </div>
@@ -1981,28 +2296,9 @@ const TaskBoard = () => {
                                   >
                                     <a
                                       style={{ cursor: "pointer" }}
-                                      // style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
-                                      // onClick={() => {
-                                      //   if ((role === "admin" || permissions.projectManagement)) {
-                                      //     getTasksOptions(ProjectData?._id);
-                                      //     setTaskModal(true);
-                                      //     setColumnId(column._id);
-                                      //   }
-                                      //   else {
-                                      //     return;
-                                      //   }
-                                      // }}
                                       onClick={() => {
-                                        // getTasksOptions(
-                                        //   BoardData?._id
-                                        //     ? BoardData?._id
-                                        //     : BoardData?.board?.project
-                                        //     ? BoardData?.board?.project?._id
-                                        //     : BoardData?.board?._id
-                                        // );
-                                        // setTaskModal(true);
-                                        setSelectedTeamMembers([]); // Clear selected team members
-                                        form2.resetFields(); // Reset form fields
+                                        setSelectedTeamMembers([]);
+                                        form2.resetFields();
                                         setAddTask({ isAddOpen: true, data: "" });
                                         setColumnId(column._id);
                                       }}
@@ -2397,7 +2693,7 @@ const TaskBoard = () => {
                           <Select
                             showSearch
                             onSearch={(val) => {
-                              showTeamSearch(val, "Team");
+                              // showTeamSearch(val, "Team");
                               // onTeamChange(val)
                             }}
                             filterOption={(input, option) =>
@@ -2638,7 +2934,7 @@ const TaskBoard = () => {
                       <Select
                         showSearch
                         onSearch={(val) => {
-                          showTeamSearch(val, "Team");
+                          // showTeamSearch(val, "Team");
                           // onTeamChange(val)
                         }}
                         filterOption={(input, option) =>
@@ -2749,7 +3045,7 @@ const TaskBoard = () => {
               <Form
                 form={form2}
                 onFinish={(values) => {
-                  onFinishAdd(values);
+                  onFinishAdd({ ...values, description: descValue, dueDate: dueDateValue });
                 }}
                 onFinishFailed={({ errorFields }) => {
                   const consecutiveSpacesError = errorFields.find((field) =>
@@ -2767,32 +3063,25 @@ const TaskBoard = () => {
                   <div className="col-12">
                     <div className="form-group">
                       <label>
-                        {t("Tasks.title")}{" "}
-                        <span className="text-danger">*</span>
+                        {t("Tasks.title")} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="title"
                         className="custom-border"
-                        rules={[
-                          {
-                            whitespace: true,
-                            required: true,
-                            validator: (_, value) => {
-                              if (!value || value.trim() === "") {
-                                return Promise.reject(
-                                  t("Tasks.pleaseentertitle")
-                                );
-                              } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject(
-                                  t("allEmp.errors.removeConsecutiveSpaces2")
-                                );
-                              } else if (value.length < 3) {
-                                return Promise.reject(t("Tasks.titleLength"));
-                              }
-                              return Promise.resolve();
-                            },
+                        rules={[{
+                          whitespace: true,
+                          required: true,
+                          validator: (_, value) => {
+                            if (!value || value.trim() === "") {
+                              return Promise.reject(t("Tasks.pleaseentertitle"));
+                            } else if (/\s{2,}/.test(value)) {
+                              return Promise.reject(t("allEmp.errors.removeConsecutiveSpaces2"));
+                            } else if (value.length < 3) {
+                              return Promise.reject(t("Tasks.titleLength"));
+                            }
+                            return Promise.resolve();
                           },
-                        ]}
+                        }]}
                       >
                         <Input className="form-control" maxLength={50} />
                       </Form.Item>
@@ -2802,49 +3091,22 @@ const TaskBoard = () => {
                     <div className="form-group">
                       <label>
                         {t("Tasks.tags")} <span className="text-danger">*</span>
-                        <Tooltip
-                          className="custom-tooltip"
-                          placement="rightBottom"
-                          title={<label>{t("Tasks.taginstruction")}</label>}
-                        >
-                          <span
-                            style={{
-                              border: "1px solid grey",
-                              color: "grey",
-                              fontSize: "12px",
-                              borderRadius: "50%",
-                              padding: "1.5px 4px 1px",
-                              margin: "5px",
-                              cursor: "pointer",
-                            }}
-                          >
+                        <Tooltip className="custom-tooltip" placement="rightBottom" title={<label>{t("Tasks.taginstruction")}</label>}>
+                          <span style={{ border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer' }}>
                             {t("Tasks.Qmark")}
                           </span>
                         </Tooltip>
                       </label>
-                      <div
-                        style={{ position: "relative" }}
-                        className="hideDropdownMenu"
-                        id="area22"
-                      >
+                      <div style={{ position: "relative" }} className="hideDropdownMenu" id="area22">
                         <Form.Item
                           name="tags"
                           className="addTeamHeight"
-                          rules={[
-                            {
-                              // whitespace: true,
-                              required: true,
-                              message: t("Tasks.pleaseentertags"),
-                            },
-                          ]}
+                          rules={[{ required: true, message: t("Tasks.pleaseentertags") }]}
                         >
                           <Select
                             mode="tags"
-                            // className="custom-select custom-normal"
                             className="custom-select customselect-height"
-                            getPopupContainer={() =>
-                              document.getElementById("area22")
-                            }
+                            getPopupContainer={() => document.getElementById("area22")}
                           />
                         </Form.Item>
                       </div>
@@ -2852,54 +3114,118 @@ const TaskBoard = () => {
                   </div>
                   <div className="col-12">
                     <div className="form-group">
-                      <label
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <div>
-                          {t("finance.Invoices.description")}{" "}
-                          <span className="text-danger">*</span>
-                        </div>
+                      <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div>{t('finance.Invoices.description')} <span className="text-danger">*</span></div>
                       </label>
                       <Form.Item
                         name="description"
-                        rules={[
-                          {
-                            whitespace: true,
-                            required: true,
-                            validator: (_, value) => {
-                              if (!value || value.trim() === "") {
-                                return Promise.reject(
-                                  t("Tasks.pleaseenterdescription")
-                                );
-                              } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject(
-                                  t("allEmp.errors.removeConsecutiveSpaces2")
-                                );
-                              } else if (value.length <= 4) {
-                                return Promise.reject(
-                                  t("Tasks.descriptionLength")
-                                );
-                              }
-                              return Promise.resolve();
-                            },
+                        rules={[{
+                          required: true,
+                          validator: (_, value) => {
+                            const plain = descValue.replace(/<(.|\n)*?>/g, '');
+                            if (!plain || plain.trim() === '') {
+                              return Promise.reject(t('Tasks.pleaseenterdescription'));
+                            }
+                            if (/\s{2,}/.test(plain)) {
+                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                            }
+                            if (plain.length <= 4) {
+                              return Promise.reject(t('Tasks.descriptionLength'));
+                            }
+                            return Promise.resolve();
                           },
-                        ]}
+                        }]}
                         className="custom-border"
                       >
-                        <Input.TextArea rows={3} className="form-control" />
+                        <ReactQuill value={descValue} onChange={setDescValue} theme="snow" style={{ minHeight: 100 }} />
                       </Form.Item>
                     </div>
                   </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        Assignee :
+                      </label>
+                      <div style={{ position: "relative" }} id="assigneeAreaTaskboard">
+                        <Form.Item
+                          name='assignee'
+                          className='custom-border'
+                        >
+                          <Select
+                            showSearch
+                            placeholder="Select assignee"
+                            allowClear
+                            optionFilterProp="children"
+                            filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                            className="custom-select custom-normal"
+                            getPopupContainer={() =>
+                              document.getElementById("assigneeAreaTaskboard")
+                            }
+                          >
+                            <Select.Option value="">Unassigned</Select.Option>
+                            {allEmployees.map(user => (
+                              <Select.Option key={user._id} value={user._id}>{user.fullName}</Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        Priority :
+                      </label>
+                      <div style={{ position: "relative" }} id="priorityAreaTaskboard">
+                        <Form.Item
+                          name='priority'
+                          className='custom-border'
+                        >
+                          <Select
+                            placeholder="Select priority"
+                            allowClear
+                            className="custom-select custom-normal"
+                            getPopupContainer={() =>
+                              document.getElementById("priorityAreaTaskboard")
+                            }
+                          >
+                            <Select.Option value="Highest">Highest</Select.Option>
+                            <Select.Option value="High">High</Select.Option>
+                            <Select.Option value="Medium">Medium</Select.Option>
+                            <Select.Option value="Low">Low</Select.Option>
+                            <Select.Option value="Lowest">Lowest</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        Due date :
+                      </label>
+                      <div style={{ position: "relative" }} id="dueDateAreaTaskboard">
+                        <Form.Item
+                          name='dueDate'
+                          className='custom-border'
+                        >
+                          <DatePicker
+                            allowClear
+                            placeholder="Select due date"
+                            className="custom-select custom-normal"
+                            style={{ width: '100%' }}
+                            getPopupContainer={() =>
+                              document.getElementById("dueDateAreaTaskboard")
+                            }
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
                 <div className="submit-section">
-                  <button
-                    type="submit"
-                    className="btn btn-primary submit-btn"
-                    disabled={loader}
-                  >
+                  <button type="submit" className="btn btn-primary submit-btn" disabled={loader}>
                     {loader ? (
                       <Spin size="small" indicator={antIcon} />
                     ) : (

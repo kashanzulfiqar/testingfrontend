@@ -49,7 +49,6 @@ const SuperAdminMain = () => {
   const { t, i18n } = useTranslation();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const user_name = useSelector((state) => state?.user?.loginvalue?.user?.fullName);
-  console.log("permissions", permissions)
   const navigate = useNavigate();
   const csvLinkEl = useRef();
   const superAdmin = useSelector((state) => state.superAdmin);
@@ -438,7 +437,7 @@ const SuperAdminMain = () => {
     const url = data?.disabled == false ? 'newApi/disable' : 'newApi/enable'
     const method = data?.disabled == false ? 'DELETE' : 'PUT'
     setLoader(true);
-    apiServices(method, url, data?.disabled == false ? id : payload, user_state)
+    apiServices(method, url, data?.disabled == false ? data : payload, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {

@@ -22,6 +22,9 @@ import BankDetails from "./BankDetails";
 import ExpenseCategory from "./ExpenseCategory";
 import { useTranslation } from "react-i18next";
 import WokringDays from "./WorkingDays";
+import AssetsManagement from "./AssetsManagement";
+import AI_Config from "./AI_Config";
+
 
 const Settings = ({test}) => {
 
@@ -46,7 +49,15 @@ const Settings = ({test}) => {
   const getInitialComponent = () => {
     const params = new URLSearchParams(location.search);
     const settingFromURL = params.get('setting');
-    return settingFromURL ? decodeURIComponent(settingFromURL) : 'Company Settings';
+    if (settingFromURL) {
+      const decoded = decodeURIComponent(settingFromURL);
+      // Redirect old asset component names to Assets Management
+      if (decoded === 'Assets Category' || decoded === 'Assets Sub-Category' || decoded === 'Assets Tag') {
+        return 'Assets Management';
+      }
+      return decoded;
+    }
+    return 'Company Settings';
   };
 
   const [editModal, setEditModal] = useState('')
@@ -98,7 +109,19 @@ useEffect(() => {
   const params = new URLSearchParams(location.search);
   const settingFromURL = params.get('setting');
   if (settingFromURL) {
-    setShowComponent(decodeURIComponent(settingFromURL));
+    const decoded = decodeURIComponent(settingFromURL);
+    // Redirect old asset component names to Assets Management
+    if (decoded === 'Assets Category' || decoded === 'Assets Sub-Category' || decoded === 'Assets Tag') {
+      setShowComponent('Assets Management');
+      // Update URL to reflect the change
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('setting', encodeURIComponent('Assets Management'));
+      // Preserve the old setting as subTab for AssetsManagement component
+      newUrl.searchParams.set('subTab', encodeURIComponent(decoded));
+      window.history.replaceState({}, '', newUrl);
+    } else {
+      setShowComponent(decoded);
+    }
   }
 }, [location.search]);
 
@@ -132,6 +155,8 @@ useEffect(() => {
           ? t('settings.invoiceCounter')
           : showComponent==="Expense Categories" 
           ? t('settings.expenseCategories')
+          : showComponent==="Assets Management" 
+          ? 'Assets Management'
           : showComponent==="Working Days" 
           ? 'Working Days'
           : showComponent
@@ -313,7 +338,33 @@ useEffect(() => {
                         {t('settings.expenseCategories')}
                       </a>
                     </li>
-                 </ul>
+                    <li className={showComponent === 'Assets Management' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Assets Management')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Assets Management');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-cubes" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
+                        Assets Management
+                      </a>
+                    </li>
+                    <li className={showComponent === 'AI Configuration' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('AI Configuration')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('AI Configuration');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-android" 
+                          style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}
+                        ></i>
+                        AI Configuration
+                      </a>
+                    </li>
+                  </ul>
                </div>
              </div>
              <div className="cardStyle col-sm-8 col-md-8 col-lg-8 col-xl-9">
@@ -330,6 +381,8 @@ useEffect(() => {
                 showComponent === 'Invoice Counter' ? <InvoiceCounter /> : 
                 showComponent === 'Bank Details' ? <BankDetails /> : 
                 showComponent === 'Expense Categories' ? <ExpenseCategory /> : 
+                showComponent === 'Assets Management' ? <AssetsManagement /> : 
+                showComponent === 'AI Configuration' ? <AI_Config /> :
                 <WokringDays />
               }
              </div>

@@ -85,12 +85,26 @@ import AdminForgot from "./Forgot-Admin";
 import DisabledCompanies from "../MainPage/SuperAdmin/disbaledCompanies";
 import LeadsDetails from "../MainPage/Employees/leadsDetails";
 import LeadReport from "../MainPage/HR/Reports/leadreport";
+import ClientReport from "../MainPage/HR/Reports/clientreport";
 import PrivacyPolicy from "../LandingPage/privacyPolicy";
 import RefundPolicy from "../LandingPage/refundPolicy";
 import TermsAndConditions from "../LandingPage/TermsConditions";
 import ClientForgotPassword from "./ClientForgotPassword";
 import ClientResetPassword from "./ClientResetPassword";
+import Recruitment from "../MainPage/Recruitment";
+import RecruitmentLayout from '../MainPage/Recruitment/RecruitmentLayout';
+import RecruitmentDashboard from '../MainPage/Recruitment/Dashboard';
+import Jobs from '../MainPage/Recruitment/Jobs';
+import JobDetails from "../MainPage/Recruitment/JobDetails";
+import EditJob from "../MainPage/Recruitment/EditJob";
+import Interviews from '../MainPage/Recruitment/Interviews';
+import PublicInterviewPage from '../MainPage/Recruitment/PublicInterviewPage';
 import TaskDetails from "../MainPage/Employees/Projects/taskDetail.jsx";
+import PaymentSetup from "../MainPage/Pages/Payment/PaymentSetup";
+import Billing from "../MainPage/Pages/Billing/Billing.jsx";
+import BillingHistory from "../MainPage/Pages/Billing/BillingHistory.jsx";
+import Assets from "../MainPage/Administration/assets";
+import AssetDetails from "../MainPage/Administration/AssetDetails";
 
 const App = () => {
   const loginState = useSelector((state) => state.user.loginvalue);
@@ -184,9 +198,10 @@ const App = () => {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/reset/:token" element={<AdminResetPassword />} />
         <Route path="/register" element={<RegistrationPage />} />
-
+        <Route path={`/change-password`} element={<ChangePassword />} />
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
 
+        {/* Protected Routes */}
         {/* <Route element={<Layout />}> */}
         <Route
           path="/"
@@ -234,7 +249,6 @@ const App = () => {
             element={<EmployeeProfile />}
           />
           <Route path={`/profile`} element={<EmployeeProfile />} />
-          <Route path={`/change-password`} element={<ChangePassword />} />
           <Route path={`payroll/payslip`} element={<SalarySlip />} />
           <Route
             path={`payroll/payroll-histroy`}
@@ -277,7 +291,12 @@ const App = () => {
           <Route path="/settings" element={<Settings />} />
           {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
 
-          {/* Settings  */}
+          {/* Billing  */}
+          <Route path="/subscription-details" element={<Billing />} />
+
+          {/* Billing History  */}
+          <Route path="/invoice-history" element={<BillingHistory />} />
+
           <Route
             path="/employee/attendance-employee"
             element={<AttendanceEmployee />}
@@ -301,10 +320,36 @@ const App = () => {
 
           <Route path="/attendance-report" element={<AttendanceReport />} />
           <Route path="/lead-report" element={<LeadReport />} />
+          <Route path="/client-report" element={<ClientReport />} />
+          <Route path="/assets" element={<Assets />} />
+          <Route path="/assets/:id" element={<AssetDetails />} />
+          <Route path="/recruitment/*" element={
+            <RecruitmentLayout>
+              <Routes>
+                <Route path="/" element={<Navigate to="/recruitment/dashboard" replace />} />
+                <Route path="dashboard" element={<RecruitmentDashboard />} />
+                <Route path="jobs" element={<Jobs />} />
+                <Route path="jobs/:jobId" element={<JobDetails />} />
+                <Route path="jobs/:jobId/edit" element={<EditJob />} />
+                <Route path="candidates" element={<div>Candidates Page</div>} />
+                <Route path="interviews" element={<Interviews />} />
+                <Route path="offers" element={<div>Offers Page</div>} />
+                <Route path="settings" element={<div>Settings Page</div>} />
+              </Routes>
+            </RecruitmentLayout>
+          } />
 
           {/* <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
           <label style={{cursor: 'pointer'}} className="longText">{text}</label>
         </Link> */}
+
+          {/* Add payment setup route */}
+          <Route path={`client/focal-profile`} element={<FocalProfile />} />
+          <Route path={`invoices`} element={<Invoices />} />
+          <Route path={`invoices/create-invoice`} element={<Invoicecreate />} />
+          <Route path={`invoices/edit-invoice`} element={<EditInvoice />} />
+          <Route path={`invoices/view-invoice`} element={<Invoiceview />} />
+          <Route path={`payment/setup`} element={<PaymentSetup />} />
         </Route>
 
         {/* <Route path="/404" element={<Error404 />}></Route> */}

@@ -218,7 +218,7 @@ const ProjectView = () => {
 
   useEffect(() => {
     // if(role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.projectManagement || permissions?.clientManagement ) {
-    if ((role != "client" && role != "focalperson") && !stateProj) {
+    if (!stateProj) {
       setIsLoading(true);
       GetProjects();
       //fetchEmployees();
@@ -1228,11 +1228,12 @@ async function downloadFile(url, fileName) {
                 </div>
               </div>
 
+                {permissions?.viewProjectFiles && (
                 <>
                 <div className="card">
                 <div className="card-body">
                   <h5 className="card-title m-b-20">Project Files
-                  { (role === 'admin' || permissions?.projectManagement) &&
+                  { permissions?.projectManagement &&
                     <>
                       <button
                         type="button"
@@ -1568,7 +1569,8 @@ async function downloadFile(url, fileName) {
               </div>
             </Modal>
               </>
-            {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) &&
+            )}
+            {(role === 'admin' || permissions?.viewConfidentialFiles) &&
             <>
               <div className="card">
                 <div className="card-body">
@@ -1580,6 +1582,7 @@ async function downloadFile(url, fileName) {
                     justifyContent: 'space-between'
                   }}
                 ><div style={{display:'flex', flexDirection: 'row', alignItems: 'center'}}><h5 className="card-title m-b-20">Confidential Files</h5> <span className="badge badge-pill bg-custom float-end" style={{marginLeft:'10px', marginBottom: 'auto'}}>ADMIN</span></div>
+                    { (role === 'admin' || permissions?.projectManagement) &&
                     <>
                     <button
                       type="button"
@@ -1601,6 +1604,7 @@ async function downloadFile(url, fileName) {
                           onChange={handleFileInputChange}
                         />
                     </>
+                    }
                     </div>
                   {
                     project?.adminDocs?.length > 0 ? 
@@ -1921,7 +1925,7 @@ async function downloadFile(url, fileName) {
             </>
             }
 
-              {((role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.projectType === "Billed") ? 
+              {(permissions?.projectManagement && permissions?.viewCostDetails && project?.projectType === "Billed") ? 
               (
                 <div className="card">
                   <div className="card-body">
@@ -2219,7 +2223,7 @@ async function downloadFile(url, fileName) {
                   <div className="table-responsive">
                     <table className="table table-striped table-border">
                       <tbody>
-                        {((role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.projectType === 'Billed') ? 
+                        {((role === 'admin' || role === 'client' || role === 'focalperson' || (permissions?.projectManagement && permissions?.viewCostDetails)) && project?.projectType === 'Billed') ? 
                         (
                         <>
                           <tr>

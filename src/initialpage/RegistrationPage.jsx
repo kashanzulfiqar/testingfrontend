@@ -15,7 +15,8 @@ import {
   Spin,
   Steps,
   message,
-  Select
+  Select,
+  Tooltip,
 } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import DaftarProLogo from "../files/Icons/DaftraProLogo.svg";
@@ -24,10 +25,10 @@ import PhoneNoInput from "../Components/PhoneNoInput/index.jsx";
 import { apiServices } from "../Services/apiServices";
 import Select2 from "react-select";
 import styled from "styled-components";
-import { LoadingOutlined } from '@ant-design/icons';
-import { getAllISOCodes } from 'iso-country-currency';
+import { LoadingOutlined } from "@ant-design/icons";
+import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
-
+import { Country, State, City } from "country-state-city";
 
 const options = [
   { value: "Male", label: "Male" },
@@ -43,7 +44,7 @@ const Registrationpage = (props) => {
   const [successSection, setSuccessSection] = useState(false);
   const [eye, seteye] = useState(true);
   const [compId, setCompId] = useState("");
-  const [loader, setLoader] = useState(false)
+  const [loader, setLoader] = useState(false);
   const [allCurrencies, setAllCurrencies] = useState([]);
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
@@ -51,25 +52,73 @@ const Registrationpage = (props) => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedState, setSelectedState] = useState(null);
   const [loadingLocations, setLoadingLocations] = useState(false);
+  const [selectedCountryCode, setSelectedCountryCode] = useState(null);
+  
+  const formatCoordinates = (latitude, longitude) => {
+    const hasLat =
+      latitude !== undefined && latitude !== null && latitude !== "";
+    const hasLong =
+      longitude !== undefined && longitude !== null && longitude !== "";
+    if (!hasLat && !hasLong) {
+      return "";
+    }
+    const lat = hasLat ? String(latitude).trim() : "";
+    const long = hasLong ? String(longitude).trim() : "";
+    return lat && long ? `${lat}, ${long}` : lat || long;
+  };
+
+  const parseCoordinates = (value) => {
+    if (!value && value !== 0) {
+      return null;
+    }
+    const cleaned = String(value).trim().replace(/[()]/g, "");
+    const [latRaw, longRaw] = cleaned.split(",").map((part) => part?.trim());
+    if (!latRaw || !longRaw) {
+      return null;
+    }
+    const latitude = parseFloat(latRaw);
+    const longitude = parseFloat(longRaw);
+    if (
+      Number.isNaN(latitude) ||
+      Number.isNaN(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      return null;
+    }
+    return {
+      latitude,
+      longitude,
+    };
+  };
+
+  const initialLocation = { coordinates: "" };
 
   useEffect(() => {
+    form.setFieldsValue({ locations: [initialLocation] });
     // Detect Safari using more robust feature detection (for both mobile and desktop)
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
-                     (navigator.vendor && navigator.vendor.includes('Apple') && !navigator.userAgent.includes('CriOS') && !navigator.userAgent.includes('FxiOS'));
-  
+    const isSafari =
+      /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
+      (navigator.vendor &&
+        navigator.vendor.includes("Apple") &&
+        !navigator.userAgent.includes("CriOS") &&
+        !navigator.userAgent.includes("FxiOS"));
+
     if (isSafari) {
       console.log("Detected Safari");
       // Apply custom styles for Safari
-      document.documentElement.style.setProperty('--word-spacing', '0px');
-      document.documentElement.style.setProperty('--heading-spacing', '0px');
-      document.documentElement.style.setProperty('--div-spacing', '0px');
-      document.documentElement.style.setProperty('--a-spacing', '0px');
+      document.documentElement.style.setProperty("--word-spacing", "0px");
+      document.documentElement.style.setProperty("--heading-spacing", "0px");
+      document.documentElement.style.setProperty("--div-spacing", "0px");
+      document.documentElement.style.setProperty("--a-spacing", "0px");
     } else {
       console.log("Not Safari");
-      document.documentElement.style.setProperty('--word-spacing', '-3.5px');
-      document.documentElement.style.setProperty('--heading-spacing', '-7px');
-      document.documentElement.style.setProperty('--div-spacing', '-2px');
-      document.documentElement.style.setProperty('--a-spacing', '-4px');
+      document.documentElement.style.setProperty("--word-spacing", "-3.5px");
+      document.documentElement.style.setProperty("--heading-spacing", "-7px");
+      document.documentElement.style.setProperty("--div-spacing", "-2px");
+      document.documentElement.style.setProperty("--a-spacing", "-4px");
     }
   }, []);
 
@@ -79,120 +128,118 @@ const Registrationpage = (props) => {
       behavior: "smooth",
     });
   }, []);
-  
+
   useEffect(() => {
     getAllCurrencies();
     fetchCountries();
-  }, [])
+  }, []);
 
   const getAllCurrencies = () => {
     const isoCodes = getAllISOCodes();
     const uniqueCurrencies = new Set();
-    isoCodes.forEach(isoCode => {
-        // const currency = isoCode.currency;
-        const currency = {
-          currency: isoCode?.currency,
-          symbol: isoCode?.symbol
-        };
-        // uniqueCurrencies.add(currency);
-        uniqueCurrencies.add(JSON.stringify(currency));
+    isoCodes.forEach((isoCode) => {
+      // const currency = isoCode.currency;
+      const currency = {
+        currency: isoCode?.currency,
+        symbol: isoCode?.symbol,
+      };
+      // uniqueCurrencies.add(currency);
+      uniqueCurrencies.add(JSON.stringify(currency));
     });
-    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
-    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
+    const currency_d = [...uniqueCurrencies].map((currency) =>
+      JSON.parse(currency)
+    );
+    const sorted_data = currency_d.sort((a, b) =>
+      a.currency.localeCompare(b.currency)
+    );
     // setAllCurrencies([...uniqueCurrencies])
-    setAllCurrencies(sorted_data)
+    setAllCurrencies(sorted_data);
   };
 
-  const fetchCountries = async () => {
+  const fetchCountries = () => {
     setLoadingLocations(true);
     try {
-      const response = await fetch('https://countriesnow.space/api/v0.1/countries');
-      const data = await response.json();
-      if (data.data) {
-        const formattedCountries = data.data.map(country => ({
-          value: country.country,
-          label: country.country
-        }));
-        setCountries(formattedCountries);
-      }
+      const formattedCountries = Country.getAllCountries().map((country) => ({
+        value: country.name,
+        label: country.name,
+        code: country.isoCode,
+      }));
+      setCountries(formattedCountries);
     } catch (error) {
-      message.error(t('settings.companySettings.errorFetchingCountries'));
+      console.error("Failed to load countries", error);
+      message.error(t("settings.companySettings.errorFetchingCountries"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const fetchStates = async (country) => {
+  const fetchStates = (countryCode) => {
     setLoadingLocations(true);
     try {
-      const response = await fetch('https://countriesnow.space/api/v0.1/countries/states', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ country }),
-      });
-      const data = await response.json();
-      if (data.data?.states) {
-        const formattedStates = data.data.states.map(state => ({
+      const formattedStates = State.getStatesOfCountry(countryCode).map(
+        (state) => ({
           value: state.name,
-          label: state.name
-        }));
-        setStates(formattedStates);
-      }
+          label: state.name,
+          code: state.isoCode,
+        })
+      );
+      setStates(formattedStates);
     } catch (error) {
-      message.error(t('settings.companySettings.errorFetchingStates'));
+      console.error("Failed to load states", error);
+      message.error(t("settings.companySettings.errorFetchingStates"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const fetchCities = async (country, state) => {
+  const fetchCities = (countryCode, stateCode) => {
     setLoadingLocations(true);
     try {
-      const response = await fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ country, state }),
-      });
-      const data = await response.json();
-      if (data.data) {
-        const formattedCities = data.data.map(city => ({
-          value: city,
-          label: city
-        }));
-        setCities(formattedCities);
-      }
+      const formattedCities = City.getCitiesOfState(
+        countryCode,
+        stateCode
+      ).map((city) => ({
+        value: city.name,
+        label: city.name,
+      }));
+      setCities(formattedCities);
     } catch (error) {
-      message.error(t('settings.companySettings.errorFetchingCities'));
+      console.error("Failed to load cities", error);
+      message.error(t("settings.companySettings.errorFetchingCities"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const handleCountryChange = (value) => {
+  const handleCountryChange = (value, option) => {
     form.setFieldsValue({ state: undefined, city: undefined });
     setSelectedCountry(value);
+    setSelectedCountryCode(option?.code || null);
     setSelectedState(null);
     setStates([]);
     setCities([]);
-    if (value) {
-      fetchStates(value);
+    if (option?.code) {
+      fetchStates(option.code);
     }
   };
 
-  const handleStateChange = (value) => {
+  const handleStateChange = (value, option) => {
     form.setFieldsValue({ city: undefined });
     setSelectedState(value);
     setCities([]);
-    if (value && selectedCountry) {
-      fetchCities(selectedCountry, value);
+    if (option?.code && selectedCountryCode) {
+      fetchCities(selectedCountryCode, option.code);
     }
   };
 
   const next = () => {
+    console.log("Moving to next step. Current step:", current);
+    console.log("Company ID before transition:", compId);
     setCurrent(current + 1);
   };
   const prev = () => {
+    console.log("Moving to previous step. Current step:", current);
+    console.log("Company ID before transition:", compId);
     setCurrent(current - 1);
   };
 
@@ -201,7 +248,11 @@ const Registrationpage = (props) => {
   };
 
   const onHandleRegChange = (type, value) => {
-    if (type === "companyPhoneNo" || type === "mobileNumber" || type === "fax") {
+    if (
+      type === "companyPhoneNo" ||
+      type === "mobileNumber" ||
+      type === "fax"
+    ) {
       let newvalue = value ? "+" + value : "";
 
       const updatedValues = {
@@ -311,22 +362,112 @@ const Registrationpage = (props) => {
     // Add any other custom styles as needed
   };
 
+  const handleCoordinatesInput = (e) => {
+    const value = e.target.value;
+    const sanitized = value.replace(/[^0-9.,\s\-()]/g, "");
+    e.target.value = sanitized;
+  };
+
+  const validateCoordinates = (_, value) => {
+    const str = String(value ?? "").trim();
+    if (!str) {
+      return Promise.reject("please enter coordinates");
+    }
+    
+    // Check for any alphabetic characters
+    if (/[a-zA-Z]/.test(str)) {
+      return Promise.reject("coordinates must contain only numbers");
+    }
+    
+    const cleaned = str.replace(/[()]/g, "");
+    const [latRaw, longRaw] = cleaned.split(",").map((part) => part?.trim());
+    
+    if (!latRaw || !longRaw) {
+      return Promise.reject("please enter values as 'latitude, longitude'");
+    }
+    
+    const latitude = parseFloat(latRaw);
+    const longitude = parseFloat(longRaw);
+    
+    if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+      return Promise.reject("please enter valid numeric coordinates");
+    }
+    
+    if (latitude < -90 || latitude > 90) {
+      return Promise.reject("latitude must be between -90 and 90");
+    }
+    
+    if (longitude < -180 || longitude > 180) {
+      return Promise.reject("longitude must be between -180 and 180");
+    }
+    
+    return Promise.resolve();
+  };
+
   const onRegFinish = (values) => {
-    setLoader(true)
-    apiServices("POST", "company/addcompany", values)
+    setLoader(true);
+    console.log("Starting company registration with values:", values);
+
+    const sanitizedLocations = (values?.locations || [])
+      .map((loc) => {
+        const parsed =
+          parseCoordinates(loc?.coordinates) ||
+          parseCoordinates(
+            formatCoordinates(loc?.latitude, loc?.longitude)
+          );
+        return parsed;
+      })
+      .filter(Boolean);
+
+    if (!sanitizedLocations.length) {
+      setLoader(false);
+      message.error("Please add at least one valid location.");
+      return;
+    }
+
+    const payload = {
+      ...values,
+      locations: sanitizedLocations,
+    };
+
+    delete payload.longitude;
+    delete payload.latitude;
+
+    apiServices("POST", "company/addcompany", payload)
       .then((res) => {
         if (res?.data?.success) {
-          setLoader(false)
-          // console.log("values==", values, "handleChange----", regValues);
-          // console.log("res======", res?.data);
-          setCompId(res?.data?.Company?._id);
+          console.log("Company registration API response:", res.data);
+
+          // Get company ID from the correct path in response
+          const newCompanyId = res?.data?.data?.companyId;
+          console.log("New Company ID received:", newCompanyId);
+
+          if (!newCompanyId) {
+            console.error("Company ID not found in response");
+            setLoader(false);
+            message.error("Error getting company ID. Please try again.");
+            return;
+          }
+
+          // Update state and proceed
+          setCompId(newCompanyId);
+          setLoader(false);
           message.success("Company Registered Successfully!");
-          next();
-          window.scrollTo(0, 0);
+
+          // Use the ID directly from response rather than state
+          setTimeout(() => {
+            console.log(
+              "Moving to admin registration with company ID:",
+              newCompanyId
+            );
+            next();
+            window.scrollTo(0, 0);
+          }, 100);
         }
       })
       .catch((err) => {
-        setLoader(false)
+        console.error("Company registration error:", err);
+        setLoader(false);
         message.error(
           `${
             err.response.data.msg
@@ -338,42 +479,59 @@ const Registrationpage = (props) => {
         );
       });
   };
+
   const onAdminFinish = (values) => {
-    setLoader(true)
-    let data = {
+    setLoader(true);
+    console.log("Starting admin registration. Current step:", current);
+    console.log("Company ID at admin registration:", compId);
+
+    if (!compId) {
+      console.error("Company ID missing at admin registration");
+      setLoader(false);
+      message.error(
+        "Company registration incomplete. Please try registering the company again."
+      );
+      setCurrent(0);
+      return;
+    }
+
+    const data = {
       ...values,
-      role: 'admin',
-      companyId: `${compId}`,
+      role: "admin",
+      companyId: compId,
     };
+
+    console.log("Sending admin signup request with data:", data);
 
     apiServices("POST", "user/admin-signup", data, null)
       .then((res) => {
+        console.log("Admin registration API response:", res.data);
         if (res?.data?.success) {
-          setLoader(false)
+          setLoader(false);
           message.success("Admin Account Created Successfully!");
           setSuccessSection(true);
         }
       })
       .catch((err) => {
-        setLoader(false)
+        console.error("Admin registration error:", err);
+        setLoader(false);
         message.error(
           `${
             err?.response?.data?.msg
-            ? err?.response?.data?.msg
-            : err?.response?.data?.validation?.body?.message
-            ? err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
               : "Admin Register Error"
           }`
         );
       });
   };
 
-
   const antIcon = (
     <LoadingOutlined
       style={{
         fontSize: 30,
-        color: '#fff'
+        color: "#fff",
       }}
       spin
     />
@@ -383,7 +541,7 @@ const Registrationpage = (props) => {
     // Regular expression to validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  }
+  };
 
   const steps = [
     {
@@ -394,14 +552,16 @@ const Registrationpage = (props) => {
           form={form}
           name="control-hooks"
           onFinish={onRegFinish}
-          onFinishFailed={({errorFields}) => {
-                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
-                  if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
-                }}
+          onFinishFailed={({ errorFields }) => {
+            const consecutiveSpacesError = errorFields.find((field) =>
+              field.errors.toString().includes("consecutive spaces")
+            );
+            if (consecutiveSpacesError) {
+              message.error("Please Remove Consecutive Spaces!");
+            } else {
+              message.error("Please Fill Required Fields!");
+            }
+          }}
         >
           <div className="row mt-5">
             <div className="col-sm-6">
@@ -417,11 +577,12 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
+                        if (!value || value?.trim() === "") {
                           return Promise.reject("please enter company name");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            "please remove consecutive spaces"
+                          );
                         }
                         return Promise.resolve();
                       },
@@ -458,18 +619,20 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
+                        if (!value || value?.trim() === "") {
                           return Promise.reject("please enter legal name");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            "please remove consecutive spaces"
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "legal length must be at least 3 characters long",
+                      message:
+                        "legal length must be at least 3 characters long",
                     },
                   ]}
                 >
@@ -499,18 +662,20 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
+                        if (!value || value?.trim() === "") {
                           return Promise.reject("please enter contact name");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            "please remove consecutive spaces"
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "person length must be at least 3 characters long",
+                      message:
+                        "person length must be at least 3 characters long",
                     },
                   ]}
                 >
@@ -540,18 +705,20 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
+                        if (!value || value?.trim() === "") {
                           return Promise.reject("please enter address");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            "please remove consecutive spaces"
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 5,
-                      message: "address length must be at least 5 characters long",
+                      message:
+                        "address length must be at least 5 characters long",
                     },
                   ]}
                 >
@@ -572,37 +739,33 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                 Preferred Currency <span className="text-danger">*</span>
+                  Preferred Currency <span className="text-danger">*</span>
                 </label>
                 <div style={{ position: "relative" }} id="area">
-                      <Form.Item
-                        name="preferredCurrency"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: "please select currency",
-                          },
-                        ]}
-                      >
-                        <Select
-                          showSearch
-                          className="custom-select custom-normal registerSelect"
-                          getPopupContainer={() =>
-                            document.getElementById("area")
-                          }
-                          placeholder="Select currency"
-                        >
-                          {
-                            allCurrencies.map((currency, index) => (
-                              <Select.Option key={index} value={currency?.currency}>
-                                {currency?.currency}
-                              </Select.Option>
-                            ))
-                          }
-                        </Select>
-                      </Form.Item>
-                    </div>
+                  <Form.Item
+                    name="preferredCurrency"
+                    className="custom-border"
+                    rules={[
+                      {
+                        required: true,
+                        message: "please select currency",
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      className="custom-select custom-normal registerSelect"
+                      getPopupContainer={() => document.getElementById("area")}
+                      placeholder="Select currency"
+                    >
+                      {allCurrencies.map((currency, index) => (
+                        <Select.Option key={index} value={currency?.currency}>
+                          {currency?.currency}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
               </div>
             </div>
             <div className="col-sm-6">
@@ -617,18 +780,20 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
+                        if (!value || value?.trim() === "") {
                           return Promise.reject("please enter postal code");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            "please remove consecutive spaces"
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "postal code length must be at least 3 characters long",
+                      message:
+                        "postal code length must be at least 3 characters long",
                     },
                   ]}
                 >
@@ -654,104 +819,269 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.country')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.country")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <div style={{ position: "relative" }} id="area">
-                <Form.Item
-                  name="country"
-                  className="custom-border"
-                  rules={[
-                    {
-                      required: true,
-                      message: t('settings.companySettings.pleaseSelectCountry')
-                    }
-                  ]}
-                >
-                  <Select
-                    showSearch
-                    placeholder={t('settings.companySettings.selectCountry')}
-                    loading={loadingLocations}
-                    onChange={handleCountryChange}
-                    filterOption={(input, option) =>
-                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    options={countries}
-                    style={{ width: '100%' }}
-                    className="custom-select custom-normal"
-                  />
-                </Form.Item>
+                  <Form.Item
+                    name="country"
+                    className="custom-border"
+                    rules={[
+                      {
+                        required: true,
+                        message: t(
+                          "settings.companySettings.pleaseSelectCountry"
+                        ),
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder={t("settings.companySettings.selectCountry")}
+                      loading={loadingLocations}
+                      onChange={handleCountryChange}
+                      filterOption={(input, option) =>
+                        option.label
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      options={countries}
+                      style={{ width: "100%" }}
+                      className="custom-select custom-normal"
+                    />
+                  </Form.Item>
                 </div>
               </div>
             </div>
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.state')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.state")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <div style={{ position: "relative" }} id="area">
-                <Form.Item
-                  name="state"
-                  className="custom-border"
-                  rules={[
-                    {
-                      required: true,
-                      message: t('settings.companySettings.pleaseSelectState')
-                    }
-                  ]}
-                >
-                  <Select
-                    showSearch
-                    placeholder={t('settings.companySettings.selectState')}
-                    loading={loadingLocations}
-                    onChange={handleStateChange}
-                    filterOption={(input, option) =>
-                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    options={states}
-                    disabled={!selectedCountry}
-                    style={{ width: '100%' }}
-                    className="custom-select custom-normal"
-                  />
-                </Form.Item>
+                  <Form.Item
+                    name="state"
+                    className="custom-border"
+                    rules={[
+                      {
+                        required: true,
+                        message: t(
+                          "settings.companySettings.pleaseSelectState"
+                        ),
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder={t("settings.companySettings.selectState")}
+                      loading={loadingLocations}
+                      onChange={handleStateChange}
+                      filterOption={(input, option) =>
+                        option.label
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      options={states}
+                      disabled={!selectedCountry}
+                      style={{ width: "100%" }}
+                      className="custom-select custom-normal"
+                    />
+                  </Form.Item>
                 </div>
               </div>
             </div>
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.city')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.city")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <div style={{ position: "relative" }} id="area">
-                <Form.Item
-                  name="city"
-                  className="custom-border"
+                  <Form.Item
+                    name="city"
+                    className="custom-border"
+                    rules={[
+                      {
+                        required: true,
+                        message: t("settings.companySettings.pleaseSelectCity"),
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder={t("settings.companySettings.selectCity")}
+                      loading={loadingLocations}
+                      filterOption={(input, option) =>
+                        option.label
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      options={cities}
+                      disabled={!selectedState}
+                      style={{ width: "100%" }}
+                      className="custom-select custom-normal"
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+            </div>
+            <div className="col-12">
+              <div className="form-group">
+                <Form.List
+                  name="locations"
                   rules={[
                     {
-                      required: true,
-                      message: t('settings.companySettings.pleaseSelectCity')
-                    }
+                      validator: async (_, locations) => {
+                        if (!locations || locations.length === 0) {
+                          return Promise.reject(
+                            new Error("please add at least one location")
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                 >
-                  <Select
-                    showSearch
-                    placeholder={t('settings.companySettings.selectCity')}
-                    loading={loadingLocations}
-                    filterOption={(input, option) =>
-                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    options={cities}
-                    disabled={!selectedState}
-                    style={{ width: '100%' }}
-                    className="custom-select custom-normal"
-                  />
-                </Form.Item>
-                </div>
+                  {(fields, { add, remove }) => (
+                    <>
+                    <div className="d-flex justify-content-between align-items-center">
+                        <label className="col-form-label mb-0">
+                          Locations <span className="text-danger">*</span>
+                          <Tooltip
+                            placement="right"
+                            title={
+                              <label style={{ maxWidth: 260, display: "block" }}>
+                                Enter the company's coordinates (latitude, longitude) and radius. These values
+                                define the allowed location area for marking attendance. Employees
+                                must be within this radius to mark attendance successfully. You can copy
+                                coordinates directly from Google Maps.
+                              </label>
+                            }
+                          >
+                            <span
+                              style={{
+                                border: "1px solid #999",
+                                color: "#666",
+                                fontSize: "12px",
+                                borderRadius: "50%",
+                                padding: "2px 6px",
+                                marginLeft: "8px",
+                                cursor: "help",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              i
+                            </span>
+                          </Tooltip>
+                        </label>
+                        <Button
+                          type="dashed"
+                          onClick={() => add({ coordinates: "" })}
+                        >
+                          + Add Location
+                        </Button>
+                      </div>
+                      {fields.map((field, index) => (
+                        <div
+                          className="row align-items-center"
+                          key={field.key}
+                          style={{ marginTop: index === 0 ? "15px" : "5px" }}
+                        >
+                          <div className="col-sm-10">
+                            <label className="col-form-label">
+                              Coordinates{" "}
+                              <span className="text-danger">*</span>
+                            </label>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, "coordinates"]}
+                              fieldKey={[field.fieldKey, "coordinates"]}
+                              rules={[
+                                {
+                                  validator: validateCoordinates,
+                                },
+                              ]}
+                            >
+                              <Input
+                                className="form-control"
+                                placeholder="Example: 33.5226784, 73.0944155"
+                                maxLength={60}
+                                onInput={handleCoordinatesInput}
+                              />
+                            </Form.Item>
+                          </div>
+                          <div className="col-sm-2 d-flex align-items-center">
+                            {fields.length > 1 && (
+                              <button
+                                type="button"
+                                className="btn btn-link text-danger p-0"
+                                onClick={() => remove(field.name)}
+                                aria-label="Remove location"
+                              >
+                                <i className="fa fa-times" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </Form.List>
               </div>
             </div>
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.companyEmail')} <span className="text-danger">*</span>
+                  Radius (meters) <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="radius_meter"
+                  rules={[
+                    {
+                      required: true,
+                      validator: (_, value) => {
+                        const str = String(value ?? "").trim();
+                        if (!str) {
+                          return Promise.reject(
+                            "please enter radius in meters"
+                          );
+                        }
+                        if (!/^\d+$/.test(str)) {
+                          return Promise.reject("please enter only digits");
+                        }
+                        const num = parseInt(str, 10);
+                        if (num <= 0) {
+                          return Promise.reject(
+                            "radius must be greater than 0"
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={regValues?.radius_meter}
+                  />
+                  <input
+                    placeholder="Enter allowed radius (in meters) for company"
+                    className="form-control"
+                    onInput={(e) => {
+                      onHandleRegChange("radius_meter", e.target.value);
+                    }}
+                    maxLength={9}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  {t("settings.companySettings.companyEmail")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyEmail"
@@ -760,12 +1090,14 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if (!value || value?.trim() === '') {
-                          return Promise.reject('Please enter company email');
+                        if (!value || value?.trim() === "") {
+                          return Promise.reject("Please enter company email");
                         } else if (/\s{2,}/.test(value)) {
-                          return Promise.reject('Please remove consecutive spaces');
+                          return Promise.reject(
+                            "Please remove consecutive spaces"
+                          );
                         } else if (!isValidEmail(value)) {
-                          return Promise.reject('please enter a valid email');
+                          return Promise.reject("please enter a valid email");
                         }
                         return Promise.resolve();
                       },
@@ -789,7 +1121,8 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.registrationNo')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.registrationNo")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyRegistrationNo"
@@ -798,18 +1131,20 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
+                        if (!value || value?.trim() === "") {
                           return Promise.reject("please enter registration no");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            "please remove consecutive spaces"
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "Registration length must be at least 3 characters long",
+                      message:
+                        "Registration length must be at least 3 characters long",
                     },
                   ]}
                 >
@@ -833,7 +1168,8 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.phoneNumber')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.phoneNumber")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyPhoneNo"
@@ -865,7 +1201,8 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.mobileNumber')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.mobileNumber")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="mobileNumber"
@@ -902,7 +1239,8 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.website')} <span className="text-danger">*</span>
+                  {t("settings.companySettings.website")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="website"
@@ -911,18 +1249,20 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
+                        if (!value || value?.trim() === "") {
                           return Promise.reject("please enter website");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            "please remove consecutive spaces"
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "website length must be at least 3 characters long",
+                      message:
+                        "website length must be at least 3 characters long",
                     },
                   ]}
                 >
@@ -943,7 +1283,7 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                    {t('settings.companySettings.fax')}
+                  {t("settings.companySettings.fax")}
                 </label>
                 <Form.Item
                   name="fax"
@@ -975,9 +1315,7 @@ const Registrationpage = (props) => {
                 </Form.Item>
               </div>
             </div>
-            <div
-              className="col-sm-12"
-            >
+            <div className="col-sm-12">
               <div
                 className="form-group"
                 style={{ marginBottom: "6px", marginTop: "0px" }}
@@ -996,7 +1334,11 @@ const Registrationpage = (props) => {
                   <div style={{ display: "flex", height: "25px" }}>
                     <Input
                       style={{ display: "none" }}
-                      value={regValues?.agreeTermsAndConditions === "false" ? "" : "true"}
+                      value={
+                        regValues?.agreeTermsAndConditions === "false"
+                          ? ""
+                          : "true"
+                      }
                     />
                     <input
                       // required
@@ -1010,12 +1352,21 @@ const Registrationpage = (props) => {
                           : ""
                       }
                       onInput={(e) => {
-                        onHandleRegChange("agreeTermsAndConditions", e.target.checked);
+                        onHandleRegChange(
+                          "agreeTermsAndConditions",
+                          e.target.checked
+                        );
                       }}
                       id="flexCheckChecked"
                       style={{ width: "23px", height: "23px" }}
                     ></input>
-                    <label style={{ marginTop: "5px", marginLeft: '15px', fontSize: '15px' }}>
+                    <label
+                      style={{
+                        marginTop: "5px",
+                        marginLeft: "15px",
+                        fontSize: "15px",
+                      }}
+                    >
                       I agree to the term of services and privacy policy
                     </label>
                   </div>
@@ -1026,7 +1377,7 @@ const Registrationpage = (props) => {
           {/* <div className="submit-section">
               <button className="btn btn-primary submit-btn">Submit</button>
             </div> */}
-          <div className="submit-section" style={{marginTop: '5px'}}>
+          <div className="submit-section" style={{ marginTop: "5px" }}>
             {/* <button className="btn btn-primary submit-btn">Save</button> */}
             <Form.Item>
               <div className="form-group text-center">
@@ -1036,10 +1387,7 @@ const Registrationpage = (props) => {
                   className="btn btn-primary account-btn"
                   disabled={loader}
                 >
-                  {
-                    loader ? <Spin size="small" indicator={antIcon} />
-                      : 'Next'
-                  }
+                  {loader ? <Spin size="small" indicator={antIcon} /> : "Next"}
                 </Button>
               </div>
             </Form.Item>
@@ -1056,12 +1404,14 @@ const Registrationpage = (props) => {
           form={form}
           name="control-hooks"
           onFinish={onAdminFinish}
-          onFinishFailed={({errorFields}) => {
-            const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
-            if(consecutiveSpacesError){
-              message.error("Please Remove Consecutive Spaces!")
-            }else{
-              message.error("Please Fill Required Fields!")
+          onFinishFailed={({ errorFields }) => {
+            const consecutiveSpacesError = errorFields.find((field) =>
+              field.errors.toString().includes("consecutive spaces")
+            );
+            if (consecutiveSpacesError) {
+              message.error("Please Remove Consecutive Spaces!");
+            } else {
+              message.error("Please Fill Required Fields!");
             }
           }}
         >
@@ -1078,11 +1428,12 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
+                        if (!value || value?.trim() === "") {
                           return Promise.reject("please enter full name");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            "please remove consecutive spaces"
+                          );
                         }
                         return Promise.resolve();
                       },
@@ -1148,18 +1499,20 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
+                        if (!value || value?.trim() === "") {
                           return Promise.reject("please enter address");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject(
+                            "please remove consecutive spaces"
+                          );
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 5,
-                      message: "address length must be at least 5 characters long",
+                      message:
+                        "address length must be at least 5 characters long",
                     },
                   ]}
                 >
@@ -1252,12 +1605,14 @@ const Registrationpage = (props) => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if (!value || value?.trim() === '') {
-                          return Promise.reject('Please enter company email');
+                        if (!value || value?.trim() === "") {
+                          return Promise.reject("Please enter company email");
                         } else if (/\s{2,}/.test(value)) {
-                          return Promise.reject('Please remove consecutive spaces');
+                          return Promise.reject(
+                            "Please remove consecutive spaces"
+                          );
                         } else if (!isValidEmail(value)) {
-                          return Promise.reject('please enter a valid email');
+                          return Promise.reject("please enter a valid email");
                         }
                         return Promise.resolve();
                       },
@@ -1298,9 +1653,12 @@ const Registrationpage = (props) => {
                     ({ getFieldValue }) => ({
                       validator(rule, value) {
                         // const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}$/;
-                        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\\|/?.>,<=~`-])[A-Za-z\d!@#$%^&*()_+\\|/?.>,<=~`-]{8,}$/;
+                        const passwordRegex =
+                          /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\\|/?.>,<=~`-])[A-Za-z\d!@#$%^&*()_+\\|/?.>,<=~`-]{8,}$/;
                         if (value && !passwordRegex.test(value)) {
-                          return Promise.reject("password must have at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character");
+                          return Promise.reject(
+                            "password must have at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character"
+                          );
                         }
                         return Promise.resolve();
                       },
@@ -1312,8 +1670,8 @@ const Registrationpage = (props) => {
                     style={{ display: "none" }}
                     value={adminValues?.password}
                   /> */}
-                    <div className="pass-group password-eye">
-                      {/* <input
+                  <div className="pass-group password-eye">
+                    {/* <input
                         type={eye ? "password" : "text"}
                         className={`form-control passwordStyle`}
                         onInput={(e) => {
@@ -1321,45 +1679,43 @@ const Registrationpage = (props) => {
                         }}
                         maxLength={50}
                       /> */}
-                      <Input
-                          type={eye ? "password" : "text"}
-                          className={`form-control passwordStyle`}
-                          onChange={(e) => {
-                            onHandleAdminChange("password", e.target.value);
-                          }}
+                    <Input
+                      type={eye ? "password" : "text"}
+                      className={`form-control passwordStyle`}
+                      onChange={(e) => {
+                        onHandleAdminChange("password", e.target.value);
+                      }}
+                    />
+                    <span
+                      onClick={onEyeClick}
+                      style={{ cursor: "pointer", top: "12px" }}
+                      className={`toggles-password fa toggle-password`}
+                    >
+                      {eye ? (
+                        <EyeInvisibleOutlined
+                          style={{ color: "#666666", fontSize: "20px" }}
                         />
-                      <span
-                        onClick={onEyeClick}
-                        style={{ cursor: "pointer", top: "12px" }}
-                        className={`toggles-password fa toggle-password`}
-                      >
-                        {eye ? (
-                          <EyeInvisibleOutlined
-                            style={{ color: "#666666", fontSize: "20px" }}
-                          />
-                        ) : (
-                          <EyeOutlined
-                            style={{ color: "#666666", fontSize: "20px" }}
-                          />
-                        )}
-                      </span>
-                        <div className="strength-bar-back"></div>
-                        <div
-                          className="strength-bar-main"
-                          style={{
-                            width: `${
-                              calculateStrength() > 100
-                                ? 100
-                                : calculateStrength()
-                            }%`,
-                            backgroundImage: `linear-gradient(to right, #F3C652 0%, #F3C652 94%, transparent 50%)`,
-                          }}
-                        ></div>
-                      {/* <span onClick={onEyeClick} style={{cursor: 'pointer'}} className={`toggles-password fa toggle-password ${eye ? "fa-light fa-eye-slash" : "fa-light fa-eye"} `} /> */}
-                    </div>
-                    {/* {adminValues?.password && ( */}
-                      
-                    {/* )} */}
+                      ) : (
+                        <EyeOutlined
+                          style={{ color: "#666666", fontSize: "20px" }}
+                        />
+                      )}
+                    </span>
+                    <div className="strength-bar-back"></div>
+                    <div
+                      className="strength-bar-main"
+                      style={{
+                        width: `${
+                          calculateStrength() > 100 ? 100 : calculateStrength()
+                        }%`,
+                        backgroundImage: `linear-gradient(to right, #F3C652 0%, #F3C652 94%, transparent 50%)`,
+                      }}
+                    ></div>
+                    {/* <span onClick={onEyeClick} style={{cursor: 'pointer'}} className={`toggles-password fa toggle-password ${eye ? "fa-light fa-eye-slash" : "fa-light fa-eye"} `} /> */}
+                  </div>
+                  {/* {adminValues?.password && ( */}
+
+                  {/* )} */}
                 </Form.Item>
               </div>
             </div>
@@ -1367,12 +1723,13 @@ const Registrationpage = (props) => {
           {/* <div className="submit-section">
                      <button className="btn btn-primary submit-btn">Submit</button>
                    </div> */}
-          <div className="form-group text-center" style={{marginTop: '5px'}}>
-            <button className="btn btn-primary account-btn" type="submit" disabled={loader}>
-            {
-              loader ? <Spin size="small" indicator={antIcon} />
-                : 'Register'
-            }
+          <div className="form-group text-center" style={{ marginTop: "5px" }}>
+            <button
+              className="btn btn-primary account-btn"
+              type="submit"
+              disabled={loader}
+            >
+              {loader ? <Spin size="small" indicator={antIcon} /> : "Register"}
             </button>
           </div>
         </Form>
@@ -1389,26 +1746,26 @@ const Registrationpage = (props) => {
 
   const ResendEmail = (email) => {
     let data1 = {
-      email: email
-    }
+      email: email,
+    };
     apiServices("PUT", "user/resend-verification-mail", data1, null)
-    .then((res) => {
-      if (res?.data?.success === true) {
-        message.success('Email has been sent Successfully!')
-      }
-    })
-    .catch((err) => {
-      message.error(
-        `${
-          err?.response?.data?.msg
-            ? err?.response?.data?.msg
-            : err?.response?.data?.validation?.body?.message
-            ? err?.response?.data?.validation?.body?.message
-            : "Resend Email Error"
-        }!`
-      );
-    });
-  }
+      .then((res) => {
+        if (res?.data?.success === true) {
+          message.success("Email has been sent Successfully!");
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Resend Email Error"
+          }!`
+        );
+      });
+  };
 
   return (
     <>
@@ -1496,7 +1853,7 @@ const Registrationpage = (props) => {
                     style={{
                       color: "#444444",
                       fontSize: "18px",
-                      margin: '4px 0px'
+                      margin: "4px 0px",
                     }}
                   >
                     Your Company Registered Successfully. Admin Account Created.
@@ -1505,21 +1862,27 @@ const Registrationpage = (props) => {
                     style={{
                       color: "#6F6F6F",
                       fontSize: "18px",
-                      margin: '12px 0px 4px 0px'
+                      margin: "12px 0px 4px 0px",
                     }}
                   >
                     Confirm your email address. We have sent a verification{" "}
                     <br />
                     email to
                   </label>
-                  <div style={{ fontWeight: "700", fontSize: "18px", margin: '15px 0px 11px 0px' }}>
+                  <div
+                    style={{
+                      fontWeight: "700",
+                      fontSize: "18px",
+                      margin: "15px 0px 11px 0px",
+                    }}
+                  >
                     {adminValues?.email}
                   </div>
                   <label
                     style={{
                       color: "#0097C7",
                       fontSize: "18px",
-                      margin: '8px 0px'
+                      margin: "8px 0px",
                     }}
                   >
                     Not your email address?
@@ -1529,7 +1892,7 @@ const Registrationpage = (props) => {
                     style={{
                       color: "#6F6F6F",
                       fontSize: "18px",
-                      margin: '8px 0px'
+                      margin: "8px 0px",
                     }}
                   >
                     Make sure to check your inbox and your spam folder if you
@@ -1539,11 +1902,16 @@ const Registrationpage = (props) => {
                     style={{
                       color: "#6F6F6F ",
                       fontSize: "18px",
-                      margin: '8px 0px'
+                      margin: "8px 0px",
                     }}
                   >
                     Still not Received?{" "}
-                    <a onClick={() => ResendEmail(adminValues?.email)} style={{ color: "#0097C7" }}>Resend Email</a>
+                    <a
+                      onClick={() => ResendEmail(adminValues?.email)}
+                      style={{ color: "#0097C7" }}
+                    >
+                      Resend Email
+                    </a>
                   </label>
                 </div>
                 {/* /Account Form */}
