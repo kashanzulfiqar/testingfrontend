@@ -1490,17 +1490,13 @@ const TaskBoard = () => {
                       </Select>
                     </div>
                     {selectedAssigneeFilter && selectedAssigneeFilter.length > 0 && (
-                      <Button
+                      <a
+                        href="javascript:void(0)"
                         onClick={() => setSelectedAssigneeFilter([])}
-                        style={{
-                          height: "38px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center"
-                        }}
+                        className="btn add-btn"
                       >
-                        Clear Filter {selectedAssigneeFilter.length > 1 && `(${selectedAssigneeFilter.length})`}
-                      </Button>
+                        <i className="fa fa-times" /> Clear Filter {selectedAssigneeFilter.length > 1 && `(${selectedAssigneeFilter.length})`}
+                      </a>
                     )}
                   </div>
                   {(role === "admin" || permissions?.projectManagement) &&
