@@ -111,9 +111,21 @@ const AttendanceAdmin = () => {
       navigate("/restricted", { state: { unAuthorize: true } });
     }
   }, []);
+  // This is JavaScript, typically used inside a functional component's body.
+  const selectedMonthStart = filters.month && filters.year
+    ? moment(`${filters.year}-${filters.month}-01`)
+    : null;
+
 
   const fetchEmployees = () => {
-    apiServices("GET", `user/all-employees?includeInactive=true`, null, user_state)
+   
+     // Build query parameters
+     let queryParams = `includeInactive=true`;
+     if (filters.month && filters.year) {
+       queryParams += `&month=${filters.month}&year=${filters.year}`;
+     }
+     
+     apiServices("GET", `user/all-employees?${queryParams}`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const emps = res?.data?.User;
@@ -136,6 +148,8 @@ const AttendanceAdmin = () => {
   useEffect(() => {
     if (role === "admin" || permissions?.attendanceManagement) {
       setIsLoading(true);
+      setIsStatLoading(true);
+      fetchEmployees();
       fetchAttendanceData();
     } else {
       navigate("/restricted", { state: { unAuthorize: true } });
