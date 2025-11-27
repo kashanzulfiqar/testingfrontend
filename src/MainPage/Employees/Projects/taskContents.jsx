@@ -17,7 +17,7 @@ import {
   Dropdown,
   Menu,
 } from "antd";
-import { PlusCircleOutlined, PlusOutlined, UserOutlined, ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, UploadOutlined, PaperClipOutlined, DeleteOutlined, EyeOutlined, DownloadOutlined, EllipsisOutlined, EyeInvisibleOutlined, PlayCircleOutlined, FileTextOutlined, FileOutlined } from '@ant-design/icons';
+import { PlusCircleOutlined, PlusOutlined, UserOutlined, ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, UploadOutlined, PaperClipOutlined, DeleteOutlined, EyeOutlined, DownloadOutlined, EllipsisOutlined, EyeInvisibleOutlined, PlayCircleOutlined, FileTextOutlined, FileOutlined, EditOutlined } from '@ant-design/icons';
 import { apiServices } from "../../../Services/apiServices";
 import { useSelector } from "react-redux";
 import { user_icon } from "../../../Entryfile/imagepath";
@@ -1138,9 +1138,27 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                 fontWeight: 600, 
                 fontSize: 16, 
                 color: '#333', 
-                marginBottom: 8 
+                marginBottom: 8,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
                 Task Name
+                {!editingTaskName && (
+                  <Tooltip title="Click to edit task name">
+                    <EditOutlined 
+                      style={{ 
+                        fontSize: 14, 
+                        color: '#666',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => {
+                        setTaskNameValue(taskData?.title || "");
+                        setEditingTaskName(true);
+                      }}
+                    />
+                  </Tooltip>
+                )}
                 </div>
               <div style={{
                 background: '#fff',
@@ -1229,9 +1247,27 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                 fontWeight: 600, 
                 fontSize: 16, 
                 color: '#333', 
-                marginBottom: 8 
+                marginBottom: 8,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
                     Description
+                    {!isEditing && (
+                      <Tooltip title="Click to edit description">
+                        <EditOutlined 
+                          style={{ 
+                            fontSize: 14, 
+                            color: '#666',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => {
+                            setDescriptionValue(taskData?.description || "");
+                            setIsEditing(true);
+                          }}
+                        />
+                      </Tooltip>
+                    )}
             </div>
               <div style={{
                 background: isEditing ? '#fff' : 'transparent',
