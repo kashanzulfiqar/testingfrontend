@@ -27,6 +27,7 @@ import {
   LockOutlined,
   UnlockOutlined,
   ArrowRightOutlined,
+  PlusOutlined,
   EyeOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
@@ -71,6 +72,8 @@ export default function ResumeSettings() {
 
 const dispatch = useDispatch();
 const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetId);
+const user_state = useSelector((state) => state.user.loginvalue);
+
 
 
   // ---------------------- FETCH ON LOAD ----------------------
@@ -81,7 +84,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       setLoading(false);
 
       if (reduxPresetId) {
-        console.log("🔁 Redux preset found on load:", reduxPresetId);
+        // console.log("🔁 Redux preset found on load:", reduxPresetId);
         handleSelectPreset(reduxPresetId); // visually mark selected
         await usePreset(reduxPresetId); // load its config from DB
         setIsLocked(true);
@@ -90,12 +93,12 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       }
     };
     loadData();
-  }, []);
+  }, [reduxPresetId]);
 
   // ---------------------- API CALLS ----------------------
   const fetchCurrentTheme = async () => {
     try {
-      const res = await apiServices("GET", "resume-theme");
+      const res = await apiServices("GET", "resume-theme", null, user_state);
       if (res?.data?.config) {
         setCurrentConfig(res.data.config);
         setDefaultConfig(res.data.config);
@@ -110,7 +113,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
 
   const fetchPresets = async () => {
     try {
-      const res = await apiServices("GET", "resume-presets");
+      const res = await apiServices("GET", "resume-presets", null, user_state);
       if (res?.data) setPresets(res.data);
     } catch (err) {
       console.error("❌ Failed to fetch presets:", err);
@@ -120,7 +123,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
 
   const updateCurrentTheme = async () => {
     try {
-      const res = await apiServices("POST", "resume-theme", { config: currentConfig });
+      const res = await apiServices("POST", "resume-theme", { config: currentConfig }, user_state);
       if (res?.data) message.success("Theme updated successfully!");
     } catch (err) {
       console.error("❌ Failed to update theme:", err);
@@ -137,7 +140,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       const res = await apiServices("POST", "resume-presets", {
         name: newPresetName,
         config: modalConfig,
-      });
+      }, user_state);
   
       if (res?.data?.preset) {
         message.success(`Preset "${res.data.preset.name}" saved successfully!`);
@@ -164,7 +167,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       const res = await apiServices("PATCH", `resume-presets/${selectedPresetId}`, {
         name: newPresetName,
         config: modalConfig,
-      });
+      }, user_state);
   
       if (res?.data?.preset) {
         message.success(`Preset "${res.data.preset.name}" updated successfully!`);
@@ -189,7 +192,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       cancelText: "No",
       onOk: async () => {
         try {
-          await apiServices("DELETE", `resume-presets/${id}`);
+          await apiServices("DELETE", `resume-presets/${id}`, null, user_state);
           message.success("Preset deleted");
           fetchPresets();
         } catch (err) {
@@ -206,7 +209,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
       }
   
       // 🧠 Fetch preset config
-      const res = await apiServices("GET", `resume-presets/${presetId}`);
+      const res = await apiServices("GET", `resume-presets/${presetId}`, null, user_state);
   
       // 🧩 Update Redux state (no await!)
       console.log('dispatching presetID', dispatch(setSelectedReduxPresetId(presetId)));
@@ -257,10 +260,14 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
   };
 
   const handleResetConfig = () => {
+
+    dispatch(clearSelectedPreset())
+
     setCurrentConfig(defaultConfig);
     setSelectedPresetId(null);
     setIsPresetSelected(false);
     setIsLocked(false);
+    console.log('using default settings', selectedPresetId, isPresetSelected)
   };
 
   // ---------------------- RENDER LOADING ----------------------
@@ -434,7 +441,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
                     <UnlockOutlined /> Unlock & Reset
                   </Button>
                 )}
-                <Button
+                {/* <Button
                   type="primary"
                   block
                   style={{ backgroundColor: "#FF9B44", border: "none" }}
@@ -451,7 +458,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
                   }}
                 >
                   <ArrowRightOutlined /> Use Settings
-                </Button>
+                </Button> */}
               </Space>
             </Card>
 
@@ -521,7 +528,24 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
         <Col xs={24} lg={8}>
           <Space direction="vertical" style={{ width: "100%" }} size="large">
             {/* Presets List */}
-            <Card title="Your Presets">
+            <Card title="Your Presets"
+              extra={
+                <PlusOutlined 
+                onClick={() => {
+                  setModalConfig(currentConfig);
+                  setShowCreateModal(true);
+                }}
+                style={{
+                  fontSize: 18,
+                  color: "#FF9B44",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease-in-out",
+                }}
+                onMouseEnter={(e) => (e.target.style.color = "#ff7a00")}
+                onMouseLeave={(e) => (e.target.style.color = "#FF9B44")}
+                />
+              }
+            >
               {presets.length === 0 ? (
                 <Empty description="No presets yet" />
               ) : (
@@ -603,17 +627,25 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
               type="primary"
               shape="round"
               block
-              icon={<SaveOutlined />}
+              icon={<ArrowRightOutlined />}
               style={{
                 backgroundColor: "#FF9B44",
                 border: "none",
                 fontWeight: 600,
               }}
-              onClick={() => {
-                setModalConfig(currentConfig);
-                setShowCreateModal(true)}}  
+              onClick={async () => {
+                    try {
+                      if (isPresetSelected && selectedPresetId) {
+                        await usePreset(selectedPresetId);
+                      } else {
+                        await updateCurrentTheme();
+                      }
+                    } catch (err) {
+                      console.error("❌ Failed to apply settings:", err);
+                    }
+                  }}
             >
-              Create Preset
+              Use Settings
             </Button>
 
 
@@ -769,7 +801,7 @@ const reduxPresetId = useSelector((state) => state.resumePreset?.selectedPresetI
             style={{ backgroundColor: "#FF9B44", border: "none", marginTop: 16, borderRadius: 10 }}
             disabled={!newPresetName.trim()}
           >
-            {isEditingPreset? 'Update Preset': 'Save Preset' }
+            <div style={{color : 'fff'}}>{isEditingPreset? 'Update Preset': 'Save Preset' }</div>
           </Button>
         </Space>
       </Modal>

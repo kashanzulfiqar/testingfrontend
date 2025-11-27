@@ -16,6 +16,7 @@ import {
   Steps,
   message,
   Select,
+  Tooltip,
 } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import DaftarProLogo from "../files/Icons/DaftraProLogo.svg";
@@ -27,6 +28,7 @@ import styled from "styled-components";
 import { LoadingOutlined } from "@ant-design/icons";
 import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
+import { Country, State, City } from "country-state-city";
 
 const options = [
   { value: "Male", label: "Male" },
@@ -50,8 +52,52 @@ const Registrationpage = (props) => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedState, setSelectedState] = useState(null);
   const [loadingLocations, setLoadingLocations] = useState(false);
+  const [selectedCountryCode, setSelectedCountryCode] = useState(null);
+  
+  const formatCoordinates = (latitude, longitude) => {
+    const hasLat =
+      latitude !== undefined && latitude !== null && latitude !== "";
+    const hasLong =
+      longitude !== undefined && longitude !== null && longitude !== "";
+    if (!hasLat && !hasLong) {
+      return "";
+    }
+    const lat = hasLat ? String(latitude).trim() : "";
+    const long = hasLong ? String(longitude).trim() : "";
+    return lat && long ? `${lat}, ${long}` : lat || long;
+  };
+
+  const parseCoordinates = (value) => {
+    if (!value && value !== 0) {
+      return null;
+    }
+    const cleaned = String(value).trim().replace(/[()]/g, "");
+    const [latRaw, longRaw] = cleaned.split(",").map((part) => part?.trim());
+    if (!latRaw || !longRaw) {
+      return null;
+    }
+    const latitude = parseFloat(latRaw);
+    const longitude = parseFloat(longRaw);
+    if (
+      Number.isNaN(latitude) ||
+      Number.isNaN(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      return null;
+    }
+    return {
+      latitude,
+      longitude,
+    };
+  };
+
+  const initialLocation = { coordinates: "" };
 
   useEffect(() => {
+    form.setFieldsValue({ locations: [initialLocation] });
     // Detect Safari using more robust feature detection (for both mobile and desktop)
     const isSafari =
       /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
@@ -110,97 +156,79 @@ const Registrationpage = (props) => {
     setAllCurrencies(sorted_data);
   };
 
-  const fetchCountries = async () => {
+  const fetchCountries = () => {
     setLoadingLocations(true);
     try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries"
-      );
-      const data = await response.json();
-      if (data.data) {
-        const formattedCountries = data.data.map((country) => ({
-          value: country.country,
-          label: country.country,
-        }));
-        setCountries(formattedCountries);
-      }
+      const formattedCountries = Country.getAllCountries().map((country) => ({
+        value: country.name,
+        label: country.name,
+        code: country.isoCode,
+      }));
+      setCountries(formattedCountries);
     } catch (error) {
+      console.error("Failed to load countries", error);
       message.error(t("settings.companySettings.errorFetchingCountries"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const fetchStates = async (country) => {
+  const fetchStates = (countryCode) => {
     setLoadingLocations(true);
     try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries/states",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ country }),
-        }
-      );
-      const data = await response.json();
-      if (data.data?.states) {
-        const formattedStates = data.data.states.map((state) => ({
+      const formattedStates = State.getStatesOfCountry(countryCode).map(
+        (state) => ({
           value: state.name,
           label: state.name,
-        }));
-        setStates(formattedStates);
-      }
+          code: state.isoCode,
+        })
+      );
+      setStates(formattedStates);
     } catch (error) {
+      console.error("Failed to load states", error);
       message.error(t("settings.companySettings.errorFetchingStates"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const fetchCities = async (country, state) => {
+  const fetchCities = (countryCode, stateCode) => {
     setLoadingLocations(true);
     try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries/state/cities",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ country, state }),
-        }
-      );
-      const data = await response.json();
-      if (data.data) {
-        const formattedCities = data.data.map((city) => ({
-          value: city,
-          label: city,
-        }));
-        setCities(formattedCities);
-      }
+      const formattedCities = City.getCitiesOfState(
+        countryCode,
+        stateCode
+      ).map((city) => ({
+        value: city.name,
+        label: city.name,
+      }));
+      setCities(formattedCities);
     } catch (error) {
+      console.error("Failed to load cities", error);
       message.error(t("settings.companySettings.errorFetchingCities"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const handleCountryChange = (value) => {
+  const handleCountryChange = (value, option) => {
     form.setFieldsValue({ state: undefined, city: undefined });
     setSelectedCountry(value);
+    setSelectedCountryCode(option?.code || null);
     setSelectedState(null);
     setStates([]);
     setCities([]);
-    if (value) {
-      fetchStates(value);
+    if (option?.code) {
+      fetchStates(option.code);
     }
   };
 
-  const handleStateChange = (value) => {
+  const handleStateChange = (value, option) => {
     form.setFieldsValue({ city: undefined });
     setSelectedState(value);
     setCities([]);
-    if (value && selectedCountry) {
-      fetchCities(selectedCountry, value);
+    if (option?.code && selectedCountryCode) {
+      fetchCities(selectedCountryCode, option.code);
     }
   };
 
@@ -334,11 +362,78 @@ const Registrationpage = (props) => {
     // Add any other custom styles as needed
   };
 
+  const handleCoordinatesInput = (e) => {
+    const value = e.target.value;
+    const sanitized = value.replace(/[^0-9.,\s\-()]/g, "");
+    e.target.value = sanitized;
+  };
+
+  const validateCoordinates = (_, value) => {
+    const str = String(value ?? "").trim();
+    if (!str) {
+      return Promise.reject("please enter coordinates");
+    }
+    
+    // Check for any alphabetic characters
+    if (/[a-zA-Z]/.test(str)) {
+      return Promise.reject("coordinates must contain only numbers");
+    }
+    
+    const cleaned = str.replace(/[()]/g, "");
+    const [latRaw, longRaw] = cleaned.split(",").map((part) => part?.trim());
+    
+    if (!latRaw || !longRaw) {
+      return Promise.reject("please enter values as 'latitude, longitude'");
+    }
+    
+    const latitude = parseFloat(latRaw);
+    const longitude = parseFloat(longRaw);
+    
+    if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+      return Promise.reject("please enter valid numeric coordinates");
+    }
+    
+    if (latitude < -90 || latitude > 90) {
+      return Promise.reject("latitude must be between -90 and 90");
+    }
+    
+    if (longitude < -180 || longitude > 180) {
+      return Promise.reject("longitude must be between -180 and 180");
+    }
+    
+    return Promise.resolve();
+  };
+
   const onRegFinish = (values) => {
     setLoader(true);
     console.log("Starting company registration with values:", values);
 
-    apiServices("POST", "company/addcompany", values)
+    const sanitizedLocations = (values?.locations || [])
+      .map((loc) => {
+        const parsed =
+          parseCoordinates(loc?.coordinates) ||
+          parseCoordinates(
+            formatCoordinates(loc?.latitude, loc?.longitude)
+          );
+        return parsed;
+      })
+      .filter(Boolean);
+
+    if (!sanitizedLocations.length) {
+      setLoader(false);
+      message.error("Please add at least one valid location.");
+      return;
+    }
+
+    const payload = {
+      ...values,
+      locations: sanitizedLocations,
+    };
+
+    delete payload.longitude;
+    delete payload.latitude;
+
+    apiServices("POST", "company/addcompany", payload)
       .then((res) => {
         if (res?.data?.success) {
           console.log("Company registration API response:", res.data);
@@ -831,31 +926,16 @@ const Registrationpage = (props) => {
                 </div>
               </div>
             </div>
-            <div className="col-sm-6">
+            <div className="col-12">
               <div className="form-group">
-                <label className="col-form-label">
-                  Longitude <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="longitude"
+                <Form.List
+                  name="locations"
                   rules={[
                     {
-                      required: true,
-                      validator: (_, value) => {
-                        if (
-                          value === undefined ||
-                          value === null ||
-                          String(value).trim() === ""
-                        ) {
-                          return Promise.reject("please enter longitude");
-                        }
-                        const num = parseFloat(String(value).trim());
-                        if (Number.isNaN(num)) {
-                          return Promise.reject("please enter a valid number");
-                        }
-                        if (num < -180 || num > 180) {
+                      validator: async (_, locations) => {
+                        if (!locations || locations.length === 0) {
                           return Promise.reject(
-                            "longitude must be between -180 and 180"
+                            new Error("please add at least one location")
                           );
                         }
                         return Promise.resolve();
@@ -863,64 +943,92 @@ const Registrationpage = (props) => {
                     },
                   ]}
                 >
-                  <Input
-                    style={{ display: "none" }}
-                    value={regValues?.longitude}
-                  />
-                  <input
-                    className="form-control"
-                    onInput={(e) => {
-                      onHandleRegChange("longitude", e.target.value);
-                    }}
-                    maxLength={15}
-                  />
-                </Form.Item>
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label className="col-form-label">
-                  Latitude <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="latitude"
-                  rules={[
-                    {
-                      required: true,
-                      validator: (_, value) => {
-                        if (
-                          value === undefined ||
-                          value === null ||
-                          String(value).trim() === ""
-                        ) {
-                          return Promise.reject("please enter latitude");
-                        }
-                        const num = parseFloat(String(value).trim());
-                        if (Number.isNaN(num)) {
-                          return Promise.reject("please enter a valid number");
-                        }
-                        if (num < -90 || num > 90) {
-                          return Promise.reject(
-                            "latitude must be between -90 and 90"
-                          );
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                  ]}
-                >
-                  <Input
-                    style={{ display: "none" }}
-                    value={regValues?.latitude}
-                  />
-                  <input
-                    className="form-control"
-                    onInput={(e) => {
-                      onHandleRegChange("latitude", e.target.value);
-                    }}
-                    maxLength={15}
-                  />
-                </Form.Item>
+                  {(fields, { add, remove }) => (
+                    <>
+                    <div className="d-flex justify-content-between align-items-center">
+                        <label className="col-form-label mb-0">
+                          Locations <span className="text-danger">*</span>
+                          <Tooltip
+                            placement="right"
+                            title={
+                              <label style={{ maxWidth: 260, display: "block" }}>
+                                Enter the company's coordinates (latitude, longitude) and radius. These values
+                                define the allowed location area for marking attendance. Employees
+                                must be within this radius to mark attendance successfully. You can copy
+                                coordinates directly from Google Maps.
+                              </label>
+                            }
+                          >
+                            <span
+                              style={{
+                                border: "1px solid #999",
+                                color: "#666",
+                                fontSize: "12px",
+                                borderRadius: "50%",
+                                padding: "2px 6px",
+                                marginLeft: "8px",
+                                cursor: "help",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              i
+                            </span>
+                          </Tooltip>
+                        </label>
+                        <Button
+                          type="dashed"
+                          onClick={() => add({ coordinates: "" })}
+                        >
+                          + Add Location
+                        </Button>
+                      </div>
+                      {fields.map((field, index) => (
+                        <div
+                          className="row align-items-center"
+                          key={field.key}
+                          style={{ marginTop: index === 0 ? "15px" : "5px" }}
+                        >
+                          <div className="col-sm-10">
+                            <label className="col-form-label">
+                              Coordinates{" "}
+                              <span className="text-danger">*</span>
+                            </label>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, "coordinates"]}
+                              fieldKey={[field.fieldKey, "coordinates"]}
+                              rules={[
+                                {
+                                  validator: validateCoordinates,
+                                },
+                              ]}
+                            >
+                              <Input
+                                className="form-control"
+                                placeholder="Example: 33.5226784, 73.0944155"
+                                maxLength={60}
+                                onInput={handleCoordinatesInput}
+                              />
+                            </Form.Item>
+                          </div>
+                          <div className="col-sm-2 d-flex align-items-center">
+                            {fields.length > 1 && (
+                              <button
+                                type="button"
+                                className="btn btn-link text-danger p-0"
+                                onClick={() => remove(field.name)}
+                                aria-label="Remove location"
+                              >
+                                <i className="fa fa-times" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </Form.List>
               </div>
             </div>
             <div className="col-sm-6">
@@ -959,6 +1067,7 @@ const Registrationpage = (props) => {
                     value={regValues?.radius_meter}
                   />
                   <input
+                    placeholder="Enter allowed radius (in meters) for company"
                     className="form-control"
                     onInput={(e) => {
                       onHandleRegChange("radius_meter", e.target.value);

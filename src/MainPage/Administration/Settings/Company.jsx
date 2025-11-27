@@ -19,6 +19,7 @@ import { apiUploadToS3 } from "../../../Services/uploadImage.js";
 import { user_icon } from "../../../Entryfile/imagepath.jsx";
 import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
+import { Country, State, City } from "country-state-city";
 
 const Company = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -38,8 +39,75 @@ const Company = () => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedState, setSelectedState] = useState(null);
   const [loadingLocations, setLoadingLocations] = useState(false);
+  const [selectedCountryCode, setSelectedCountryCode] = useState(null);
+  const [selectedStateCode, setSelectedStateCode] = useState(null);
+  const formatCoordinates = (latitude, longitude) => {
+    const hasLat =
+      latitude !== undefined && latitude !== null && latitude !== "";
+    const hasLong =
+      longitude !== undefined && longitude !== null && longitude !== "";
+    if (!hasLat && !hasLong) {
+      return "";
+    }
+    const lat = hasLat ? String(latitude).trim() : "";
+    const long = hasLong ? String(longitude).trim() : "";
+    return lat && long ? `${lat}, ${long}` : lat || long;
+  };
+
+  const parseCoordinates = (value) => {
+    if (!value && value !== 0) {
+      return null;
+    }
+    const cleaned = String(value).trim().replace(/[()]/g, "");
+    const [latRaw, longRaw] = cleaned.split(",").map((part) => part?.trim());
+    if (!latRaw || !longRaw) {
+      return null;
+    }
+    const latitude = parseFloat(latRaw);
+    const longitude = parseFloat(longRaw);
+    if (
+      Number.isNaN(latitude) ||
+      Number.isNaN(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      return null;
+    }
+    return {
+      latitude,
+      longitude,
+    };
+  };
+
+  const getInitialLocations = (companyInfo = {}) => {
+    if (Array.isArray(companyInfo?.locations) && companyInfo.locations.length) {
+      return companyInfo.locations.map((loc) => ({
+        coordinates: formatCoordinates(loc?.latitude, loc?.longitude),
+      }));
+    }
+
+    if (companyInfo?.longitude || companyInfo?.latitude) {
+      return [
+        {
+          coordinates: formatCoordinates(
+            companyInfo?.latitude,
+            companyInfo?.longitude
+          ),
+        },
+      ];
+    }
+
+    return [
+      {
+        coordinates: "",
+      },
+    ];
+  };
 
   useEffect(() => {
+    form.setFieldsValue({ locations: getInitialLocations() });
     getCompanyData();
     getAllCurrencies();
     fetchEmployees();
@@ -50,8 +118,16 @@ const Company = () => {
     apiServices("GET", "company/viewmycompanyinfo", null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          form.setFieldsValue(res?.data?.companyInfo);
-          setData(res?.data?.companyInfo);
+          const companyInfo = res?.data?.companyInfo || {};
+          const mappedLocations = getInitialLocations(companyInfo);
+          form.setFieldsValue({
+            ...companyInfo,
+            locations: mappedLocations,
+          });
+          setData({
+            ...companyInfo,
+            locations: mappedLocations,
+          });
           setAbsentDeduction(
             res?.data?.companyInfo?.absentDeduction === true ? true : false
           );
@@ -136,12 +212,27 @@ const Company = () => {
 
   const onFinish = (values) => {
     setLoader(true);
+    const sanitizedLocations = (values?.locations || [])
+      .map((loc) => {
+        const parsed =
+          parseCoordinates(loc?.coordinates) ||
+          parseCoordinates(
+            formatCoordinates(loc?.latitude, loc?.longitude)
+          );
+        return parsed;
+      })
+      .filter(Boolean);
+
     let new_data = {
       ...values,
+      locations: sanitizedLocations,
       _id: data?._id,
       agreeTermsAndConditions: true,
       absentDeduction: absentDeduction,
     };
+
+    delete new_data.longitude;
+    delete new_data.latitude;
 
     apiServices("PUT", "company/updatecompany", new_data, user_state)
       .then((res) => {
@@ -176,6 +267,48 @@ const Company = () => {
   );
 
   const numericPattern = new RegExp(/^[0-9]*$/);
+
+  const handleCoordinatesInput = (e) => {
+    const value = e.target.value;
+    const sanitized = value.replace(/[^0-9.,\s\-()]/g, "");
+    e.target.value = sanitized;
+  };
+
+  const validateCoordinates = (_, value) => {
+    const str = String(value ?? "").trim();
+    if (!str) {
+      return Promise.reject("please enter coordinates");
+    }
+    
+    // Check for any alphabetic characters
+    if (/[a-zA-Z]/.test(str)) {
+      return Promise.reject("coordinates must contain only numbers");
+    }
+    
+    const cleaned = str.replace(/[()]/g, "");
+    const [latRaw, longRaw] = cleaned.split(",").map((part) => part?.trim());
+    
+    if (!latRaw || !longRaw) {
+      return Promise.reject("please enter values as 'latitude, longitude'");
+    }
+    
+    const latitude = parseFloat(latRaw);
+    const longitude = parseFloat(longRaw);
+    
+    if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+      return Promise.reject("please enter valid numeric coordinates");
+    }
+    
+    if (latitude < -90 || latitude > 90) {
+      return Promise.reject("latitude must be between -90 and 90");
+    }
+    
+    if (longitude < -180 || longitude > 180) {
+      return Promise.reject("longitude must be between -180 and 180");
+    }
+    
+    return Promise.resolve();
+  };
 
   const isValidEmail = (email) => {
     // Regular expression to validate email format
@@ -254,112 +387,138 @@ const Company = () => {
     setAllCurrencies(sorted_data);
   };
 
-  const fetchCountries = async () => {
+  const fetchCountries = () => {
     setLoadingLocations(true);
     try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries"
-      );
-      const data = await response.json();
-      if (data.data) {
-        const formattedCountries = data.data.map((country) => ({
-          value: country.country,
-          label: country.country,
-        }));
-        setCountries(formattedCountries);
-      }
+      const formattedCountries = Country.getAllCountries().map((country) => ({
+        value: country.name,
+        label: country.name,
+        code: country.isoCode,
+      }));
+      setCountries(formattedCountries);
     } catch (error) {
+      console.error("Failed to load countries", error);
       message.error(t("settings.companySettings.errorFetchingCountries"));
+    } finally {
+      setLoadingLocations(false);
     }
-    setLoadingLocations(false);
   };
 
-  const fetchStates = async (country) => {
-    setLoadingLocations(true);
+  const fetchStates = (countryCode, showLoader = true) => {
+    if (!countryCode) {
+      setStates([]);
+      return [];
+    }
+    let formattedStates = [];
+    if (showLoader) {
+      setLoadingLocations(true);
+    }
     try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries/states",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ country }),
-        }
-      );
-      const data = await response.json();
-      if (data.data?.states) {
-        const formattedStates = data.data.states.map((state) => ({
-          value: state.name,
-          label: state.name,
-        }));
-        setStates(formattedStates);
-      }
+      formattedStates = State.getStatesOfCountry(countryCode).map((state) => ({
+        value: state.name,
+        label: state.name,
+        code: state.isoCode,
+      }));
+      setStates(formattedStates);
     } catch (error) {
+      console.error("Failed to load states", error);
       message.error(t("settings.companySettings.errorFetchingStates"));
-    }
-    setLoadingLocations(false);
-  };
-
-  const fetchCities = async (country, state) => {
-    setLoadingLocations(true);
-    try {
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries/state/cities",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ country, state }),
-        }
-      );
-      const data = await response.json();
-      if (data.data) {
-        const formattedCities = data.data.map((city) => ({
-          value: city,
-          label: city,
-        }));
-        setCities(formattedCities);
+    } finally {
+      if (showLoader) {
+        setLoadingLocations(false);
       }
-    } catch (error) {
-      message.error(t("settings.companySettings.errorFetchingCities"));
     }
-    setLoadingLocations(false);
+    return formattedStates;
   };
 
-  const handleCountryChange = (value) => {
+  const fetchCities = (countryCode, stateCode, showLoader = true) => {
+    if (!countryCode || !stateCode) {
+      setCities([]);
+      return [];
+    }
+    let formattedCities = [];
+    if (showLoader) {
+      setLoadingLocations(true);
+    }
+    try {
+      formattedCities = City.getCitiesOfState(countryCode, stateCode).map(
+        (city) => ({
+          value: city.name,
+          label: city.name,
+        })
+      );
+      setCities(formattedCities);
+    } catch (error) {
+      console.error("Failed to load cities", error);
+      message.error(t("settings.companySettings.errorFetchingCities"));
+    } finally {
+      if (showLoader) {
+        setLoadingLocations(false);
+      }
+    }
+    return formattedCities;
+  };
+
+  const handleCountryChange = (value, option) => {
     form.setFieldsValue({ state: undefined, city: undefined });
     setSelectedCountry(value);
+    setSelectedCountryCode(option?.code || null);
     setSelectedState(null);
+    setSelectedStateCode(null);
     setStates([]);
     setCities([]);
-    if (value) {
-      fetchStates(value);
+    if (option?.code) {
+      fetchStates(option.code);
     }
   };
 
-  const handleStateChange = (value) => {
+  const handleStateChange = (value, option) => {
     form.setFieldsValue({ city: undefined });
     setSelectedState(value);
+    setSelectedStateCode(option?.code || null);
     setCities([]);
-    if (value && selectedCountry) {
-      fetchCities(selectedCountry, value);
+    if (option?.code && selectedCountryCode) {
+      fetchCities(selectedCountryCode, option.code);
     }
   };
 
-  // Add this new effect to handle initial data loading
   useEffect(() => {
-    if (data?.country) {
-      setSelectedCountry(data.country);
-      fetchStates(data.country).then(() => {
-        if (data?.state) {
-          setSelectedState(data.state);
-          fetchCities(data.country, data.state);
-        }
-      });
+    if (!data?.country || !countries.length) {
+      return;
     }
-  }, [data]);
+
+    const countryOption = countries.find(
+      (country) => country.value === data.country
+    );
+
+    if (!countryOption) {
+      return;
+    }
+
+    setSelectedCountry(data.country);
+    setSelectedCountryCode(countryOption.code);
+
+    const stateOptions = fetchStates(countryOption.code, false);
+
+    if (data?.state && stateOptions.length) {
+      const stateOption = stateOptions.find(
+        (state) => state.value === data.state
+      );
+      if (stateOption) {
+        setSelectedState(data.state);
+        setSelectedStateCode(stateOption.code);
+        fetchCities(countryOption.code, stateOption.code, false);
+      } else {
+        setSelectedState(null);
+        setSelectedStateCode(null);
+        setCities([]);
+      }
+    } else {
+      setSelectedState(null);
+      setSelectedStateCode(null);
+      setCities([]);
+    }
+  }, [data, countries]);
 
   return (
     <div>
@@ -902,12 +1061,12 @@ const Company = () => {
                           .indexOf(input.toLowerCase()) >= 0
                       }
                       options={states}
-                      disabled={!selectedCountry}
+                      disabled={!selectedCountryCode}
                       style={{ width: "100%" }}
                       className="custom-select custom-normal"
                       onFocus={() => {
-                        if (selectedCountry && states.length === 0) {
-                          fetchStates(selectedCountry);
+                        if (selectedCountryCode && states.length === 0) {
+                          fetchStates(selectedCountryCode);
                         }
                       }}
                     />
@@ -942,16 +1101,16 @@ const Company = () => {
                           .indexOf(input.toLowerCase()) >= 0
                       }
                       options={cities}
-                      disabled={!selectedState}
+                      disabled={!selectedStateCode}
                       style={{ width: "100%" }}
                       className="custom-select custom-normal"
                       onFocus={() => {
                         if (
-                          selectedCountry &&
-                          selectedState &&
+                          selectedCountryCode &&
+                          selectedStateCode &&
                           cities.length === 0
                         ) {
-                          fetchCities(selectedCountry, selectedState);
+                          fetchCities(selectedCountryCode, selectedStateCode);
                         }
                       }}
                     />
@@ -959,31 +1118,16 @@ const Company = () => {
                 </div>
               </div>
             </div>
-            <div className="col-sm-6">
+            <div className="col-12">
               <div className="form-group">
-                <label className="col-form-label">
-                  Longitude <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="longitude"
+                <Form.List
+                  name="locations"
                   rules={[
                     {
-                      required: true,
-                      validator: (_, value) => {
-                        if (
-                          value === undefined ||
-                          value === null ||
-                          String(value).trim() === ""
-                        ) {
-                          return Promise.reject("please enter longitude");
-                        }
-                        const num = parseFloat(String(value).trim());
-                        if (Number.isNaN(num)) {
-                          return Promise.reject("please enter a valid number");
-                        }
-                        if (num < -180 || num > 180) {
+                      validator: async (_, locations) => {
+                        if (!locations || locations.length === 0) {
                           return Promise.reject(
-                            "longitude must be between -180 and 180"
+                            new Error("please add at least one location")
                           );
                         }
                         return Promise.resolve();
@@ -991,66 +1135,91 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input
-                    style={{ display: "none" }}
-                    value={allValues?.longitude}
-                  />
-                  <input
-                    className="form-control inputWordSpacing"
-                    defaultValue={data ? data?.longitude : ""}
-                    onInput={(e) => {
-                      onHandleChange("longitude", e.target.value);
-                    }}
-                    maxLength={15}
-                  />
-                </Form.Item>
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label className="col-form-label">
-                  Latitude <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="latitude"
-                  rules={[
-                    {
-                      required: true,
-                      validator: (_, value) => {
-                        if (
-                          value === undefined ||
-                          value === null ||
-                          String(value).trim() === ""
-                        ) {
-                          return Promise.reject("please enter latitude");
-                        }
-                        const num = parseFloat(String(value).trim());
-                        if (Number.isNaN(num)) {
-                          return Promise.reject("please enter a valid number");
-                        }
-                        if (num < -90 || num > 90) {
-                          return Promise.reject(
-                            "latitude must be between -90 and 90"
-                          );
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                  ]}
-                >
-                  <Input
-                    style={{ display: "none" }}
-                    value={allValues?.latitude}
-                  />
-                  <input
-                    className="form-control inputWordSpacing"
-                    defaultValue={data ? data?.latitude : ""}
-                    onInput={(e) => {
-                      onHandleChange("latitude", e.target.value);
-                    }}
-                    maxLength={15}
-                  />
-                </Form.Item>
+                  {(fields, { add, remove }) => (
+                    <>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <label className="col-form-label mb-0">
+                          Locations <span className="text-danger">*</span>
+                          <Tooltip
+                            placement="right"
+                            title={
+                              <label style={{ maxWidth: 260, display: "block" }}>
+                                Enter the company's Latitude, Longitude, and Radius. These values
+                                define the allowed location area for marking attendance. Employees
+                                must be within this radius to mark attendance successfully.
+                              </label>
+                            }
+                          >
+                            <span
+                              style={{
+                                border: "1px solid #999",
+                                color: "#666",
+                                fontSize: "12px",
+                                borderRadius: "50%",
+                                padding: "2px 6px",
+                                marginLeft: "8px",
+                                cursor: "help",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              i
+                            </span>
+                          </Tooltip>
+                        </label>
+                        <Button
+                          type="dashed"
+                          onClick={() => add({ coordinates: "" })}
+                        >
+                          + Add Location
+                        </Button>
+                      </div>
+                      {fields.map((field, index) => (
+                        <div
+                          className="row align-items-center"
+                          key={field.key}
+                          style={{ marginTop: index === 0 ? "15px" : "5px" }}
+                        >
+                          <div className="col-sm-10">
+                            <label className="col-form-label">
+                              Coordinates{" "}
+                              <span className="text-danger">*</span>
+                            </label>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, "coordinates"]}
+                              fieldKey={[field.fieldKey, "coordinates"]}
+                              rules={[
+                                {
+                                  validator: validateCoordinates,
+                                },
+                              ]}
+                            >
+                              <Input
+                                className="form-control inputWordSpacing"
+                                placeholder="Example: 33.5226784, 73.0944155"
+                                maxLength={60}
+                                onInput={handleCoordinatesInput}
+                              />
+                            </Form.Item>
+                          </div>
+                          <div className="col-sm-2 d-flex align-items-center">
+                            {fields.length > 1 && (
+                              <button
+                                type="button"
+                                className="btn btn-link text-danger p-0"
+                                onClick={() => remove(field.name)}
+                                aria-label="Remove location"
+                              >
+                                <i className="fa fa-times" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </Form.List>
               </div>
             </div>
             <div className="col-sm-6">
@@ -1089,6 +1258,7 @@ const Company = () => {
                     value={allValues?.radius_meter}
                   />
                   <input
+                    placeholder="Enter allowed radius (in meters) for company"
                     className="form-control inputWordSpacing"
                     defaultValue={data ? data?.radius_meter : ""}
                     onInput={(e) => {
@@ -1353,6 +1523,107 @@ const Company = () => {
                       onHandleChange("fax", value);
                     }}
                     phone={data ? data?.fax : ""}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  {t("settings.companySettings.employeeIdPrefix")}{" "}
+                  <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="employeeIdPrefix"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      validator: (_, value) => {
+                        if (!value || value.trim() === "") {
+                          return Promise.reject(
+                            t("settings.companySettings.pleaseEnterEmployeeIdPrefix")
+                          );
+                        } else if (/\s/.test(value)) {
+                          return Promise.reject(
+                            t("settings.companySettings.noSpacesAllowed")
+                          );
+                        } else if (!/^[A-Z0-9-]+$/.test(value)) {
+                          return Promise.reject(
+                            t("settings.companySettings.onlyUppercaseAndNumbers")
+                          );
+                        } else if (value.length < 2) {
+                          return Promise.reject(
+                            t("settings.minLength", {
+                              name: t("settings.companySettings.employeeIdPrefix"),
+                            })
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.employeeIdPrefix}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.employeeIdPrefix : ""}
+                    onInput={(e) => {
+                      const upperValue = e.target.value.toUpperCase();
+                      e.target.value = upperValue;
+                      onHandleChange("employeeIdPrefix", upperValue);
+                    }}
+                    placeholder="e.g., DG-"
+                    maxLength={10}
+                    style={{ textTransform: "uppercase" }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  {t("settings.companySettings.employeeIdCounter")}{" "}
+                  <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="employeeIdCounter"
+                  rules={[
+                    {
+                      required: true,
+                      validator: (_, value) => {
+                        if (value === undefined || value === null || value === "") {
+                          return Promise.reject(
+                            t("settings.companySettings.pleaseEnterEmployeeIdCounter")
+                          );
+                        }
+                        const numValue = Number(value);
+                        if (isNaN(numValue) || numValue < 0) {
+                          return Promise.reject(
+                            t("settings.companySettings.counterMustBePositive")
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.employeeIdCounter}
+                  />
+                  <input
+                    className="form-control"
+                    type="number"
+                    defaultValue={data?.employeeIdCounter !== undefined ? data?.employeeIdCounter : ""}
+                    onInput={(e) => {
+                      onHandleChange("employeeIdCounter", e.target.value);
+                    }}
+                    placeholder="e.g., 0, 001"
+                    min="0"
                   />
                 </Form.Item>
               </div>

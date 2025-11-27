@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, Input, Empty, Pagination, Spin, message } from 'antd';
 import { Modal } from '@mui/material';
+import AssetsCategoryModal from './AssetsCategoryModal';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -292,68 +293,12 @@ const AssetsCategory = () => {
         </div>
       </div>
 
-      <Modal open={open.isAddOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description" disableRestoreFocus BackdropProps={{ style: { backgroundColor: 'rgb(0 0 0 / 87%)' } }}>
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">{open?.data ? t('holiday.update') : t('holiday.add')} Assets Category</h5>
-              <button type="button" className="close" onClick={handleClose}>
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <Form
-                form={form}
-                name="assets-category-form"
-                onFinish={(val) => onFinish(val, open?.data)}
-                onFinishFailed={({ errorFields }) => {
-                  const consecutiveSpacesError = errorFields.find((field) => field.errors.toString().includes('consecutive spaces'));
-                  if (consecutiveSpacesError) {
-                    message.error(t('allEmp.errors.removeConsecutiveSpaces'));
-                  } else {
-                    message.error(t('allEmp.errors.fillRequiredFields'));
-                  }
-                }}
-                initialValues={{ assetCategoryName: open?.data ? (open?.data?.assetCategoryName || open?.data?.name || open?.data?.categoryName || '') : '' }}
-                autoComplete="off"
-              >
-                <div className="form-group">
-                  <label>
-                    Category Name <span className="text-danger">*</span>
-                  </label>
-                  <Form.Item
-                    name="assetCategoryName"
-                    rules={[
-                      {
-                        whitespace: true,
-                        required: true,
-                        validator: (_, value) => {
-                          if (!value || value.trim() === '') {
-                            return Promise.reject('Please enter category name');
-                          } else if (/\s{2,}/.test(value)) {
-                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                          }
-                          return Promise.resolve();
-                        },
-                      },
-                    ]}
-                    className="custom-border"
-                  >
-                    <Input className="form-control" maxLength={50} autoFocus />
-                  </Form.Item>
-                </div>
-                <div className="submit-section">
-                  <Form.Item>
-                    <Button htmlType="submit" className="btn btn-primary submit-btn" disabled={loader}>
-                      {loader ? <Spin size="small" indicator={antIcon} /> : t('submit')}
-                    </Button>
-                  </Form.Item>
-                </div>
-              </Form>
-            </div>
-          </div>
-        </div>
-      </Modal>
+      <AssetsCategoryModal
+        open={open.isAddOpen}
+        onClose={handleClose}
+        onSuccess={() => fetchCategories()}
+        initialData={open.data}
+      />
 
       <Modal open={open.isDelOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description" disableRestoreFocus BackdropProps={{ style: { backgroundColor: 'rgb(0 0 0 / 87%)' } }}>
         <div className="modal-dialog modal-dialog-centered">
