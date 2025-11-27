@@ -18,7 +18,6 @@ const definePlugin = new webpack.DefinePlugin({
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
 const publicPath = '/';
 
 module.exports = {
@@ -29,22 +28,6 @@ module.exports = {
     publicPath: publicPath, // base path where referenced files will be look for
   },
 optimization: {
-    // minimize can be toggled; setting explicitly helps troubleshooting hangs
-    minimize: env?.NODE_ENV === 'production',
-    minimizer: [
-      // Configure Terser with lower-memory settings for constrained servers (no worker pool)
-      new TerserPlugin({
-        parallel: false,
-        extractComments: false,
-        terserOptions: {
-          ecma: 5,
-          compress: {
-            drop_console: false
-          },
-          mangle: true
-        }
-      })
-    ],
     splitChunks: {
       chunks: 'all',
       maxInitialRequests: 25,
@@ -66,7 +49,7 @@ optimization: {
           priority: 20,
         },
         charts: {
-          test: /[\\/]node_modules[\\/](chart\\.js|apexcharts)[\\/]/,
+          test: /[\\/]node_modules[\\/](chart\.js|apexcharts)[\\/]/,
           name: 'charts',
           priority: 15,
         },
