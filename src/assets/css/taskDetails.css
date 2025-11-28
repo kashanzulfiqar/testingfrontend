@@ -1,0 +1,171 @@
+/* Comment Content Formatting */
+.comment-content {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Paragraph spacing */
+.comment-content p {
+  margin: 0 0 8px 0;
+}
+
+.comment-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Bold text */
+.comment-content strong,
+.comment-content b {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Italic text */
+.comment-content em,
+.comment-content i {
+  font-style: italic;
+}
+
+/* Underline text */
+.comment-content u {
+  text-decoration: underline;
+}
+
+/* Unordered lists (bullets) */
+.comment-content ul {
+  margin: 8px 0;
+  padding-left: 24px;
+  list-style-type: disc;
+}
+
+.comment-content ul li {
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+/* Ordered lists (numbers) */
+.comment-content ol {
+  margin: 8px 0;
+  padding-left: 24px;
+  list-style-type: decimal;
+}
+
+.comment-content ol li {
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+/* Nested lists */
+.comment-content ul ul,
+.comment-content ol ol,
+.comment-content ul ol,
+.comment-content ol ul {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+/* Headings in comments */
+.comment-content h1,
+.comment-content h2,
+.comment-content h3,
+.comment-content h4,
+.comment-content h5,
+.comment-content h6 {
+  font-weight: 600;
+  margin: 12px 0 8px 0;
+  color: #333;
+}
+
+.comment-content h1 {
+  font-size: 20px;
+}
+
+.comment-content h2 {
+  font-size: 18px;
+}
+
+.comment-content h3 {
+  font-size: 16px;
+}
+
+/* Links in comments */
+.comment-content a {
+  color: #1890ff;
+  text-decoration: none;
+}
+
+.comment-content a:hover {
+  text-decoration: underline;
+}
+
+/* Blockquotes */
+.comment-content blockquote {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-left: 3px solid #e0e0e0;
+  background-color: #f5f5f5;
+  font-style: italic;
+}
+
+/* Code blocks */
+.comment-content code {
+  background-color: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.comment-content pre {
+  background-color: #f5f5f5;
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.comment-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Horizontal rule */
+.comment-content hr {
+  margin: 12px 0;
+  border: none;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Tables */
+.comment-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+}
+
+.comment-content table td,
+.comment-content table th {
+  border: 1px solid #e0e0e0;
+  padding: 8px;
+  text-align: left;
+}
+
+.comment-content table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+/* Strike-through */
+.comment-content s,
+.comment-content strike,
+.comment-content del {
+  text-decoration: line-through;
+}
+
+/* Ensure line breaks are respected */
+.comment-content br {
+  display: block;
+  content: "";
+  margin: 4px 0;
+}
+

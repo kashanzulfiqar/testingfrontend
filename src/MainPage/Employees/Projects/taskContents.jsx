@@ -26,6 +26,7 @@ import LikeIcon from "../../../assets/Icons/Like.svg";
 import EmojiIcon from "../../../assets/Icons/emojicon.svg";
 import EditIcon from "../../../assets/Icons/Edit.svg";
 import { BASE_URL } from '../../../config/apiConfig';
+import '../../../assets/css/taskDetails.css';
 
 const getPriorityIcon = (priority) => {
   switch (priority?.toLowerCase()) {
@@ -1812,18 +1813,20 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                         </div>
                                       </div>
                                     ) : (
-                                      <div style={{
-                                        color: '#333',
-                                        fontSize: 14,
-                                        lineHeight: '1.5',
-                                        marginBottom: 12
-                                      }}
-                                      dangerouslySetInnerHTML={{ 
-                                        __html: c.text.replace(
-                                          /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g, 
-                                          '<span style="background-color: #e6f7ff; color: #1890ff; padding: 2px 4px; border-radius: 4px; font-weight: 500;">@$1</span>'
-                                        )
-                                      }}
+                                      <div 
+                                        className="comment-content"
+                                        style={{
+                                          color: '#333',
+                                          fontSize: 14,
+                                          lineHeight: '1.5',
+                                          marginBottom: 12
+                                        }}
+                                        dangerouslySetInnerHTML={{ 
+                                          __html: c.text.replace(
+                                            /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g, 
+                                            '<span style="background-color: #e6f7ff; color: #1890ff; padding: 2px 4px; border-radius: 4px; font-weight: 500;">@$1</span>'
+                                          )
+                                        }}
                                       />
                                     )}
                                     
