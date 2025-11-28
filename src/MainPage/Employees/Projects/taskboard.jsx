@@ -86,6 +86,7 @@ const TaskBoard = () => {
   const [originalDueDate, setOriginalDueDate] = useState(null);
   const [selectedAssigneeFilter, setSelectedAssigneeFilter] = useState([]);
   const [filteredColumns, setFilteredColumns] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -1247,7 +1248,8 @@ const TaskBoard = () => {
   }, [addTask.isAddOpen]);
 
   useEffect(() => {
-    if (!selectedAssigneeFilter || selectedAssigneeFilter.length === 0) {
+    // If no filters are applied, show all columns
+    if ((!selectedAssigneeFilter || selectedAssigneeFilter.length === 0) && !searchQuery.trim()) {
       setFilteredColumns(columns);
       return;
     }
@@ -1258,6 +1260,17 @@ const TaskBoard = () => {
 
         if (!taskDetails) {
           return false;
+        }
+
+        // Search filter - check if task title matches search query
+        const searchLower = searchQuery.toLowerCase().trim();
+        if (searchQuery.trim() && !taskDetails.title?.toLowerCase().includes(searchLower)) {
+          return false;
+        }
+
+        // Assignee filter - if no assignee filter is selected, pass this check
+        if (!selectedAssigneeFilter || selectedAssigneeFilter.length === 0) {
+          return true;
         }
 
         // Check if task's assignee is in the selected filters
@@ -1283,7 +1296,7 @@ const TaskBoard = () => {
     });
 
     setFilteredColumns(filtered);
-  }, [selectedAssigneeFilter, columns, allTasks]);
+  }, [selectedAssigneeFilter, columns, allTasks, searchQuery]);
 
   return (
     <>
@@ -1395,6 +1408,19 @@ const TaskBoard = () => {
               </div>
               <div className="col-auto float-end ms-auto">
                 <div className="d-flex gap-2 align-items-center">
+                  {/* Search Input */}
+                  <Input
+                    placeholder="Search tasks..."
+                    prefix={<i className="fa fa-search" style={{ color: '#999' }} />}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    allowClear
+                    style={{
+                      width: '250px',
+                      borderRadius: '8px',
+                      height: '38px'
+                    }}
+                  />
                   <div className="project-members mr-3">
                     <ul
                       className="team-members"
