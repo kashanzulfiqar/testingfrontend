@@ -147,14 +147,15 @@ const AttendanceAdmin = () => {
 
   useEffect(() => {
     if (role === "admin" || permissions?.attendanceManagement) {
-      setIsLoading(true);
-      setIsStatLoading(true);
-      fetchEmployees();
-      fetchAttendanceData();
+      // Only fetch attendance if employees are loaded (for proper filtering)
+      if (employees && employees.length > 0) {
+        setIsLoading(true);
+        fetchAttendanceData();
+      }
     } else {
       navigate("/restricted", { state: { unAuthorize: true } });
     }
-  }, [filters]);
+  }, [filters, employees]);
 
   const fetchAttendanceData = async () => {
     apiServices(
@@ -165,19 +166,48 @@ const AttendanceAdmin = () => {
     )
       .then((res) => {
         if (res.data.success === true) {
-          const attendanceData = res?.data?.Attendance;
+          let attendanceData = res?.data?.Attendance;
           const statData = res?.data;
-          setAttendanceRecords(attendanceData);
+          
+          const validRecords = [];
+          const nullRecords = [];
+          
+          attendanceData?.forEach((record) => {
+            if (!record.attendanceDate) {
+              nullRecords.push(record);
+            } else {
+              if (employees && employees.length > 0) {
+                const employee = employees.find(emp => emp._id === record.user?._id);
+                
+                if (!employee || !employee.employeeExitDate) {
+                  validRecords.push(record);
+                } else {
+                  const exitDate = moment(employee.employeeExitDate);
+                  const attendanceDate = moment(record.attendanceDate);
+                  
+                  if (attendanceDate.isSameOrBefore(exitDate, 'day')) {
+                    validRecords.push(record);
+                  }
+                }
+              } else {
+                validRecords.push(record);
+              }
+            }
+          });
+          
+          const filteredAttendanceData = [...validRecords, ...nullRecords];
+          
+          setAttendanceRecords(filteredAttendanceData);
           setStatdata(statData);
           //console.log(attendanceData);
           //console.log(attendancerecords);
 
           const uniqueEmployees = [
-            ...new Set(attendanceData.map((record) => record.user._id)),
+            ...new Set(filteredAttendanceData.map((record) => record.user?._id).filter(Boolean)),
           ];
           const employeeData = uniqueEmployees?.map((employeeId) => {
-            const employeeRecords = attendanceData?.filter(
-              (record) => record.user._id === employeeId
+            const employeeRecords = filteredAttendanceData?.filter(
+              (record) => record.user?._id === employeeId
             );
             return {
               employeeId,
@@ -488,10 +518,37 @@ const AttendanceAdmin = () => {
 
   const dataSource = employees
     ?.filter((employee) => {
+      const hasAttendanceRecords = employeeAttendanceData?.some(
+        (data) => data.employeeId === employee._id
+      );
+      
+      if (!hasAttendanceRecords) {
+        return false;
+      }
+
       // Filter employees based on the search criteria (employee name)
-      return employee.fullName
+      const matchesName = employee.fullName
         .toLowerCase()
         .includes(filters.name.toLowerCase());
+      
+      if (!matchesName) return false;
+
+      // Check if employee should be shown for the selected month/year
+      if (employee.employeeExitDate) {
+        const exitDate = moment(employee.employeeExitDate);
+        const selectedMonth = filters.month || moment().month() + 1;
+        const selectedYear = filters.year || moment().year();
+        
+        // Create a moment object for the first day of the selected month
+        const selectedMonthStart = moment(`${selectedYear}-${selectedMonth}-01`, 'YYYY-MM-DD');
+        
+        // If exit date is before the selected month, don't show the employee
+        if (exitDate.isBefore(selectedMonthStart, 'month')) {
+          return false;
+        }
+      }
+      
+      return true;
     })
     ?.map((employee) => {
       const rowData = {
@@ -508,15 +565,40 @@ const AttendanceAdmin = () => {
         (data) => data.employeeId === employee._id
       );
 
-      if (employeeAttendance) {
-        // Employee has attendance records
-        employeeAttendance?.records.forEach((record) => {
-          const day = moment(record.attendanceDate).date();
-          rowData[`day${day}`] = record;
-        });
+      // Determine the last day to show attendance for this employee
+      let lastDayToShow = daysInMonth;
+      if (employee.employeeExitDate) {
+        const exitDate = moment(employee.employeeExitDate);
+        const selectedMonth = filters.month || moment().month() + 1;
+        const selectedYear = filters.year || moment().year();
+        
+        // If the exit date is in the same month/year as selected, limit the days shown
+        if (exitDate.year() === parseInt(selectedYear) && (exitDate.month() + 1) === parseInt(selectedMonth)) {
+          lastDayToShow = exitDate.date();
+        }
+      }
+
+      if (employeeAttendance && employeeAttendance.records) {
+        const validRecords = employeeAttendance.records.filter(record => record.attendanceDate);
+        
+        if (validRecords.length > 0) {
+          validRecords.forEach((record) => {
+            const day = moment(record.attendanceDate).date();
+            if (day <= lastDayToShow) {
+              rowData[`day${day}`] = record;
+            }
+          });
+        }
+        
+        // Fill remaining days with "-" if within the working period
+        for (let i = 1; i <= lastDayToShow; i++) {
+          if (!rowData[`day${i}`]) {
+            rowData[`day${i}`] = { status: "-" };
+          }
+        }
       } else {
-        // Employee has no attendance records
-        for (let i = 1; i <= daysInMonth; i++) {
+        // Employee has no attendance records - show "-" only up to last working day
+        for (let i = 1; i <= lastDayToShow; i++) {
           rowData[`day${i}`] = { status: "-" };
         }
       }

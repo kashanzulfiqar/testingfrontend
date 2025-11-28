@@ -17,7 +17,7 @@ import {
   Dropdown,
   Menu,
 } from "antd";
-import { PlusCircleOutlined, PlusOutlined, UserOutlined, ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, UploadOutlined, PaperClipOutlined, DeleteOutlined, EyeOutlined, DownloadOutlined, EllipsisOutlined, EyeInvisibleOutlined, PlayCircleOutlined, FileTextOutlined, FileOutlined } from '@ant-design/icons';
+import { PlusCircleOutlined, PlusOutlined, UserOutlined, ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, UploadOutlined, PaperClipOutlined, DeleteOutlined, EyeOutlined, DownloadOutlined, EllipsisOutlined, EyeInvisibleOutlined, PlayCircleOutlined, FileTextOutlined, FileOutlined, EditOutlined } from '@ant-design/icons';
 import { apiServices } from "../../../Services/apiServices";
 import { useSelector } from "react-redux";
 import { user_icon } from "../../../Entryfile/imagepath";
@@ -26,6 +26,7 @@ import LikeIcon from "../../../assets/Icons/Like.svg";
 import EmojiIcon from "../../../assets/Icons/emojicon.svg";
 import EditIcon from "../../../assets/Icons/Edit.svg";
 import { BASE_URL } from '../../../config/apiConfig';
+import '../../../assets/css/taskDetails.css';
 
 const getPriorityIcon = (priority) => {
   switch (priority?.toLowerCase()) {
@@ -1138,9 +1139,27 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                 fontWeight: 600, 
                 fontSize: 16, 
                 color: '#333', 
-                marginBottom: 8 
+                marginBottom: 8,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
                 Task Name
+                {!editingTaskName && (
+                  <Tooltip title="Click to edit task name">
+                    <EditOutlined 
+                      style={{ 
+                        fontSize: 14, 
+                        color: '#666',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => {
+                        setTaskNameValue(taskData?.title || "");
+                        setEditingTaskName(true);
+                      }}
+                    />
+                  </Tooltip>
+                )}
                 </div>
               <div style={{
                 background: '#fff',
@@ -1229,9 +1248,27 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                 fontWeight: 600, 
                 fontSize: 16, 
                 color: '#333', 
-                marginBottom: 8 
+                marginBottom: 8,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
                     Description
+                    {!isEditing && (
+                      <Tooltip title="Click to edit description">
+                        <EditOutlined 
+                          style={{ 
+                            fontSize: 14, 
+                            color: '#666',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => {
+                            setDescriptionValue(taskData?.description || "");
+                            setIsEditing(true);
+                          }}
+                        />
+                      </Tooltip>
+                    )}
             </div>
               <div style={{
                 background: isEditing ? '#fff' : 'transparent',
@@ -1776,18 +1813,20 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                         </div>
                                       </div>
                                     ) : (
-                                      <div style={{
-                                        color: '#333',
-                                        fontSize: 14,
-                                        lineHeight: '1.5',
-                                        marginBottom: 12
-                                      }}
-                                      dangerouslySetInnerHTML={{ 
-                                        __html: c.text.replace(
-                                          /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g, 
-                                          '<span style="background-color: #e6f7ff; color: #1890ff; padding: 2px 4px; border-radius: 4px; font-weight: 500;">@$1</span>'
-                                        )
-                                      }}
+                                      <div 
+                                        className="comment-content"
+                                        style={{
+                                          color: '#333',
+                                          fontSize: 14,
+                                          lineHeight: '1.5',
+                                          marginBottom: 12
+                                        }}
+                                        dangerouslySetInnerHTML={{ 
+                                          __html: c.text.replace(
+                                            /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g, 
+                                            '<span style="background-color: #e6f7ff; color: #1890ff; padding: 2px 4px; border-radius: 4px; font-weight: 500;">@$1</span>'
+                                          )
+                                        }}
                                       />
                                     )}
                                     

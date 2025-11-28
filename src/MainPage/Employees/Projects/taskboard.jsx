@@ -18,6 +18,8 @@ import {
   Tag,
   Tooltip,
   message,
+  Popover,
+  Badge,
 } from "antd";
 import {
   LoadingOutlined,
@@ -86,6 +88,11 @@ const TaskBoard = () => {
   const [originalDueDate, setOriginalDueDate] = useState(null);
   const [selectedAssigneeFilter, setSelectedAssigneeFilter] = useState([]);
   const [filteredColumns, setFilteredColumns] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState([]);
+  const [selectedPriorityFilter, setSelectedPriorityFilter] = useState([]);
+  const [selectedReporterFilter, setSelectedReporterFilter] = useState([]);
+  const [filterDropdownVisible, setFilterDropdownVisible] = useState(false);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -1247,7 +1254,16 @@ const TaskBoard = () => {
   }, [addTask.isAddOpen]);
 
   useEffect(() => {
-    if (!selectedAssigneeFilter || selectedAssigneeFilter.length === 0) {
+    // Check if any filters are applied
+    const hasFilters = 
+      searchQuery.trim() ||
+      (selectedAssigneeFilter && selectedAssigneeFilter.length > 0) ||
+      (selectedTypeFilter && selectedTypeFilter.length > 0) ||
+      (selectedPriorityFilter && selectedPriorityFilter.length > 0) ||
+      (selectedReporterFilter && selectedReporterFilter.length > 0);
+
+    // If no filters are applied, show all columns
+    if (!hasFilters) {
       setFilteredColumns(columns);
       return;
     }
@@ -1260,20 +1276,60 @@ const TaskBoard = () => {
           return false;
         }
 
-        // Check if task's assignee is in the selected filters
-        if (taskDetails.assignee && selectedAssigneeFilter.includes(taskDetails.assignee)) {
-          return true;
+        // Search filter - check if task title matches search query
+        const searchLower = searchQuery.toLowerCase().trim();
+        if (searchQuery.trim() && !taskDetails.title?.toLowerCase().includes(searchLower)) {
+          return false;
         }
 
-        // Check if any of the task's assigned developers are in the selected filters
-        if (taskDetails.assignedDevelopers && taskDetails.assignedDevelopers.length > 0) {
-          return taskDetails.assignedDevelopers.some(dev => {
-            const devId = typeof dev === 'string' ? dev : (dev?._id || dev?.userId || dev?.id);
-            return selectedAssigneeFilter.includes(devId);
-          });
+        // Type filter
+        if (selectedTypeFilter && selectedTypeFilter.length > 0) {
+          if (!taskDetails.type || !selectedTypeFilter.includes(taskDetails.type)) {
+            return false;
+          }
         }
 
-        return false;
+        // Priority filter
+        if (selectedPriorityFilter && selectedPriorityFilter.length > 0) {
+          if (!taskDetails.priority || !selectedPriorityFilter.includes(taskDetails.priority)) {
+            return false;
+          }
+        }
+
+        // Reporter filter
+        if (selectedReporterFilter && selectedReporterFilter.length > 0) {
+          const reporterId = typeof taskDetails.reporter === 'string' 
+            ? taskDetails.reporter 
+            : (taskDetails.reporter?._id || taskDetails.createdBy);
+          
+          if (!reporterId || !selectedReporterFilter.includes(reporterId)) {
+            return false;
+          }
+        }
+
+        // Assignee filter
+        if (selectedAssigneeFilter && selectedAssigneeFilter.length > 0) {
+          let assigneeMatch = false;
+
+          // Check if task's assignee is in the selected filters
+          if (taskDetails.assignee && selectedAssigneeFilter.includes(taskDetails.assignee)) {
+            assigneeMatch = true;
+          }
+
+          // Check if any of the task's assigned developers are in the selected filters
+          if (!assigneeMatch && taskDetails.assignedDevelopers && taskDetails.assignedDevelopers.length > 0) {
+            assigneeMatch = taskDetails.assignedDevelopers.some(dev => {
+              const devId = typeof dev === 'string' ? dev : (dev?._id || dev?.userId || dev?.id);
+              return selectedAssigneeFilter.includes(devId);
+            });
+          }
+
+          if (!assigneeMatch) {
+            return false;
+          }
+        }
+
+        return true;
       });
 
       return {
@@ -1283,7 +1339,7 @@ const TaskBoard = () => {
     });
 
     setFilteredColumns(filtered);
-  }, [selectedAssigneeFilter, columns, allTasks]);
+  }, [selectedAssigneeFilter, selectedTypeFilter, selectedPriorityFilter, selectedReporterFilter, columns, allTasks, searchQuery]);
 
   return (
     <>
@@ -1395,6 +1451,207 @@ const TaskBoard = () => {
               </div>
               <div className="col-auto float-end ms-auto">
                 <div className="d-flex gap-2 align-items-center">
+                  {/* Search Input */}
+                  <Input
+                    placeholder="Search tasks..."
+                    prefix={<i className="fa fa-search" style={{ color: '#999' }} />}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    allowClear
+                    style={{
+                      width: '250px',
+                      borderRadius: '8px',
+                      height: '38px'
+                    }}
+                  />
+                  
+                  {/* Filter Button with Popover */}
+                  <Popover
+                    content={
+                      <div style={{ width: '320px', padding: '12px' }}>
+                        <div style={{ marginBottom: '16px' }}>
+                          <label style={{ 
+                            display: 'block', 
+                            marginBottom: '8px', 
+                            fontWeight: 500,
+                            fontSize: '13px',
+                            color: '#333'
+                          }}>
+                            Type
+                          </label>
+                          <Select
+                            mode="multiple"
+                            placeholder="Select types..."
+                            value={selectedTypeFilter}
+                            onChange={setSelectedTypeFilter}
+                            allowClear
+                            style={{ width: '100%' }}
+                            maxTagCount="responsive"
+                          >
+                            <Select.Option value="Bug">Bug</Select.Option>
+                            <Select.Option value="Feature">Feature</Select.Option>
+                            <Select.Option value="Enhancement">Enhancement</Select.Option>
+                            <Select.Option value="Refactor">Refactor</Select.Option>
+                            <Select.Option value="Task">Task</Select.Option>
+                          </Select>
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                          <label style={{ 
+                            display: 'block', 
+                            marginBottom: '8px', 
+                            fontWeight: 500,
+                            fontSize: '13px',
+                            color: '#333'
+                          }}>
+                            Priority
+                          </label>
+                          <Select
+                            mode="multiple"
+                            placeholder="Select priorities..."
+                            value={selectedPriorityFilter}
+                            onChange={setSelectedPriorityFilter}
+                            allowClear
+                            style={{ width: '100%' }}
+                            maxTagCount="responsive"
+                          >
+                            <Select.Option value="Highest">Highest</Select.Option>
+                            <Select.Option value="High">High</Select.Option>
+                            <Select.Option value="Medium">Medium</Select.Option>
+                            <Select.Option value="Low">Low</Select.Option>
+                            <Select.Option value="Lowest">Lowest</Select.Option>
+                          </Select>
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                          <label style={{ 
+                            display: 'block', 
+                            marginBottom: '8px', 
+                            fontWeight: 500,
+                            fontSize: '13px',
+                            color: '#333'
+                          }}>
+                            Assignee
+                          </label>
+                          <Select
+                            mode="multiple"
+                            placeholder="Select assignees..."
+                            value={selectedAssigneeFilter}
+                            onChange={setSelectedAssigneeFilter}
+                            allowClear
+                            showSearch
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            style={{ width: '100%' }}
+                            maxTagCount="responsive"
+                          >
+                            {employees?.map((employee) => (
+                              <Select.Option key={employee._id} value={employee._id}>
+                                {employee.fullName}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </div>
+
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={{ 
+                            display: 'block', 
+                            marginBottom: '8px', 
+                            fontWeight: 500,
+                            fontSize: '13px',
+                            color: '#333'
+                          }}>
+                            Reporter
+                          </label>
+                          <Select
+                            mode="multiple"
+                            placeholder="Select reporters..."
+                            value={selectedReporterFilter}
+                            onChange={setSelectedReporterFilter}
+                            allowClear
+                            showSearch
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            style={{ width: '100%' }}
+                            maxTagCount="responsive"
+                          >
+                            {employees?.map((employee) => (
+                              <Select.Option key={employee._id} value={employee._id}>
+                                {employee.fullName}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </div>
+
+                        {((selectedAssigneeFilter && selectedAssigneeFilter.length > 0) ||
+                          (selectedTypeFilter && selectedTypeFilter.length > 0) ||
+                          (selectedPriorityFilter && selectedPriorityFilter.length > 0) ||
+                          (selectedReporterFilter && selectedReporterFilter.length > 0)) && (
+                          <div style={{ 
+                            borderTop: '1px solid #f0f0f0',
+                            paddingTop: '12px',
+                            marginTop: '12px'
+                          }}>
+                            <Button 
+                              size="small"
+                              onClick={() => {
+                                setSelectedAssigneeFilter([]);
+                                setSelectedTypeFilter([]);
+                                setSelectedPriorityFilter([]);
+                                setSelectedReporterFilter([]);
+                              }}
+                              style={{ width: '100%' }}
+                            >
+                              Clear All Filters
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    }
+                    title={
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span style={{ fontWeight: 600 }}>Filters</span>
+                        <CloseOutlined 
+                          style={{ cursor: 'pointer', fontSize: '12px' }}
+                          onClick={() => setFilterDropdownVisible(false)}
+                        />
+                      </div>
+                    }
+                    trigger="click"
+                    open={filterDropdownVisible}
+                    onOpenChange={setFilterDropdownVisible}
+                    placement="bottomRight"
+                    overlayStyle={{ maxWidth: '360px' }}
+                  >
+                    <Badge 
+                      count={
+                        (selectedAssigneeFilter?.length || 0) +
+                        (selectedTypeFilter?.length || 0) +
+                        (selectedPriorityFilter?.length || 0) +
+                        (selectedReporterFilter?.length || 0)
+                      }
+                      offset={[-5, 5]}
+                    >
+                      <Button
+                        style={{
+                          height: '38px',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <i className="fa fa-filter" /> Filter
+                      </Button>
+                    </Badge>
+                  </Popover>
+
                   <div className="project-members mr-3">
                     <ul
                       className="team-members"
@@ -1436,11 +1693,21 @@ const TaskBoard = () => {
                           >
                             +{employees?.length - 4}
                           </Link>
-                          <div className="dropdown-menu dropdown-menu-right">
-                            <div className="avatar-group">
+                          <div className="dropdown-menu dropdown-menu-right" style={{
+                            padding: "8px",
+                            minWidth: "240px",
+                            maxHeight: "400px",
+                            overflowY: "auto",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                            borderRadius: "8px"
+                          }}>
+                            <div style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "4px"
+                            }}>
                               {employees?.slice(4).map((developer, index) => (
-                                <a
-                                  className="avatar avatar-xs projectTeamMember"
+                                <div
                                   key={index}
                                   onClick={() => {
                                     if (selectedAssigneeFilter.includes(developer._id)) {
@@ -1449,59 +1716,61 @@ const TaskBoard = () => {
                                       setSelectedAssigneeFilter([...selectedAssigneeFilter, developer._id]);
                                     }
                                   }}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "12px",
+                                    cursor: "pointer",
+                                    padding: "8px 12px",
+                                    borderRadius: "6px",
+                                    transition: "background-color 0.2s",
+                                    backgroundColor: selectedAssigneeFilter.includes(developer._id) ? "#fff3e0" : "transparent"
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!selectedAssigneeFilter.includes(developer._id)) {
+                                      e.currentTarget.style.backgroundColor = "#f5f5f5";
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!selectedAssigneeFilter.includes(developer._id)) {
+                                      e.currentTarget.style.backgroundColor = "transparent";
+                                    }
+                                  }}
                                 >
-                                  <Tooltip title={`${developer?.fullName} - Click to ${selectedAssigneeFilter.includes(developer._id) ? 'remove from' : 'add to'} filter`}>
-                                    <Avatar
-                                      src={developer?.imageUrl || user_icon}
-                                      style={{
-                                        cursor: "pointer",
-                                        border: selectedAssigneeFilter.includes(developer._id) ? "2px solid #ff902f" : "none"
-                                      }}
-                                    />
-                                  </Tooltip>
-                                </a>
+                                  <Avatar
+                                    size={36}
+                                    src={developer?.imageUrl || user_icon}
+                                    style={{
+                                      cursor: "pointer",
+                                      border: selectedAssigneeFilter.includes(developer._id) ? "2px solid #ff902f" : "2px solid #e0e0e0",
+                                      flexShrink: 0
+                                    }}
+                                  />
+                                  <span style={{
+                                    fontSize: "14px",
+                                    color: "#333",
+                                    fontWeight: selectedAssigneeFilter.includes(developer._id) ? "500" : "400",
+                                    flex: 1,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap"
+                                  }}>
+                                    {developer?.fullName}
+                                  </span>
+                                  {selectedAssigneeFilter.includes(developer._id) && (
+                                    <i className="fa fa-check" style={{
+                                      color: "#ff902f",
+                                      fontSize: "14px",
+                                      flexShrink: 0
+                                    }} />
+                                  )}
+                                </div>
                               ))}
                             </div>
                           </div>
                         </li>
                       )}
                     </ul>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div style={{ display: "none", position: "relative", minWidth: "200px" }} id="assignee-filter-area">
-                      <Select
-                        showSearch
-                        allowClear
-                        placeholder="Filter by Assignee"
-                        value={selectedAssigneeFilter}
-                        onChange={(value) => setSelectedAssigneeFilter(value)}
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        style={{ width: "100%", minWidth: "200px" }}
-                        className="custom-select custom-normal"
-                        getPopupContainer={() => document.getElementById("assignee-filter-area")}
-                      >
-                        {employees?.map((employee) => (
-                          <Select.Option key={employee._id} value={employee._id}>
-                            {employee.fullName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </div>
-                    {selectedAssigneeFilter && selectedAssigneeFilter.length > 0 && (
-                      <Button
-                        onClick={() => setSelectedAssigneeFilter([])}
-                        style={{
-                          height: "38px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center"
-                        }}
-                      >
-                        Clear Filter {selectedAssigneeFilter.length > 1 && `(${selectedAssigneeFilter.length})`}
-                      </Button>
-                    )}
                   </div>
                   {(role === "admin" || permissions?.projectManagement) &&
                     !BoardData?._id &&
