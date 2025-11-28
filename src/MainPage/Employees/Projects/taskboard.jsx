@@ -1436,11 +1436,21 @@ const TaskBoard = () => {
                           >
                             +{employees?.length - 4}
                           </Link>
-                          <div className="dropdown-menu dropdown-menu-right">
-                            <div className="avatar-group">
+                          <div className="dropdown-menu dropdown-menu-right" style={{
+                            padding: "8px",
+                            minWidth: "240px",
+                            maxHeight: "400px",
+                            overflowY: "auto",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                            borderRadius: "8px"
+                          }}>
+                            <div style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "4px"
+                            }}>
                               {employees?.slice(4).map((developer, index) => (
-                                <a
-                                  className="avatar avatar-xs projectTeamMember"
+                                <div
                                   key={index}
                                   onClick={() => {
                                     if (selectedAssigneeFilter.includes(developer._id)) {
@@ -1449,17 +1459,55 @@ const TaskBoard = () => {
                                       setSelectedAssigneeFilter([...selectedAssigneeFilter, developer._id]);
                                     }
                                   }}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "12px",
+                                    cursor: "pointer",
+                                    padding: "8px 12px",
+                                    borderRadius: "6px",
+                                    transition: "background-color 0.2s",
+                                    backgroundColor: selectedAssigneeFilter.includes(developer._id) ? "#fff3e0" : "transparent"
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!selectedAssigneeFilter.includes(developer._id)) {
+                                      e.currentTarget.style.backgroundColor = "#f5f5f5";
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!selectedAssigneeFilter.includes(developer._id)) {
+                                      e.currentTarget.style.backgroundColor = "transparent";
+                                    }
+                                  }}
                                 >
-                                  <Tooltip title={`${developer?.fullName} - Click to ${selectedAssigneeFilter.includes(developer._id) ? 'remove from' : 'add to'} filter`}>
-                                    <Avatar
-                                      src={developer?.imageUrl || user_icon}
-                                      style={{
-                                        cursor: "pointer",
-                                        border: selectedAssigneeFilter.includes(developer._id) ? "2px solid #ff902f" : "none"
-                                      }}
-                                    />
-                                  </Tooltip>
-                                </a>
+                                  <Avatar
+                                    size={36}
+                                    src={developer?.imageUrl || user_icon}
+                                    style={{
+                                      cursor: "pointer",
+                                      border: selectedAssigneeFilter.includes(developer._id) ? "2px solid #ff902f" : "2px solid #e0e0e0",
+                                      flexShrink: 0
+                                    }}
+                                  />
+                                  <span style={{
+                                    fontSize: "14px",
+                                    color: "#333",
+                                    fontWeight: selectedAssigneeFilter.includes(developer._id) ? "500" : "400",
+                                    flex: 1,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap"
+                                  }}>
+                                    {developer?.fullName}
+                                  </span>
+                                  {selectedAssigneeFilter.includes(developer._id) && (
+                                    <i className="fa fa-check" style={{
+                                      color: "#ff902f",
+                                      fontSize: "14px",
+                                      flexShrink: 0
+                                    }} />
+                                  )}
+                                </div>
                               ))}
                             </div>
                           </div>
