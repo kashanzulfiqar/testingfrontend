@@ -164,7 +164,7 @@ const Projects = () => {
     );
     setPaymentSchedules(updatedSchedules);
   };
-  
+
   const [data, setData] = useState([]);
   const [tableData, setTableData] = useState([]);
 
@@ -280,46 +280,45 @@ const Projects = () => {
   };
 
   useEffect(() => {
-    if(role !== 'client' && role !== 'focalperson') {
+    if (role !== 'client' && role !== 'focalperson') {
       getAllDomain();
     }
   }, []);
 
   useEffect(() => {
     //if(role === 'admin' || permissions?.projectManagement ) { 
-      if(!flag){
-        GetListProjects();
-      }
-      
+    if (!flag) {
+      GetListProjects();
+    }
+
     // getAllDomain();
     // }else{
     //    nav('/restricted', { state: { unAuthorize: true}})
     // }
-  }, [filters, pagination.current, pagination.pageSize]); 
+  }, [filters, pagination.current, pagination.pageSize]);
 
 
   const getAllDomain = () => {
     apiServices("GET", "team/view-team", null, user_state)
-    .then((res) => {
-      // console.log(res?.data);
-      if (res?.data?.success === true) {
-        const all_domains = res?.data?.Team;
-        const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
-        setAllDomain(sortedData);
-      }
-    })
-    .catch((err) => {
-      // console.log(err);
-      message.error(
-        `${
-          err?.response?.data?.msg
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          const all_domains = res?.data?.Team;
+          const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
+          setAllDomain(sortedData);
+        }
+      })
+      .catch((err) => {
+        // console.log(err);
+        message.error(
+          `${err?.response?.data?.msg
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
-            ? err?.response?.data?.validation?.body?.message
-            : t('projectScreen.errors.getDomainInfoError')
-        }!`
-      );
-    });
+              ? err?.response?.data?.validation?.body?.message
+              : t('projectScreen.errors.getDomainInfoError')
+          }!`
+        );
+      });
   }
 
   const ViewClients = () => {
@@ -338,10 +337,9 @@ const Projects = () => {
       })
       .catch((err) => {
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t('aDash.errors.getAllClientsError')
           }`
@@ -380,16 +378,16 @@ const Projects = () => {
 
     // If user is a client, fetch only that client's projects using project-by-id API
     if (role === 'client' || role === 'focalperson') {
-    apiServices(
-      "GET",
+      apiServices(
+        "GET",
         `project-management/project-by-id?role=${role}&id=${user_state?.user?._id}&page=${params.page}&limit=${params.limit}`,
-      null,
-      user_state
-    )
-      .then((res) => {
-        if (res.data.success === true) {
-          setCategoryObj(res?.data?.projects);
-          setTableData(res?.data?.projects?.docs);
+        null,
+        user_state
+      )
+        .then((res) => {
+          if (res.data.success === true) {
+            setCategoryObj(res?.data?.projects);
+            setTableData(res?.data?.projects?.docs);
             setIsLoading(false);
             setFlag(true);
             setPagination({
@@ -401,10 +399,9 @@ const Projects = () => {
         })
         .catch((err) => {
           message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
+            `${err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : t('projectScreen.errors.getEmployeeProjectsError')
             }`
@@ -437,14 +434,13 @@ const Projects = () => {
             current: res.data.projects.page,
             total: res.data.projects.totalDocs,
           });
-      }
+        }
       })
       .catch((err) => {
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t('projectScreen.errors.getEmployeeProjectsError')
           }`
@@ -456,51 +452,51 @@ const Projects = () => {
       });
   };
 
-//   const DeleteFiles = async (files) => {
-//     // Create an array of promises for deleting each file
-//     const deletionPromises = files?.map(file => {
-//         let data = {
-//           resource_type: file?.resource_type,
-//         };
+  //   const DeleteFiles = async (files) => {
+  //     // Create an array of promises for deleting each file
+  //     const deletionPromises = files?.map(file => {
+  //         let data = {
+  //           resource_type: file?.resource_type,
+  //         };
 
-//         if (file?.public_id) {
-//           data.public_id = file.public_id;
-//         } 
-//         else if (file?.imageUrl) {
-//           data.secure_url = file.imageUrl;
-//         }
-//         return apiServices("DELETE", `user/deletefile`, data, user_state)
-//             .then(res => {
-//                 if (res.data.success) {
-//                     console.log(`Deleted: ${file.public_id}`);
-//                     return { success: true, public_id: file.public_id };
-//                 } else {
-//                     throw new Error(`Failed to delete: ${file.public_id}`);
-//                 }
-//             })
-//             .catch(err => {
-//                 console.error(`Error deleting ${file.public_id}:`, err);
-//                 // Return an error object instead of throwing to handle it gracefully in Promise.all
-//                 return { success: false, public_id: file.public_id, error: err };
-//             });
-//     });
+  //         if (file?.public_id) {
+  //           data.public_id = file.public_id;
+  //         } 
+  //         else if (file?.imageUrl) {
+  //           data.secure_url = file.imageUrl;
+  //         }
+  //         return apiServices("DELETE", `user/deletefile`, data, user_state)
+  //             .then(res => {
+  //                 if (res.data.success) {
+  //                     console.log(`Deleted: ${file.public_id}`);
+  //                     return { success: true, public_id: file.public_id };
+  //                 } else {
+  //                     throw new Error(`Failed to delete: ${file.public_id}`);
+  //                 }
+  //             })
+  //             .catch(err => {
+  //                 console.error(`Error deleting ${file.public_id}:`, err);
+  //                 // Return an error object instead of throwing to handle it gracefully in Promise.all
+  //                 return { success: false, public_id: file.public_id, error: err };
+  //             });
+  //     });
 
-//     // Wait for all deletion promises to resolve
-//     try {
-//         const results = await Promise.all(deletionPromises);
-//         // Filter out successful deletions
-//         const successfulDeletes = results.filter(result => result.success);
-//         const failedDeletes = results.filter(result => !result.success);
-        
-//         console.log(`Successfully deleted ${successfulDeletes.length} files.`);
-//         if (failedDeletes.length > 0) {
-//             console.error(`Failed to delete ${failedDeletes.length} files.`);
-//             message.error('Some files could not be deleted.');
-//         }
-//     } catch (error) {
-//         message.error('An error occurred while deleting files.');
-//     }
-// };
+  //     // Wait for all deletion promises to resolve
+  //     try {
+  //         const results = await Promise.all(deletionPromises);
+  //         // Filter out successful deletions
+  //         const successfulDeletes = results.filter(result => result.success);
+  //         const failedDeletes = results.filter(result => !result.success);
+
+  //         console.log(`Successfully deleted ${successfulDeletes.length} files.`);
+  //         if (failedDeletes.length > 0) {
+  //             console.error(`Failed to delete ${failedDeletes.length} files.`);
+  //             message.error('Some files could not be deleted.');
+  //         }
+  //     } catch (error) {
+  //         message.error('An error occurred while deleting files.');
+  //     }
+  // };
 
   // const AddProject = async (values) => {
   //   setLoader(true);
@@ -513,14 +509,14 @@ const Projects = () => {
   //     (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
   //     0
   //   );
-  
+
   //   if (totalAmountInFigure > cost) {
   //     const errorMessage = 'Total amount exceeds the project cost.';
   //     const errorFields = [];
 
   //     paymentSchedule.forEach((schedule, index) => {
   //       const scheduleAmount = parseFloat(schedule.amountInFigure || 0);
-  
+
   //       if (scheduleAmount + totalAmountInFigure - scheduleAmount > cost) {
   //         errorFields.push({
   //           name: ['paymentSchedule', index, 'amountInFigure'],
@@ -645,8 +641,8 @@ const Projects = () => {
       dataIndex: "projectName",
       key: "projectName",
       render: (text, record) => (
-        <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}} state={{ project: record }}>
-          <label style={{cursor: 'pointer'}} className="longText">{text}</label>
+        <Link to={`/projects/projects-view/${record?._id}`} style={{ color: '#333333' }} state={{ project: record }}>
+          <label style={{ cursor: 'pointer' }} className="longText">{text}</label>
         </Link>
       ),
     },
@@ -655,7 +651,7 @@ const Projects = () => {
       dataIndex: "clientName",
       key: "clientName",
       render: (text, record) => (
-        <div style={{minWidth: 'max-content'}}>
+        <div style={{ minWidth: 'max-content' }}>
           <img
             src={record?.client?.logo || user_icon}
             alt=""
@@ -678,14 +674,14 @@ const Projects = () => {
         //     </Tooltip>
         //   </li>
         // </ul>
-        <div style={{minWidth: 'max-content'}}>
+        <div style={{ minWidth: 'max-content' }}>
           <img
             src={projectLead?.imageUrl || user_icon}
             alt=""
             className="avatar"
             style={{ width: "30px", height: "30px", cursor: 'pointer' }}
           />
-          <label style={{cursor: 'pointer'}}>{projectLead?.fullName}</label>
+          <label style={{ cursor: 'pointer' }}>{projectLead?.fullName}</label>
         </div>
       ),
     },
@@ -694,45 +690,45 @@ const Projects = () => {
       dataIndex: "assignedDevelopers",
       key: "assignedDevelopers",
       render: (assignedDevelopers) => (
-        <div className="project-members" style={{margin: '4px auto'}}>
-        <ul className="team-members" style={{minWidth: 'max-content'}}>
-          {assignedDevelopers?.slice(0, 4).map((developer, index) => (
-            <li key={index}>
-              <Tooltip title={developer?.fullName}>
-                <Avatar style={{cursor: 'pointer'}} src={developer?.imageUrl || user_icon} />
-              </Tooltip>
-            </li>
-          ))}
-          {assignedDevelopers?.length > 4 && (
-            <li className="dropdown avatar-dropdown">
-              <Link
-                className="all-users dropdown-toggle projectTeamMember"
-                style={{display:'inline-flex', height: '33px', width: '33px'}}
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                +{assignedDevelopers?.length - 4}
-              </Link>
-              {/* Dropdown menu for additional team members */}
-              <div className="dropdown-menu dropdown-menu-right">
-                <div className="avatar-group">
-                  {assignedDevelopers?.slice(4).map((developer, index) => (
-                    <a
-                      className="avatar avatar-xs projectTeamMember"
-                      
-                      key={index}
-                    >
-                      <Tooltip title={developer?.fullName}>
-                        <Avatar
-                          src={developer?.imageUrl || user_icon}
-                          style={{cursor: 'pointer'}}
-                        />
-                      </Tooltip>
-                    </a>
-                  ))}
-                </div>
-                {/* Pagination for additional team members */}
-                {/* <div className="avatar-pagination">
+        <div className="project-members" style={{ margin: '4px auto' }}>
+          <ul className="team-members" style={{ minWidth: 'max-content' }}>
+            {assignedDevelopers?.slice(0, 4).map((developer, index) => (
+              <li key={index}>
+                <Tooltip title={developer?.fullName}>
+                  <Avatar style={{ cursor: 'pointer' }} src={developer?.imageUrl || user_icon} />
+                </Tooltip>
+              </li>
+            ))}
+            {assignedDevelopers?.length > 4 && (
+              <li className="dropdown avatar-dropdown">
+                <Link
+                  className="all-users dropdown-toggle projectTeamMember"
+                  style={{ display: 'inline-flex', height: '33px', width: '33px' }}
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  +{assignedDevelopers?.length - 4}
+                </Link>
+                {/* Dropdown menu for additional team members */}
+                <div className="dropdown-menu dropdown-menu-right">
+                  <div className="avatar-group">
+                    {assignedDevelopers?.slice(4).map((developer, index) => (
+                      <a
+                        className="avatar avatar-xs projectTeamMember"
+
+                        key={index}
+                      >
+                        <Tooltip title={developer?.fullName}>
+                          <Avatar
+                            src={developer?.imageUrl || user_icon}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        </Tooltip>
+                      </a>
+                    ))}
+                  </div>
+                  {/* Pagination for additional team members */}
+                  {/* <div className="avatar-pagination">
                   <ul className="pagination">
                     <li className="page-item">
                       <a className="page-link" aria-label="Previous">
@@ -756,10 +752,10 @@ const Projects = () => {
                     </li>
                   </ul>
                 </div> */}
-              </div>
-            </li>
-          )}
-        </ul>
+                </div>
+              </li>
+            )}
+          </ul>
         </div>
       ),
     },
@@ -800,9 +796,9 @@ const Projects = () => {
             {record === "High Priority"
               ? ` ${t('projectScreen.Modal.high')}`
               : record === "Normal Priority"
-              ? ` ${t('projectScreen.Modal.normal')}`
-              : ` ${t('projectScreen.Modal.low')}`
-              }
+                ? ` ${t('projectScreen.Modal.normal')}`
+                : ` ${t('projectScreen.Modal.low')}`
+            }
           </label>
         </div>
       ),
@@ -836,14 +832,14 @@ const Projects = () => {
             {record === "Scheduled"
               ? ` ${t('projectScreen.Modal.scheduled')}`
               : record === "On-Going"
-              ? ` ${t('projectScreen.Modal.onGoing')}`
-              : record === "Paused"
-              ? ` ${t('projectScreen.Modal.paused')}`
-              : record === "Archived"
-              ? ` ${t('projectScreen.Modal.archived')}`
-              : record === "Completed"
-              ? ` ${t('projectScreen.Modal.completed')}`
-              : ""}
+                ? ` ${t('projectScreen.Modal.onGoing')}`
+                : record === "Paused"
+                  ? ` ${t('projectScreen.Modal.paused')}`
+                  : record === "Archived"
+                    ? ` ${t('projectScreen.Modal.archived')}`
+                    : record === "Completed"
+                      ? ` ${t('projectScreen.Modal.completed')}`
+                      : ""}
           </label>
         </div>
       ),
@@ -859,7 +855,7 @@ const Projects = () => {
             className="action-icon dropdown-toggle"
             data-bs-toggle={(role === 'admin' || permissions?.projectManagement) ? 'dropdown' : ''}
             aria-expanded="false"
-            style={{cursor: `${(role === 'admin' || permissions?.projectManagement) ? '' : 'not-allowed'}`}}
+            style={{ cursor: `${(role === 'admin' || permissions?.projectManagement) ? '' : 'not-allowed'}` }}
           >
             <i className="material-icons">more_vert</i>
           </a>
@@ -950,11 +946,11 @@ const Projects = () => {
           //setData((prevData) => [...prevData, ...payrolls]);
           //setFilters(selectedPayFilters);
           //GetGenPayrolls();
-          if(categoryObj?.docs?.length === 1){
+          if (categoryObj?.docs?.length === 1) {
             //console.log(categoryObj.totalPages)
-            GetListProjects((categoryObj.totalPages-1),null);
+            GetListProjects((categoryObj.totalPages - 1), null);
           }
-          else{
+          else {
             GetListProjects()
           }
           message.success(t('projectScreen.errors.projectDeletedSuccessfully'));
@@ -965,10 +961,9 @@ const Projects = () => {
       })
       .catch((err) => {
         message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
+          `${err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t('projectScreen.errors.errorDeletingProject')
           }`
@@ -1001,14 +996,14 @@ const Projects = () => {
   //         throw err; 
   //       });
   //   });
-  
+
   //   try {
   //     return await Promise.all(uploadPromises);
   //   } catch (error) {
   //     console.error("File upload error:", error);
   //   }
   // };
-  
+
   // const acceptableFormats = ["pdf", "doc", "docx", "jpg", "jpeg", "png", "gif", "xls", "xlsx"];
 
   // const onFileUpload = async (files, type) => {
@@ -1016,24 +1011,24 @@ const Projects = () => {
   //     const uploadPromises = [];
   //     const validFiles = []; // To store valid files
   //     const existingFileNames = selectedFiles?.map((file) => file?.fileName);
-    
+
   //     for (let i = 0; i < files.length; i++) {
   //       const file = files[i];
   //       //console.log("File: ", file);
-    
+
   //       // Check file format (extension)
   //       const fileExtension = file?.name?.split(".").pop().toLowerCase();
   //       if (!acceptableFormats.includes(fileExtension)) {
   //         message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
   //         continue; // Skip this file and continue with the next one
   //       }
-    
+
   //       // Check file size
   //       if (file?.size > 10485760) {
   //         message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
   //         continue; // Skip this file and continue with the next one
   //       }
-  
+
   //       if (existingFileNames?.includes(file?.name)) {
   //         message.error(t('projectScreen.errors.fileAlreadySelected', { file: file?.name }));
   //         continue; // Skip this file and continue with the next one
@@ -1051,7 +1046,7 @@ const Projects = () => {
   //         });
   //         return [...prevSelectedFiles, ...uniqueValidFiles];
   //       });
-        
+
   //     setNewFiles((prev)=> [...prev, file]);
   //     }
   //   }
@@ -1059,24 +1054,24 @@ const Projects = () => {
   //     const uploadPromises = [];
   //     const validFiles = []; // To store valid files
   //     const existingFileNames = selectedFiles2?.map((file) => file?.fileName);
-    
+
   //     for (let i = 0; i < files.length; i++) {
   //       const file = files[i];
   //       //console.log("File: ", file);
-    
+
   //       // Check file format (extension)
   //       const fileExtension = file?.name?.split(".").pop().toLowerCase();
   //       if (!acceptableFormats.includes(fileExtension)) {
   //         message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
   //         continue; // Skip this file and continue with the next one
   //       }
-    
+
   //       // Check file size
   //       if (file?.size > 10485760) {
   //         message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
   //         continue; // Skip this file and continue with the next one
   //       }
-  
+
   //       if (existingFileNames?.includes(file?.name)) {
   //         message.error(t('projectScreen.errors.fileAlreadySelected', { file: file?.name }));
   //         continue; // Skip this file and continue with the next one
@@ -1107,7 +1102,7 @@ const Projects = () => {
   //     console.log(fileToRemove);
   //     updatedSelectedFiles.splice(index, 1);
   //     setSelectedFiles(updatedSelectedFiles);
-  
+
   //     // Remove the corresponding file from the uploadFiles state array
   //     const updatedUploadFiles = [...uploadFiles];
   //     updatedUploadFiles.splice(index, 1);
@@ -1127,7 +1122,7 @@ const Projects = () => {
   //     const fileToRemove = updatedSelectedFiles[index];
   //     updatedSelectedFiles.splice(index, 1);
   //     setSelectedFiles2(updatedSelectedFiles);
-  
+
   //     // Remove the corresponding file from the uploadFiles state array
   //     const updatedUploadFiles = [...uploadFiles2];
   //     updatedUploadFiles.splice(index, 1);
@@ -1200,7 +1195,7 @@ const Projects = () => {
   //   newPaymentSchedules[index].amountInPercent = parseFloat(percentage);
 
   //   setPaymentSchedules(newPaymentSchedules); 
-    
+
   //   form.setFieldsValue({
   //     paymentSchedule: newPaymentSchedules,
   //   });
@@ -1214,7 +1209,7 @@ const Projects = () => {
   //   newPaymentSchedules[index].amountInFigure = amount;
 
   //   setPaymentSchedules(newPaymentSchedules); 
-    
+
   //   form.setFieldsValue({
   //     paymentSchedule: newPaymentSchedules,
   //   });
@@ -1386,37 +1381,37 @@ const Projects = () => {
   //     ),
   //   },
   // ];
- 
+
   const showTeamSearch = (val, type) => {
     let dropdownValues = []
-    if(type === 'Team'){
-      employees.forEach((team)=>{
-          dropdownValues.push(team.fullName.toLowerCase())
-       })
-    }else if (type === 'client'){
-      clients.forEach((client)=>{
+    if (type === 'Team') {
+      employees.forEach((team) => {
+        dropdownValues.push(team.fullName.toLowerCase())
+      })
+    } else if (type === 'client') {
+      clients.forEach((client) => {
         dropdownValues.push(client.clientName.toLowerCase())
-     })
-    }else if (type === 'focal'){
-      focalPersons.forEach((focal)=>{
+      })
+    } else if (type === 'focal') {
+      focalPersons.forEach((focal) => {
         dropdownValues.push(focal.focalPersonName.toLowerCase())
-     })
-    }else if (type === 'domain'){
-      allDomain.forEach((dom)=>{
+      })
+    } else if (type === 'domain') {
+      allDomain.forEach((dom) => {
         dropdownValues.push(dom.teamName.toLowerCase())
-     })
+      })
     }
 
-    if(val !== ''){
+    if (val !== '') {
       dropdownValues.some((team) => {
-        if(team.includes(val.toLowerCase())){
+        if (team.includes(val.toLowerCase())) {
           // setNoData(false);
           return true
-        }else{
+        } else {
           // setNoData(true);
         }
       })
-    }else{
+    } else {
       // setNoData(false)
     }
   }
@@ -1425,13 +1420,13 @@ const Projects = () => {
     const isoCodes = getAllISOCodes();
     const uniqueCurrencies = new Set();
     isoCodes.forEach(isoCode => {
-        // const currency = isoCode.currency;
-        const currency = {
-          currency: isoCode?.currency,
-          symbol: isoCode?.symbol
-        };
-        // uniqueCurrencies.add(currency);
-        uniqueCurrencies.add(JSON.stringify(currency));
+      // const currency = isoCode.currency;
+      const currency = {
+        currency: isoCode?.currency,
+        symbol: isoCode?.symbol
+      };
+      // uniqueCurrencies.add(currency);
+      uniqueCurrencies.add(JSON.stringify(currency));
     });
     const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
     const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
@@ -1440,12 +1435,12 @@ const Projects = () => {
   };
 
 
-const filteredColumns = columns.filter(column => {
-  if (column.dataIndex === 'clientName' && (role === '' && !permissions?.projectManagement)) {
-    return false;
-  }
-  return true;
-});
+  const filteredColumns = columns.filter(column => {
+    if (column.dataIndex === 'clientName' && (role === '' && !permissions?.projectManagement)) {
+      return false;
+    }
+    return true;
+  });
 
 
   return (
@@ -1464,32 +1459,31 @@ const filteredColumns = columns.filter(column => {
                 <h3 className="page-title">{t('projects')}</h3>
               </div>
               <div className="col-auto float-end ms-auto">
-                { (role === "admin" || permissions?.projectManagement) &&
-                <button
-                  className="btn add-btn"
-                  onClick={() => { openCreateModal(); getAllCurrencies(); }}
-                  disabled={
-                    role === "admin" 
-                      ? false
-                      : permissions?.projectManagement
-                      ? false
-                      : true
-                  }
-                >
-                  <i className="fa fa-plus" />
-                  {t('projectScreen.createProject')}
-                </button>
+                {(role === "admin" || permissions?.projectManagement) &&
+                  <button
+                    className="btn add-btn"
+                    onClick={() => { openCreateModal(); getAllCurrencies(); }}
+                    disabled={
+                      role === "admin"
+                        ? false
+                        : permissions?.projectManagement
+                          ? false
+                          : true
+                    }
+                  >
+                    <i className="fa fa-plus" />
+                    {t('projectScreen.createProject')}
+                  </button>
                 }
-              
+
                 <div className="view-icons">
                   <button
                     onClick={() => {
                       handleViewToggle("grid")
                       handleReset();
                     }}
-                    className={`grid-view btn btn-link ${
-                      view === "grid" ? "active" : ""
-                    }`}
+                    className={`grid-view btn btn-link ${view === "grid" ? "active" : ""
+                      }`}
                   >
                     <i className="fa fa-th" />
                   </button>
@@ -1499,9 +1493,8 @@ const filteredColumns = columns.filter(column => {
                       handleReset();
                       //GetListProjects();
                     }}
-                    className={`list-view btn btn-link ${
-                      view === "list" ? "active" : ""
-                    }`}
+                    className={`list-view btn btn-link ${view === "list" ? "active" : ""
+                      }`}
                   >
                     <i className="fa fa-bars" />
                   </button>
@@ -1516,8 +1509,92 @@ const filteredColumns = columns.filter(column => {
 
           {/* Search Filter */}
           <Form form={form} onFinish={handleSearch}>
-              {
-                (role === '' && !permissions?.projectManagement) ? 
+            {
+              (role === '' && !permissions?.projectManagement) ?
+                <div className="row filter-row">
+                  <div className="col-sm-6 col-md-3">
+                    <div className="form-group">
+                      <Form.Item name="projectName" className="custom-border">
+                        <Input
+                          className="form-control"
+                          allowClear={false}
+                          placeholder={t('projectScreen.Modal.projectName')}
+                          style={{ height: '50px' }}
+                          onChange={(e) =>
+                            handleFilterChange(e.target.value, "projectName")
+                          }
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-md-3">
+                    <div className="form-group">
+                      <div style={{ position: "relative" }} id="area1">
+                        <Form.Item
+                          name="projectDomain"
+                          className="custom-border"
+                        >
+                          <Select
+                            showSearch
+                            onSearch={(val) => {
+                              showTeamSearch(val, 'domain')
+                            }}
+                            filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                            optionFilterProp="children"
+                            notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                            dropdownRender={(menu) => (
+                              <>
+                                {menu}
+                              </>
+                            )}
+
+                            getPopupContainer={() =>
+                              document.getElementById("area1")
+                            }
+                            className="custom-select searchCenter"
+                            placeholder={t('projectScreen.Modal.selectDomain')}
+                            style={{ height: '50px' }}
+                            onChange={(value) => {
+                              handleFilterChange(value, "projectDomain");
+                            }}
+                          >
+                            {allDomain?.map((domain) => (
+                              <Select.Option
+                                key={domain._id}
+                                value={domain._id}
+                              >
+                                {domain.teamName}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-md-3">
+                    <button
+                      type="primary"
+                      htmlType="submit"
+                      className="btn btn-success btn-block w-100"
+                      //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                      style={{ marginBottom: '24px' }}
+                    >
+                      <span className="d-flex justify-content-center">{t('search')}</span>
+                    </button>
+                  </div>
+                  <div className="col-sm-6 col-md-3">
+                    <button
+                      htmlType="button"
+                      className="btn btn-success btn-block w-100"
+                      onClick={handleReset}
+                      //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                      style={{ backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae' }}
+                    >
+                      <span className="d-flex justify-content-center">{t('reset')}</span>
+                    </button>
+                  </div>
+                </div>
+                : (role === 'client' || role === 'focalperson') ?
                   <div className="row filter-row">
                     <div className="col-sm-6 col-md-3">
                       <div className="form-group">
@@ -1526,91 +1603,7 @@ const filteredColumns = columns.filter(column => {
                             className="form-control"
                             allowClear={false}
                             placeholder={t('projectScreen.Modal.projectName')}
-                            style={{height:'50px'}}
-                            onChange={(e) =>
-                              handleFilterChange(e.target.value, "projectName")
-                            }
-                          />
-                        </Form.Item>
-                      </div>
-                    </div>
-                    <div className="col-sm-6 col-md-3">
-                      <div className="form-group">
-                        <div style={{ position: "relative" }} id="area1">
-                          <Form.Item
-                            name="projectDomain"
-                            className="custom-border"
-                          >
-                            <Select
-                              showSearch
-                              onSearch={(val) => {
-                                showTeamSearch(val, 'domain')
-                              }}
-                              filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                              optionFilterProp="children"
-                              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                              dropdownRender={(menu) => (
-                                <>
-                                  {menu}
-                                </>
-                              )}
-
-                              getPopupContainer={() =>
-                                document.getElementById("area1")
-                              }
-                              className="custom-select searchCenter"
-                              placeholder={t('projectScreen.Modal.selectDomain')}
-                              style={{height:'50px'}}
-                              onChange={(value) => {
-                                handleFilterChange(value, "projectDomain");
-                              }}
-                            >
-                              {allDomain?.map((domain) => (
-                                <Select.Option
-                                  key={domain._id}
-                                  value={domain._id}
-                                >
-                                  {domain.teamName}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-sm-6 col-md-3">
-                      <button
-                        type="primary"
-                        htmlType="submit"
-                        className="btn btn-success btn-block w-100"
-                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                        style={{marginBottom: '24px'}}
-                      >
-                        <span className="d-flex justify-content-center">{t('search')}</span>
-                      </button>
-                    </div>
-                    <div className="col-sm-6 col-md-3">
-                      <button
-                        htmlType="button"
-                        className="btn btn-success btn-block w-100"
-                        onClick={handleReset}
-                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                        style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
-                      >
-                        <span className="d-flex justify-content-center">{t('reset')}</span>
-                      </button>
-                    </div>
-                  </div>
-                : (role === 'client' || role === 'focalperson') ?
-                <div className="row filter-row">
-                    <div className="col-sm-6 col-md-3">
-                      <div className="form-group">
-                        <Form.Item name="projectName" className="custom-border">
-                          <Input
-                            className="form-control"
-                            allowClear={false}
-                            placeholder={t('projectScreen.Modal.projectName')}
-                            style={{height:'50px'}}
+                            style={{ height: '50px' }}
                             onChange={(e) =>
                               handleFilterChange(e.target.value, "projectName")
                             }
@@ -1622,20 +1615,20 @@ const filteredColumns = columns.filter(column => {
                       <div className="form-group">
                         <Form.Item name="status" className="custom-border">
                           <Select
-                              className="custom-select searchCenter"
-                              placeholder={t('projectScreen.Modal.projectStatus')}
-                              style={{height:'50px'}}
-                              dropdownStyle={{ zIndex: 1 }}
-                              onChange={(value) => {
-                                handleFilterChange(value, "status");
-                              }}
-                            >
-                              <Select.Option value="On-Going">{t('projectScreen.Modal.onGoing')}</Select.Option>
-                              <Select.Option value="Completed">{t('projectScreen.Modal.completed')}</Select.Option>
-                              <Select.Option value="Paused">{t('projectScreen.Modal.paused')}</Select.Option>
-                              <Select.Option value="Scheduled">{t('projectScreen.Modal.scheduled')}</Select.Option>
-                              <Select.Option value="Archived">{t('projectScreen.Modal.archived')}</Select.Option>
-                            </Select>
+                            className="custom-select searchCenter"
+                            placeholder={t('projectScreen.Modal.projectStatus')}
+                            style={{ height: '50px' }}
+                            dropdownStyle={{ zIndex: 1 }}
+                            onChange={(value) => {
+                              handleFilterChange(value, "status");
+                            }}
+                          >
+                            <Select.Option value="On-Going">{t('projectScreen.Modal.onGoing')}</Select.Option>
+                            <Select.Option value="Completed">{t('projectScreen.Modal.completed')}</Select.Option>
+                            <Select.Option value="Paused">{t('projectScreen.Modal.paused')}</Select.Option>
+                            <Select.Option value="Scheduled">{t('projectScreen.Modal.scheduled')}</Select.Option>
+                            <Select.Option value="Archived">{t('projectScreen.Modal.archived')}</Select.Option>
+                          </Select>
                         </Form.Item>
                       </div>
                     </div>
@@ -1645,7 +1638,7 @@ const filteredColumns = columns.filter(column => {
                         htmlType="submit"
                         className="btn btn-success btn-block w-100"
                         //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                        style={{marginBottom: '24px'}}
+                        style={{ marginBottom: '24px' }}
                       >
                         <span className="d-flex justify-content-center">{t('search')}</span>
                       </button>
@@ -1656,33 +1649,33 @@ const filteredColumns = columns.filter(column => {
                         className="btn btn-success btn-block w-100"
                         onClick={handleReset}
                         //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                        style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
+                        style={{ backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae' }}
                       >
                         <span className="d-flex justify-content-center">{t('reset')}</span>
                       </button>
                     </div>
                   </div>
-                :
-                <div className="row filter-row">
-                  <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
-                    <div className="form-group">
-                      <Form.Item name="projectName" className="custom-border">
-                        <Input
-                          className="form-control"
-                          allowClear={false}
-                          placeholder={t('projectScreen.Modal.projectName')}
-                          style={{height:'50px'}}
-                          onChange={(e) =>
-                            handleFilterChange(e.target.value, "projectName")
-                          }
-                        />
-                      </Form.Item>
+                  :
+                  <div className="row filter-row">
+                    <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
+                      <div className="form-group">
+                        <Form.Item name="projectName" className="custom-border">
+                          <Input
+                            className="form-control"
+                            allowClear={false}
+                            placeholder={t('projectScreen.Modal.projectName')}
+                            style={{ height: '50px' }}
+                            onChange={(e) =>
+                              handleFilterChange(e.target.value, "projectName")
+                            }
+                          />
+                        </Form.Item>
+                      </div>
                     </div>
-                  </div>
-                  <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
-                    <div className="form-group">
-                      <Form.Item name="status" className="custom-border">
-                        {/* <Select
+                    <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
+                      <div className="form-group">
+                        <Form.Item name="status" className="custom-border">
+                          {/* <Select
                           showSearch
                           onSearch={(val) => {
                             showTeamSearch(val, 'client')
@@ -1712,13 +1705,13 @@ const filteredColumns = columns.filter(column => {
                             </Select.Option>
                           ))}
                         </Select> */}
-                        <Select
+                          <Select
                             className="custom-select searchCenter"
                             getPopupContainer={() =>
                               document.getElementById("area1")
                             }
                             placeholder={t('projectScreen.Modal.projectStatus')}
-                            style={{height:'50px'}}
+                            style={{ height: '50px' }}
                             onChange={(value) => {
                               handleFilterChange(value, "status");
                             }}
@@ -1729,107 +1722,107 @@ const filteredColumns = columns.filter(column => {
                             <Select.Option value="Scheduled">{t('projectScreen.Modal.scheduled')}</Select.Option>
                             <Select.Option value="Archived">{t('projectScreen.Modal.archived')}</Select.Option>
                           </Select>
-                      </Form.Item>
-                    </div>
-                  </div>
-                  {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) &&
-                    <div className="col-sm-6 col-md-2">
-                    <div className="form-group">
-                      <div style={{ position: "relative" }} id="area1">
-                        <Form.Item
-                          name="costType"
-                          className="custom-border"
-                        >
-                          <Select
-                            className="custom-select searchCenter"
-                            getPopupContainer={() =>
-                              document.getElementById("area1")
-                            }
-                            placeholder={t('projectScreen.Modal.costType')}
-                            style={{height:'50px'}}
-                            onChange={(value) => {
-                              handleFilterChange(value, "costType");
-                            }}
-                          >
-                            <Select.Option value="Hourly">{t('projectScreen.Modal.hourly')}</Select.Option>
-                            <Select.Option value="Fixed">{t('projectScreen.Modal.fixed')}</Select.Option>
-                            <Select.Option value="Monthly">{t('projectScreen.Modal.monthly')}</Select.Option>
-                          </Select>
                         </Form.Item>
                       </div>
                     </div>
-                  </div>}
-                  <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
-                    <div className="form-group">
-                      <div style={{ position: "relative" }} id="area1">
-                        <Form.Item
-                          name="projectDomain"
-                          className="custom-border"
-                        >
-                          <Select
-                            showSearch
-                            onSearch={(val) => {
-                              showTeamSearch(val, 'domain')
-                            }}
-                            filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                            optionFilterProp="children"
-                            notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                            dropdownRender={(menu) => (
-                              <>
-                                {menu}
-                              </>
-                            )}
-
-                            getPopupContainer={() =>
-                              document.getElementById("area1")
-                            }
-                            className="custom-select searchCenter"
-                            placeholder={t('projectScreen.Modal.selectDomain')}
-                            style={{height:'50px'}}
-                            onChange={(value) => {
-                              handleFilterChange(value, "projectDomain");
-                            }}
-                          >
-                            {allDomain?.map((domain) => (
-                              <Select.Option
-                                key={domain._id}
-                                value={domain._id}
+                    {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) &&
+                      <div className="col-sm-6 col-md-2">
+                        <div className="form-group">
+                          <div style={{ position: "relative" }} id="area1">
+                            <Form.Item
+                              name="costType"
+                              className="custom-border"
+                            >
+                              <Select
+                                className="custom-select searchCenter"
+                                getPopupContainer={() =>
+                                  document.getElementById("area1")
+                                }
+                                placeholder={t('projectScreen.Modal.costType')}
+                                style={{ height: '50px' }}
+                                onChange={(value) => {
+                                  handleFilterChange(value, "costType");
+                                }}
                               >
-                                {domain.teamName}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
+                                <Select.Option value="Hourly">{t('projectScreen.Modal.hourly')}</Select.Option>
+                                <Select.Option value="Fixed">{t('projectScreen.Modal.fixed')}</Select.Option>
+                                <Select.Option value="Monthly">{t('projectScreen.Modal.monthly')}</Select.Option>
+                              </Select>
+                            </Form.Item>
+                          </div>
+                        </div>
+                      </div>}
+                    <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
+                      <div className="form-group">
+                        <div style={{ position: "relative" }} id="area1">
+                          <Form.Item
+                            name="projectDomain"
+                            className="custom-border"
+                          >
+                            <Select
+                              showSearch
+                              onSearch={(val) => {
+                                showTeamSearch(val, 'domain')
+                              }}
+                              filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                              optionFilterProp="children"
+                              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                              dropdownRender={(menu) => (
+                                <>
+                                  {menu}
+                                </>
+                              )}
+
+                              getPopupContainer={() =>
+                                document.getElementById("area1")
+                              }
+                              className="custom-select searchCenter"
+                              placeholder={t('projectScreen.Modal.selectDomain')}
+                              style={{ height: '50px' }}
+                              onChange={(value) => {
+                                handleFilterChange(value, "projectDomain");
+                              }}
+                            >
+                              {allDomain?.map((domain) => (
+                                <Select.Option
+                                  key={domain._id}
+                                  value={domain._id}
+                                >
+                                  {domain.teamName}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </div>
                       </div>
                     </div>
+                    <div className={`${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-sm-12 col-md-4' : 'col-sm-6 col-md-3'}`}
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: "24px",
+                      }}>
+                      <button
+                        type="primary"
+                        htmlType="submit"
+                        className="btn btn-success btn-block w-100"
+                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                        style={{ marginBottom: '24px' }}
+                      >
+                        <span className="d-flex justify-content-center">{t('search')}</span>
+                      </button>
+                      <button
+                        htmlType="button"
+                        className="btn btn-success btn-block w-100"
+                        onClick={handleReset}
+                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                        style={{ backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae' }}
+                      >
+                        <span className="d-flex justify-content-center">{t('reset')}</span>
+                      </button>
+                    </div>
                   </div>
-                  <div className={`${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-sm-12 col-md-4' : 'col-sm-6 col-md-3'}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "24px",
-                  }}>
-                    <button
-                      type="primary"
-                      htmlType="submit"
-                      className="btn btn-success btn-block w-100"
-                      //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                      style={{marginBottom: '24px'}}
-                    >
-                      <span className="d-flex justify-content-center">{t('search')}</span>
-                    </button>
-                    <button
-                      htmlType="button"
-                      className="btn btn-success btn-block w-100"
-                      onClick={handleReset}
-                      //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                      style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
-                    >
-                      <span className="d-flex justify-content-center">{t('reset')}</span>
-                    </button>
-                  </div>
-                </div>
-              
+
             }
           </Form>
 
@@ -1894,12 +1887,12 @@ const filteredColumns = columns.filter(column => {
                             </div>
                           </div>
                         }
-                        <div style={{ height: "43px"}}>
-                        <h4 className="project-title longText">
-                          <Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>
-                            {project?.projectName}
-                          </Link>
-                        </h4>
+                        <div style={{ height: "43px" }}>
+                          <h4 className="project-title longText">
+                            <Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>
+                              {project?.projectName}
+                            </Link>
+                          </h4>
                         </div>
                         {/* <small className="block text-ellipsis m-b-15">
                         <span className="text-xs">1</span>{" "}
@@ -1907,7 +1900,7 @@ const filteredColumns = columns.filter(column => {
                         <span className="text-xs">9</span>{" "}
                         <span className="text-muted">tasks completed</span>
                       </small> */}
-                        <div style={{ height: "88px", marginTop: "20px"}}>
+                        <div style={{ height: "88px", marginTop: "20px" }}>
                           <p className="text-muted longText1">
                             {project?.projectDescription}
                           </p>
@@ -1924,42 +1917,48 @@ const filteredColumns = columns.filter(column => {
                         <div className="pro-deadline m-b-15">
                           <div className="sub-title">{t('projectScreen.status')}:</div>
                           <div style={{
-                            color: 
+                            color:
                               project?.status === 'Scheduled' ? 'red' :
-                              project?.status === 'On-Going' ? 'orange' :
-                              (project?.status === 'Paused' || project?.status === 'Archived') ? 'grey' :
-                              project?.status === 'Completed' ? 'green' : 'inherit'
+                                project?.status === 'On-Going' ? 'orange' :
+                                  (project?.status === 'Paused' || project?.status === 'Archived') ? 'grey' :
+                                    project?.status === 'Completed' ? 'green' : 'inherit'
                           }}>
-                            {project?.status === 'Scheduled' 
-                            ? t('projectScreen.Modal.scheduled')
-                            : project?.status === 'On-Going' 
-                            ? t('projectScreen.Modal.onGoing')
-                            : project?.status === 'Paused' 
-                            ? t('projectScreen.Modal.paused')
-                            : project?.status === 'Completed' 
-                            ? t('projectScreen.Modal.completed')
-                            : project?.status === 'Archived' 
-                            ? t('projectScreen.Modal.archived') 
-                            : project?.status
+                            {project?.status === 'Scheduled'
+                              ? t('projectScreen.Modal.scheduled')
+                              : project?.status === 'On-Going'
+                                ? t('projectScreen.Modal.onGoing')
+                                : project?.status === 'Paused'
+                                  ? t('projectScreen.Modal.paused')
+                                  : project?.status === 'Completed'
+                                    ? t('projectScreen.Modal.completed')
+                                    : project?.status === 'Archived'
+                                      ? t('projectScreen.Modal.archived')
+                                      : project?.status
                             }
+                          </div>
+                        </div>
+                        <div className="pro-deadline m-b-15">
+                          <div className="sub-title">{t('projectScreen.clientName')}:</div>
+                          <div className="text-muted">
+                            {project?.client?.clientName || "-"}
                           </div>
                         </div>
                         <div className="project-members m-b-15">
                           <div>{t('projectScreen.projectLeader')}:</div>
                           <ul className="team-members">
                             <li>
-                            <Tooltip
+                              <Tooltip
                                 title={project?.projectLead?.fullName}
                               >
-                              <a>
-                                <img
-                                  alt=""
-                                  src={
-                                    project?.projectLead?.imageUrl ||
-                                    user_icon
-                                  }
-                                />
-                              </a>
+                                <a>
+                                  <img
+                                    alt=""
+                                    src={
+                                      project?.projectLead?.imageUrl ||
+                                      user_icon
+                                    }
+                                  />
+                                </a>
                               </Tooltip>
                             </li>
                           </ul>
@@ -1967,25 +1966,25 @@ const filteredColumns = columns.filter(column => {
                         <div className="project-members m-b-15">
                           <div>{t('projectScreen.team')}:</div>
                           <ul className="team-members"
-                          style={{ marginLeft: "10px" }}>
+                            style={{ marginLeft: "10px" }}>
                             {project?.assignedDevelopers
                               ?.slice(0, 4)
                               ?.map((developer, devIndex) => (
                                 <li key={devIndex}>
                                   <Tooltip
-                                  className="projectTeamMember"
-                                title={developer.fullName}
-                              >
-                              <a>
-                                <img
-                                  alt=""
-                                  src={
-                                    developer.imageUrl ||
-                                    user_icon
-                                  }
-                                />
-                              </a>
-                              </Tooltip>
+                                    className="projectTeamMember"
+                                    title={developer.fullName}
+                                  >
+                                    <a>
+                                      <img
+                                        alt=""
+                                        src={
+                                          developer.imageUrl ||
+                                          user_icon
+                                        }
+                                      />
+                                    </a>
+                                  </Tooltip>
 
                                   {/* <a
                                     className="projectTeamMember"
@@ -2092,39 +2091,39 @@ const filteredColumns = columns.filter(column => {
                 <div className="col-md-12 text-center">{customEmptyText}</div>
               )}
 
-                  {
-                    tableData?.length > 0 &&
-                    <div>
-                      <Pagination
-                        style={{display: 'flex', float: 'right'}}
-                        total={pagination.total}
-                        pageSize={pagination.pageSize}
-                        defaultCurrent={1}
-                        current={pagination.current}
-                        showTotal={(total, range) =>
-                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
-                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
-                        showSizeChanger={true}
-                        pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={(current, type, originalElement) =>
-                          itemRender(current, type, originalElement, t)
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                  }
+              {
+                tableData?.length > 0 &&
+                <div>
+                  <Pagination
+                    style={{ display: 'flex', float: 'right' }}
+                    total={pagination.total}
+                    pageSize={pagination.pageSize}
+                    defaultCurrent={1}
+                    current={pagination.current}
+                    showTotal={(total, range) =>
+                      t('paginationShow', { range1: range[0], range2: range[1], total: total })}
+                    onChange={(page, pageSize) => setPagination({ ...pagination, current: page, pageSize: pageSize, })}
+                    showSizeChanger={true}
+                    pageSizeOptions={['20', '30', '40', '50']}
+                    itemRender={(current, type, originalElement) =>
+                      itemRender(current, type, originalElement, t)
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+              }
             </div>
           ) : (
             <div className="row">
               <div className="col-md-12">
-              {/* projectsListTable */}
-                <div className="table-responsive"> 
+                {/* projectsListTable */}
+                <div className="table-responsive">
                   <Table
                     locale={{
                       emptyText: isLoading ? null : customEmptyText
                     }}
                     className="table-striped custom-table datatable"
-                    style = {{overflowX : 'auto'}}
+                    style={{ overflowX: 'auto' }}
                     loading={isLoading}
                     //style={{ height: "400px", background: "white" }}
                     columns={filteredColumns}
@@ -2149,45 +2148,45 @@ const filteredColumns = columns.filter(column => {
                     //   },
                     //   itemRender: itemRender,
                     // }}
-                    components={i18n.dir()==="rtl" ?
+                    components={i18n.dir() === "rtl" ?
                       {
-                      header: {
-                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
-                      },
-                    } :
-                    null
+                        header: {
+                          cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                        },
+                      } :
+                      null
                     }
-                    onRow={ i18n.dir()==="rtl" ?
+                    onRow={i18n.dir() === "rtl" ?
                       (record, rowIndex) => {
-                      return {
-                        style: { textAlign: 'right' }, // Align table data to the right
-                      };
-                    } :
-                    null
+                        return {
+                          style: { textAlign: 'right' }, // Align table data to the right
+                        };
+                      } :
+                      null
                     }
                   />
                 </div>
                 {
-                    tableData?.length > 0 &&
-                    <div>
-                      <Pagination
-                        style={{display: 'flex', float: 'right'}}
-                        current={pagination.current}
-                        pageSize={pagination.pageSize}
-                        total={pagination.total}
-                        showTotal={(total, range) =>
-                          t('paginationShow', { range1: range[0], range2: range[1], total: total })
-                        }
-                        pageSizeOptions={["20", "30", "40", "50"]}
-                        showSizeChanger
-                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
-                        itemRender={(current, type, originalElement) =>
-                          itemRender(current, type, originalElement, t)
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                  }
+                  tableData?.length > 0 &&
+                  <div>
+                    <Pagination
+                      style={{ display: 'flex', float: 'right' }}
+                      current={pagination.current}
+                      pageSize={pagination.pageSize}
+                      total={pagination.total}
+                      showTotal={(total, range) =>
+                        t('paginationShow', { range1: range[0], range2: range[1], total: total })
+                      }
+                      pageSizeOptions={["20", "30", "40", "50"]}
+                      showSizeChanger
+                      onChange={(page, pageSize) => setPagination({ ...pagination, current: page, pageSize: pageSize, })}
+                      itemRender={(current, type, originalElement) =>
+                        itemRender(current, type, originalElement, t)
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                }
               </div>
             </div>
           )}
@@ -3568,7 +3567,7 @@ const filteredColumns = columns.filter(column => {
             allCurrencies={allCurrencies}
           />
         )}
-        
+
         {createModal && (
           <EditProjects
             data={null}
@@ -3613,8 +3612,8 @@ const filteredColumns = columns.filter(column => {
                         onClick={() => DeleteProject(toDelete)}
                         style={{ width: "100%" }}
                         disabled={loader}
-                        >
-                          {loader ? (
+                      >
+                        {loader ? (
                           <Spin size="small" indicator={antIcon} />
                         ) : (
                           t('delete')
