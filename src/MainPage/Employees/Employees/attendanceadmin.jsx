@@ -169,10 +169,28 @@ const AttendanceAdmin = () => {
           let attendanceData = res?.data?.Attendance;
           const statData = res?.data;
           
+          const flattenedRecords = [];
+          attendanceData?.forEach((employeeRecord) => {
+            const user = employeeRecord.user;
+            if (employeeRecord.attendances && employeeRecord.attendances.length > 0) {
+              employeeRecord.attendances.forEach((attendance) => {
+                flattenedRecords.push({
+                  ...attendance,
+                  user: user,
+                });
+              });
+            } else {
+              flattenedRecords.push({
+                user: user,
+                attendanceDate: null,
+              });
+            }
+          });
+          
           const validRecords = [];
           const nullRecords = [];
           
-          attendanceData?.forEach((record) => {
+          flattenedRecords?.forEach((record) => {
             if (!record.attendanceDate) {
               nullRecords.push(record);
             } else {
@@ -199,8 +217,6 @@ const AttendanceAdmin = () => {
           
           setAttendanceRecords(filteredAttendanceData);
           setStatdata(statData);
-          //console.log(attendanceData);
-          //console.log(attendancerecords);
 
           const uniqueEmployees = [
             ...new Set(filteredAttendanceData.map((record) => record.user?._id).filter(Boolean)),
@@ -214,9 +230,7 @@ const AttendanceAdmin = () => {
               records: employeeRecords,
             };
           });
-          //const newAttendanceData = [...fetchattend, ...Attendance.docs];
           setEmployeeAttendanceData(employeeData);
-          //console.log("this is atendance",employeeData)
         }
       })
       .catch((error) => {
@@ -516,59 +530,36 @@ const AttendanceAdmin = () => {
     }),
   ];
 
-  const dataSource = employees
-    ?.filter((employee) => {
-      const hasAttendanceRecords = employeeAttendanceData?.some(
-        (data) => data.employeeId === employee._id
-      );
+  
+  const dataSource = employeeAttendanceData
+    ?.filter((data) => {
+      const employeeFromList = employees?.find(emp => emp._id === data.employeeId);
+      const employeeName = employeeFromList?.fullName || 
+        data.records?.[0]?.user?.fullName || '';
       
-      if (!hasAttendanceRecords) {
-        return false;
-      }
-
-      // Filter employees based on the search criteria (employee name)
-      const matchesName = employee.fullName
+      const matchesName = employeeName
         .toLowerCase()
         .includes(filters.name.toLowerCase());
       
-      if (!matchesName) return false;
-
-      // Check if employee should be shown for the selected month/year
-      if (employee.employeeExitDate) {
-        const exitDate = moment(employee.employeeExitDate);
-        const selectedMonth = filters.month || moment().month() + 1;
-        const selectedYear = filters.year || moment().year();
-        
-        // Create a moment object for the first day of the selected month
-        const selectedMonthStart = moment(`${selectedYear}-${selectedMonth}-01`, 'YYYY-MM-DD');
-        
-        // If exit date is before the selected month, don't show the employee
-        if (exitDate.isBefore(selectedMonthStart, 'month')) {
-          return false;
-        }
-      }
-      
-      return true;
+      return matchesName;
     })
-    ?.map((employee) => {
+    ?.map((data) => {
+      const employeeFromList = employees?.find(emp => emp._id === data.employeeId);
+      const employeeUser = data.records?.[0]?.user;
+      
       const rowData = {
-        key: employee._id,
-        employeeName: employee.fullName,
-        employeeImageUrl: employee.imageUrl,
-        shiftStart: employee?.shiftId?.startTime,
-        shiftMaxStart: employee?.shiftId?.maxStartTime,
-        shiftEnd: employee?.shiftId?.endTime,
+        key: data.employeeId,
+        employeeName: employeeFromList?.fullName || employeeUser?.fullName || '',
+        employeeImageUrl: employeeFromList?.imageUrl || employeeUser?.imageUrl || '',
+        shiftStart: employeeFromList?.shiftId?.startTime,
+        shiftMaxStart: employeeFromList?.shiftId?.maxStartTime,
+        shiftEnd: employeeFromList?.shiftId?.endTime,
       };
-      //setSpecific(rowData);
-
-      const employeeAttendance = employeeAttendanceData?.find(
-        (data) => data.employeeId === employee._id
-      );
 
       // Determine the last day to show attendance for this employee
       let lastDayToShow = daysInMonth;
-      if (employee.employeeExitDate) {
-        const exitDate = moment(employee.employeeExitDate);
+      if (employeeFromList?.employeeExitDate) {
+        const exitDate = moment(employeeFromList.employeeExitDate);
         const selectedMonth = filters.month || moment().month() + 1;
         const selectedYear = filters.year || moment().year();
         
@@ -578,8 +569,8 @@ const AttendanceAdmin = () => {
         }
       }
 
-      if (employeeAttendance && employeeAttendance.records) {
-        const validRecords = employeeAttendance.records.filter(record => record.attendanceDate);
+      if (data.records) {
+        const validRecords = data.records.filter(record => record.attendanceDate);
         
         if (validRecords.length > 0) {
           validRecords.forEach((record) => {
@@ -597,7 +588,7 @@ const AttendanceAdmin = () => {
           }
         }
       } else {
-        // Employee has no attendance records - show "-" only up to last working day
+        // Employee has no attendance records - show "-" for all days
         for (let i = 1; i <= lastDayToShow; i++) {
           rowData[`day${i}`] = { status: "-" };
         }
