@@ -394,6 +394,15 @@ const AttendanceAdmin = () => {
     />
   );
 
+  const handleEmployeeClick = (e, employeeId) => {
+    e.stopPropagation();
+    console.log('Employee clicked:', employeeId);
+    if (employeeId) {
+      sessionStorage.setItem('employee_tab', 'profile');
+      navigate(`/profile/employee-profile/${employeeId}`);
+    }
+  };
+
   const columns = [
     {
       title: t('aAttend.employee'),
@@ -409,19 +418,17 @@ const AttendanceAdmin = () => {
             alignItems: "center",
             minWidth: "120px",
             width: "max-content",
+            cursor: "pointer",
+            position: "relative",
+            zIndex: 10,
           }}
+          onClick={(e) => handleEmployeeClick(e, record?.key)}
         >
-          <label className="avatar">
+          <span className="avatar" style={{ pointerEvents: 'none' }}>
             <img alt="" src={record?.employeeImageUrl || user_icon} />
-          </label>
-          <label>{text}</label>
+          </span>
+          <span style={{ pointerEvents: 'none' }}>{text}</span>
         </div>
-        // <h2 className="table-avatar">
-        //   <label className="avatar"><img alt="" src={record?.user?.imageUrl || user_icon} /></label>
-        //   <label>{record?.user?.fullName}</label>
-        //   {/* <label>{text} <span>{record?.user?.role}</span></label> */}
-        // </h2>
-        // </div>
       ),
     },
     ...Array.from({ length: daysInMonth }, (_, index) => {
