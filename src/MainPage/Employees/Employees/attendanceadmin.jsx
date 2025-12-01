@@ -396,10 +396,15 @@ const AttendanceAdmin = () => {
 
   const handleEmployeeClick = (e, employeeId) => {
     e.stopPropagation();
-    console.log('Employee clicked:', employeeId);
     if (employeeId) {
       sessionStorage.setItem('employee_tab', 'profile');
-      navigate(`/profile/employee-profile/${employeeId}`);
+      const profileUrl = `/profile/employee-profile/${employeeId}`;
+      
+      if (e.ctrlKey || e.metaKey) {
+        window.open(profileUrl, '_blank');
+      } else {
+        navigate(profileUrl);
+      }
     }
   };
 
