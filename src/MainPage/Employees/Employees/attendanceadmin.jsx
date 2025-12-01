@@ -112,8 +112,20 @@ const AttendanceAdmin = () => {
     }
   }, []);
 
+  const selectedMonthStart = filters.month && filters.year
+    ? moment(`${filters.year}-${filters.month}-01`)
+    : null;
+
+
   const fetchEmployees = () => {
-    apiServices("GET", `user/all-employees?includeInactive=true`, null, user_state)
+   
+     // Build query parameters
+     let queryParams = `includeInactive=true`;
+     if (filters.month && filters.year) {
+       queryParams += `&month=${filters.month}&year=${filters.year}`;
+     }
+     
+     apiServices("GET", `user/all-employees?${queryParams}`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const emps = res?.data?.User;
@@ -135,12 +147,15 @@ const AttendanceAdmin = () => {
 
   useEffect(() => {
     if (role === "admin" || permissions?.attendanceManagement) {
-      setIsLoading(true);
-      fetchAttendanceData();
+      // Only fetch attendance if employees are loaded (for proper filtering)
+      if (employees && employees.length > 0) {
+        setIsLoading(true);
+        fetchAttendanceData();
+      }
     } else {
       navigate("/restricted", { state: { unAuthorize: true } });
     }
-  }, [filters]);
+  }, [filters, employees]);
 
   const fetchAttendanceData = async () => {
     apiServices(
@@ -151,28 +166,71 @@ const AttendanceAdmin = () => {
     )
       .then((res) => {
         if (res.data.success === true) {
-          const attendanceData = res?.data?.Attendance;
+          let attendanceData = res?.data?.Attendance;
           const statData = res?.data;
-          setAttendanceRecords(attendanceData);
+          
+          const flattenedRecords = [];
+          attendanceData?.forEach((employeeRecord) => {
+            const user = employeeRecord.user;
+            if (employeeRecord.attendances && employeeRecord.attendances.length > 0) {
+              employeeRecord.attendances.forEach((attendance) => {
+                flattenedRecords.push({
+                  ...attendance,
+                  user: user,
+                });
+              });
+            } else {
+              flattenedRecords.push({
+                user: user,
+                attendanceDate: null,
+              });
+            }
+          });
+          
+          const validRecords = [];
+          const nullRecords = [];
+          
+          flattenedRecords?.forEach((record) => {
+            if (!record.attendanceDate) {
+              nullRecords.push(record);
+            } else {
+              if (employees && employees.length > 0) {
+                const employee = employees.find(emp => emp._id === record.user?._id);
+                
+                if (!employee || !employee.employeeExitDate) {
+                  validRecords.push(record);
+                } else {
+                  const exitDate = moment(employee.employeeExitDate);
+                  const attendanceDate = moment(record.attendanceDate);
+                  
+                  if (attendanceDate.isSameOrBefore(exitDate, 'day')) {
+                    validRecords.push(record);
+                  }
+                }
+              } else {
+                validRecords.push(record);
+              }
+            }
+          });
+          
+          const filteredAttendanceData = [...validRecords, ...nullRecords];
+          
+          setAttendanceRecords(filteredAttendanceData);
           setStatdata(statData);
-          //console.log(attendanceData);
-          //console.log(attendancerecords);
 
           const uniqueEmployees = [
-            ...new Set(attendanceData.map((record) => record.user._id)),
+            ...new Set(filteredAttendanceData.map((record) => record.user?._id).filter(Boolean)),
           ];
           const employeeData = uniqueEmployees?.map((employeeId) => {
-            const employeeRecords = attendanceData?.filter(
-              (record) => record.user._id === employeeId
+            const employeeRecords = filteredAttendanceData?.filter(
+              (record) => record.user?._id === employeeId
             );
             return {
               employeeId,
               records: employeeRecords,
             };
           });
-          //const newAttendanceData = [...fetchattend, ...Attendance.docs];
           setEmployeeAttendanceData(employeeData);
-          //console.log("this is atendance",employeeData)
         }
       })
       .catch((error) => {
@@ -336,6 +394,20 @@ const AttendanceAdmin = () => {
     />
   );
 
+  const handleEmployeeClick = (e, employeeId) => {
+    e.stopPropagation();
+    if (employeeId) {
+      sessionStorage.setItem('employee_tab', 'profile');
+      const profileUrl = `/profile/employee-profile/${employeeId}`;
+      
+      if (e.ctrlKey || e.metaKey) {
+        window.open(profileUrl, '_blank');
+      } else {
+        navigate(profileUrl);
+      }
+    }
+  };
+
   const columns = [
     {
       title: t('aAttend.employee'),
@@ -351,19 +423,17 @@ const AttendanceAdmin = () => {
             alignItems: "center",
             minWidth: "120px",
             width: "max-content",
+            cursor: "pointer",
+            position: "relative",
+            zIndex: 10,
           }}
+          onClick={(e) => handleEmployeeClick(e, record?.key)}
         >
-          <label className="avatar">
+          <span className="avatar" style={{ pointerEvents: 'none' }}>
             <img alt="" src={record?.employeeImageUrl || user_icon} />
-          </label>
-          <label>{text}</label>
+          </span>
+          <span style={{ pointerEvents: 'none' }}>{text}</span>
         </div>
-        // <h2 className="table-avatar">
-        //   <label className="avatar"><img alt="" src={record?.user?.imageUrl || user_icon} /></label>
-        //   <label>{record?.user?.fullName}</label>
-        //   {/* <label>{text} <span>{record?.user?.role}</span></label> */}
-        // </h2>
-        // </div>
       ),
     },
     ...Array.from({ length: daysInMonth }, (_, index) => {
@@ -472,37 +542,66 @@ const AttendanceAdmin = () => {
     }),
   ];
 
-  const dataSource = employees
-    ?.filter((employee) => {
-      // Filter employees based on the search criteria (employee name)
-      return employee.fullName
+  
+  const dataSource = employeeAttendanceData
+    ?.filter((data) => {
+      const employeeFromList = employees?.find(emp => emp._id === data.employeeId);
+      const employeeName = employeeFromList?.fullName || 
+        data.records?.[0]?.user?.fullName || '';
+      
+      const matchesName = employeeName
         .toLowerCase()
         .includes(filters.name.toLowerCase());
+      
+      return matchesName;
     })
-    ?.map((employee) => {
+    ?.map((data) => {
+      const employeeFromList = employees?.find(emp => emp._id === data.employeeId);
+      const employeeUser = data.records?.[0]?.user;
+      
       const rowData = {
-        key: employee._id,
-        employeeName: employee.fullName,
-        employeeImageUrl: employee.imageUrl,
-        shiftStart: employee?.shiftId?.startTime,
-        shiftMaxStart: employee?.shiftId?.maxStartTime,
-        shiftEnd: employee?.shiftId?.endTime,
+        key: data.employeeId,
+        employeeName: employeeFromList?.fullName || employeeUser?.fullName || '',
+        employeeImageUrl: employeeFromList?.imageUrl || employeeUser?.imageUrl || '',
+        shiftStart: employeeFromList?.shiftId?.startTime,
+        shiftMaxStart: employeeFromList?.shiftId?.maxStartTime,
+        shiftEnd: employeeFromList?.shiftId?.endTime,
       };
-      //setSpecific(rowData);
 
-      const employeeAttendance = employeeAttendanceData?.find(
-        (data) => data.employeeId === employee._id
-      );
+      // Determine the last day to show attendance for this employee
+      let lastDayToShow = daysInMonth;
+      if (employeeFromList?.employeeExitDate) {
+        const exitDate = moment(employeeFromList.employeeExitDate);
+        const selectedMonth = filters.month || moment().month() + 1;
+        const selectedYear = filters.year || moment().year();
+        
+        // If the exit date is in the same month/year as selected, limit the days shown
+        if (exitDate.year() === parseInt(selectedYear) && (exitDate.month() + 1) === parseInt(selectedMonth)) {
+          lastDayToShow = exitDate.date();
+        }
+      }
 
-      if (employeeAttendance) {
-        // Employee has attendance records
-        employeeAttendance?.records.forEach((record) => {
-          const day = moment(record.attendanceDate).date();
-          rowData[`day${day}`] = record;
-        });
+      if (data.records) {
+        const validRecords = data.records.filter(record => record.attendanceDate);
+        
+        if (validRecords.length > 0) {
+          validRecords.forEach((record) => {
+            const day = moment(record.attendanceDate).date();
+            if (day <= lastDayToShow) {
+              rowData[`day${day}`] = record;
+            }
+          });
+        }
+        
+        // Fill remaining days with "-" if within the working period
+        for (let i = 1; i <= lastDayToShow; i++) {
+          if (!rowData[`day${i}`]) {
+            rowData[`day${i}`] = { status: "-" };
+          }
+        }
       } else {
-        // Employee has no attendance records
-        for (let i = 1; i <= daysInMonth; i++) {
+        // Employee has no attendance records - show "-" for all days
+        for (let i = 1; i <= lastDayToShow; i++) {
           rowData[`day${i}`] = { status: "-" };
         }
       }
