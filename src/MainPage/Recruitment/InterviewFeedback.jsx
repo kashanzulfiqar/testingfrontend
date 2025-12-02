@@ -1,16 +1,34 @@
 import React, { useState } from "react";
-import { Modal, Form, Input, Rate, Row, Col, Button } from "antd";
+import { Modal, Form, Input, Rate, Row, Col, Button, Spin } from "antd";
 
 const { TextArea } = Input;
 
 const RECOMMENDATIONS = ["Strong Yes", "Yes", "No", "Strong No"];
 
-const InterviewFeedback = ({ visible, onCancel, onSubmit }) => {
+const InterviewFeedback = ({ visible, onCancel, onSubmit, initialValues, title = "Add Feedback", loading = false }) => {
   const [form] = Form.useForm();
   const [selectedRecommendation, setSelectedRecommendation] = useState(null);
 
   // Watch the form field value to keep visual state in sync
   const recommendationValue = Form.useWatch("recommendation", form);
+
+  React.useEffect(() => {
+    if (visible && initialValues) {
+      form.setFieldsValue({
+        description: initialValues.description,
+        recommendation: initialValues.recommendation,
+        technicalRating: initialValues.ratings?.technicalRating,
+        behaviorRating: initialValues.ratings?.behaviorRating,
+        softSkillRating: initialValues.ratings?.softSkillRating,
+        leadershipRating: initialValues.ratings?.leadershipRating,
+        teamworkRating: initialValues.ratings?.teamworkRating,
+      });
+      setSelectedRecommendation(initialValues.recommendation);
+    } else if (visible && !initialValues) {
+      form.resetFields();
+      setSelectedRecommendation(null);
+    }
+  }, [visible, initialValues, form]);
 
   const handleSubmit = async (values) => {
     // Structure the data according to API requirements
@@ -34,7 +52,7 @@ const InterviewFeedback = ({ visible, onCancel, onSubmit }) => {
 
   return (
     <Modal
-      title="Add Feedback"
+      title={title}
       open={visible}
       onCancel={() => {
         onCancel();
@@ -47,7 +65,8 @@ const InterviewFeedback = ({ visible, onCancel, onSubmit }) => {
       style={{ zIndex: 2000 }}
       maskStyle={{ zIndex: 1999, background: "rgba(0, 0, 0, 0.5)" }}
     >
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+      <Spin spinning={loading}>
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           name="description"
           label="Description"
@@ -292,6 +311,7 @@ const InterviewFeedback = ({ visible, onCancel, onSubmit }) => {
           </Button>
         </Form.Item>
       </Form>
+      </Spin>
 
       <style jsx>{`
         .custom-modal .ant-modal-close {

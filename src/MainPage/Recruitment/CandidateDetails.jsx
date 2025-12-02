@@ -1106,23 +1106,51 @@ const CandidateDetails = () => {
   }
 
   if (!candidate) return null;
-  const calculateAverageRating = (feedbackArray) => {
-    if (!feedbackArray || feedbackArray.length === 0) {
+  const calculateAverageRating = () => {
+    if (!interviews || !Array.isArray(interviews) || interviews.length === 0) {
       return 0;
     }
 
-    const totalRatings = feedbackArray.reduce((sum, feedback) => {
-      const ratings = feedback.ratings;
-      const ratingSum =
-        ratings.technicalSkills1 +
-        ratings.behavior +
-        ratings.softSkills +
-        ratings.technicalSkills2 +
-        ratings.technicalSkills3;
-      return sum + ratingSum / 5; // Average of all skills for this feedback
-    }, 0);
+    let validInterviewsCount = 0;
+    let sumOfAverageRatings = 0;
 
-    return (totalRatings / feedbackArray.length).toFixed(1);
+    interviews.forEach((interview) => {
+      if (interview?.feedback?.length > 0) {
+        const interviewTotalScore = interview.feedback.reduce((acc, fb) => {
+          const r = fb.ratings || {};
+          let score = 0;
+
+          // Check if it's legacy or task based on keys
+          const isLegacy = r.technicalRating !== undefined;
+          const isTask = r.EfficientWorkingSkills !== undefined;
+
+          if (isLegacy) {
+            score =
+              ((r.technicalRating || 0) +
+                (r.behaviorRating || 0) +
+                (r.softSkillRating || 0) +
+                (r.leadershipRating || 0) +
+                (r.teamworkRating || 0)) /
+              5;
+          } else if (isTask) {
+            score =
+              ((r.EfficientWorkingSkills || 0) +
+                (r.ProblemSolvingSkills || 0) +
+                (r.PresentationSkills || 0)) /
+              3;
+          }
+
+          return acc + score;
+        }, 0);
+
+        const interviewAvg = interviewTotalScore / interview.feedback.length;
+        sumOfAverageRatings += interviewAvg;
+        validInterviewsCount++;
+      }
+    });
+
+    if (validInterviewsCount === 0) return 0;
+    return (sumOfAverageRatings / validInterviewsCount).toFixed(1);
   };
 
   const deleteResume = async (index) => {
