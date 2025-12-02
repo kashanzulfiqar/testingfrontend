@@ -99,16 +99,37 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
     }
   };
 
+  const [editingFeedback, setEditingFeedback] = useState(null);
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+
+  const handleEditFeedback = (feedback) => {
+    setEditingFeedback(feedback);
+    setIsFeedbackModalVisible(true);
+  };
+
+  const handleFeedbackModalCancel = () => {
+    setIsFeedbackModalVisible(false);
+    setEditingFeedback(null);
+  };
+
   const handleFeedbackSubmit = async (values) => {
     const token =
       localStorage.getItem("token") || authState?.access_token?.accessToken;
 
+    setSubmittingFeedback(true);
     try {
-      // First submit the feedback
+      // Determine if we are creating or updating
+      const isEditing = !!editingFeedback;
+      const url = isEditing 
+        ? `interview/feedback/${editingFeedback._id}` 
+        : `interview/${id}/feedback`;
+      
+      const method = isEditing ? "PUT" : "POST";
+
       console.log("values in interview details", values);
       const response = await apiServices(
-        "POST",
-        `interview/${id}/feedback`,
+        method,
+        url,
         {
           description: values.description,
           ratings: {
@@ -128,33 +149,38 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
       );
 
       if (response?.data?.success) {
-        // If feedback submission is successful, update the status to completed
-        try {
-          const statusResponse = await apiServices(
-            "PATCH",
-            `interview/${id}/status`,
-            { status: "completed" },
-            {
-              access_token: {
-                accessToken: token,
-              },
-            }
-          );
-
-          if (statusResponse?.data?.success) {
-            message.success(
-              "Feedback submitted and interview marked as completed"
+        // If feedback submission is successful, update the status to completed (only for new feedback)
+        if (!isEditing) {
+            try {
+            const statusResponse = await apiServices(
+                "PATCH",
+                `interview/${id}/status`,
+                { status: "completed" },
+                {
+                access_token: {
+                    accessToken: token,
+                },
+                }
             );
-          } else {
-            console.error("Status update failed:", statusResponse?.data);
+
+            if (statusResponse?.data?.success) {
+                message.success(
+                "Feedback submitted and interview marked as completed"
+                );
+            } else {
+                console.error("Status update failed:", statusResponse?.data);
+                message.success("Feedback submitted successfully");
+            }
+            } catch (statusError) {
+            console.error("Error updating status:", statusError);
             message.success("Feedback submitted successfully");
-          }
-        } catch (statusError) {
-          console.error("Error updating status:", statusError);
-          message.success("Feedback submitted successfully");
+            }
+        } else {
+            message.success("Feedback updated successfully");
         }
 
         fetchInterviewDetails(); // Refresh interview details to show new feedback and updated status
+        handleFeedbackModalCancel();
       } else {
         throw new Error(response?.data?.message || "Failed to submit feedback");
       }
@@ -167,8 +193,12 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
       } else {
         message.error(error.message || "Error submitting feedback");
       }
+    } finally {
+      setSubmittingFeedback(false);
     }
   };
+
+
 
   const calculateAverageRating = () => {
     if (!interview?.feedback || interview.feedback.length === 0) {
@@ -833,7 +863,11 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
           {interview?.status === "completed" && (
             <div>
               {interview?.feedback?.map((feedback, index) => (
-                <InterviewFeedbackDisplay key={index} feedback={feedback} />
+                <InterviewFeedbackDisplay 
+                  key={index} 
+                  feedback={feedback} 
+                  onEdit={handleEditFeedback}
+                />
               ))}
             </div>
           )}
@@ -841,8 +875,11 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
 
         <InterviewFeedback
           visible={isFeedbackModalVisible}
-          onCancel={() => setIsFeedbackModalVisible(false)}
+          onCancel={handleFeedbackModalCancel}
           onSubmit={handleFeedbackSubmit}
+          initialValues={editingFeedback}
+          title={editingFeedback ? "Edit Feedback" : "Add Feedback"}
+          loading={submittingFeedback}
         />
 
         <style jsx>{`
