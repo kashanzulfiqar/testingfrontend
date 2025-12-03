@@ -1446,15 +1446,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             const isVideo = file.imageUrl && /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(file.fileName || '');
                             const isDocument = file.imageUrl && /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/i.test(file.fileName || '');
                             
-                            const menu = (
-                              <Menu>
-                                <Menu.Item key="delete" icon={<DeleteOutlined />} onClick={() => handleDeleteAttachment(file._id)}>
-                                  Delete
-                                </Menu.Item>
-                              </Menu>
-                            );
-                            
-                        const fileDate = file.createdAt ? new Date(file.createdAt) : new Date();
+                            const fileDate = file.createdAt ? new Date(file.createdAt) : new Date();
                             const formattedDate = fileDate.toLocaleDateString('en-US', { 
                               month: '2-digit', 
                               day: '2-digit', 
@@ -1469,14 +1461,14 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             return (
                               <div
                                 key={file._id}
-                            style={{ 
-                              width: 200, 
+                                style={{ 
+                                  width: 200, 
                                   borderRadius: 12,
                                   border: '1px solid #e1e5e9',
                                   backgroundColor: '#fff',
                                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                                   overflow: 'hidden',
-                              position: 'relative',
+                                  position: 'relative',
                                   transition: 'transform 0.2s, box-shadow 0.2s',
                                   cursor: 'pointer'
                                 }}
@@ -1488,6 +1480,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                   e.currentTarget.style.transform = 'translateY(0)';
                                   e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
                                 }}
+                                onClick={() => window.open(file.imageUrl, '_blank')}
                               >
                                 {/* Image Preview */}
                                 <div style={{ position: 'relative', height: 140 }}>
@@ -1543,7 +1536,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                     </div>
                                   )}
                                   
-                                  {/* Action Icons */}
+                                  {/* Download Icon */}
                                   <div style={{ 
                                     position: 'absolute', 
                                     top: 8, 
@@ -1552,60 +1545,39 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                     gap: 4, 
                                     zIndex: 2 
                                   }}>
-                                      <Tooltip title="Download">
-      <div
-        onClick={() => handleDownload(file)}
-        style={{
-          background: "#fff",
-          borderRadius: "50%",
-          width: 32,
-          height: 32,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.2s",
-          cursor: "pointer",
-          textDecoration: "none",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.1)";
-          e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-        }}
-      >
-        <DownloadOutlined style={{ fontSize: 16, color: "#1890ff" }} />
-      </div>
-    </Tooltip>
-                                      <Dropdown overlay={menu} trigger={['click']}>
+                                    <Tooltip title="Download">
                                       <div
-                                          style={{
-                                            background: '#fff',
-                                          borderRadius: '50%',
-                                            width: 32,
-                                            height: 32,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                          transition: 'all 0.2s',
-                                            cursor: 'pointer',
-                                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDownload(file);
+                                        }}
+                                        style={{
+                                          background: "#fff",
+                                          borderRadius: "50%",
+                                          width: 32,
+                                          height: 32,
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          transition: "all 0.2s",
+                                          cursor: "pointer",
+                                          textDecoration: "none",
+                                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
                                         }}
                                         onMouseEnter={(e) => {
-                                          e.currentTarget.style.transform = 'scale(1.1)';
+                                          e.currentTarget.style.transform = "scale(1.1)";
+                                          e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
                                         }}
                                         onMouseLeave={(e) => {
-                                          e.currentTarget.style.transform = 'scale(1)';
+                                          e.currentTarget.style.transform = "scale(1)";
+                                          e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
                                         }}
                                       >
-                                        <EllipsisOutlined style={{ fontSize: 16, color: '#666' }} />
+                                        <DownloadOutlined style={{ fontSize: 16, color: "#1890ff" }} />
                                       </div>
-                                      </Dropdown>
-                                    </div>
+                                    </Tooltip>
                                   </div>
+                                </div>
                                 
                                 {/* File Info */}
                             <div style={{ padding: '12px' }}>
