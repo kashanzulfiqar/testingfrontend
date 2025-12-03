@@ -20,6 +20,7 @@ import {
   message,
   Popover,
   Badge,
+  Table,
 } from "antd";
 import {
   LoadingOutlined,
@@ -93,6 +94,11 @@ const TaskBoard = () => {
   const [selectedPriorityFilter, setSelectedPriorityFilter] = useState([]);
   const [selectedReporterFilter, setSelectedReporterFilter] = useState([]);
   const [filterDropdownVisible, setFilterDropdownVisible] = useState(false);
+  const [viewMode, setViewMode] = useState('board');
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [bulkStatusModal, setBulkStatusModal] = useState(false);
+  const [bulkDeleteModal, setBulkDeleteModal] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -1652,6 +1658,44 @@ const TaskBoard = () => {
                     </Badge>
                   </Popover>
 
+                  {/* Board/List View Toggle */}
+                  <div style={{ 
+                    display: 'flex', 
+                    border: '1px solid #d9d9d9', 
+                    borderRadius: '8px',
+                    overflow: 'hidden'
+                  }}>
+                    <Button
+                      style={{
+                        borderRadius: 0,
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        backgroundColor: viewMode === 'board' ? '#ff9b44' : '#fff',
+                        color: viewMode === 'board' ? '#fff' : '#333',
+                      }}
+                      onClick={() => setViewMode('board')}
+                    >
+                      <i className="fa fa-th-large" /> Board
+                    </Button>
+                    <Button
+                      style={{
+                        borderRadius: 0,
+                        border: 'none',
+                        borderLeft: '1px solid #d9d9d9',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        backgroundColor: viewMode === 'list' ? '#ff9b44' : '#fff',
+                        color: viewMode === 'list' ? '#fff' : '#333',
+                      }}
+                      onClick={() => setViewMode('list')}
+                    >
+                      <i className="fa fa-list" /> List
+                    </Button>
+                  </div>
+
                   <div className="project-members mr-3">
                     <ul
                       className="team-members"
@@ -1800,6 +1844,445 @@ const TaskBoard = () => {
             </div>
           </div>
           {/* /Page Header */}
+          
+          {/* List View */}
+          {viewMode === 'list' && (
+            <div className="card mb-0">
+              {selectedRowKeys.length > 0 && (
+                <div style={{
+                  padding: '12px 16px',
+                  backgroundColor: '#fff7e6',
+                  borderBottom: '1px solid #ffd591',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ fontWeight: 500, color: '#d46b08' }}>
+                    {selectedRowKeys.length} task{selectedRowKeys.length > 1 ? 's' : ''} selected
+                  </span>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <Select
+                      placeholder="Change Status"
+                      style={{ width: 150 }}
+                      value={null}
+                      onChange={async (newStatus) => {
+                        const targetColumn = columns.find(col => col.title === newStatus);
+                        if (targetColumn) {
+                          setBulkActionLoading(true);
+                          try {
+                            const res = await apiServices(
+                              "PUT",
+                              "tasks/bulk-update-status",
+                              {
+                                taskIds: selectedRowKeys,
+                                columnId: targetColumn._id,
+                                boardId: boardId
+                              },
+                              user_state
+                            );
+                            if (res?.data?.success) {
+                              message.success(res?.data?.msg || `${selectedRowKeys.length} task(s) moved to ${newStatus}`);
+                              setSelectedRowKeys([]);
+                              const boardIdToFetch = BoardData?._id
+                                ? BoardData?._id
+                                : BoardData?.board?.project
+                                  ? BoardData?.board?.project?._id
+                                  : BoardData?.board?._id;
+                              getTaskBoard(boardIdToFetch);
+                            } else {
+                              message.error(res?.data?.msg || 'Failed to update tasks');
+                            }
+                          } catch (err) {
+                            message.error('Failed to update tasks');
+                          } finally {
+                            setBulkActionLoading(false);
+                          }
+                        }
+                      }}
+                      loading={bulkActionLoading}
+                      disabled={bulkActionLoading}
+                    >
+                      {columns.map(col => (
+                        <Select.Option key={col._id} value={col.title}>
+                          {col.title}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    {!(role === 'client' || role === 'focalperson') && (
+                      <Button
+                        danger
+                        onClick={() => setBulkDeleteModal(true)}
+                        loading={bulkActionLoading}
+                        disabled={bulkActionLoading}
+                      >
+                        Delete Selected
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => {
+                        const selectedTasks = filteredColumns?.flatMap(column =>
+                          column.tasks
+                            .filter(task => selectedRowKeys.includes(task.taskId))
+                            .map(task => {
+                              const taskDetails = allTasks.find(t => t._id === task.taskId);
+                              return {
+                                Title: taskDetails?.title || '',
+                                Project: BoardData?.projectName || BoardData?.board?.project?.projectName || '-',
+                                'Task Board': boardTitle || '-',
+                                Tags: taskDetails?.tags?.join(', ') || '',
+                                Status: column.title,
+                              };
+                            })
+                        );
+                        const headers = ['Title', 'Project', 'Task Board', 'Tags', 'Status'];
+                        const csvContent = [
+                          headers.join(','),
+                          ...selectedTasks.map(task => 
+                            headers.map(h => `"${(task[h] || '').replace(/"/g, '""')}"`).join(',')
+                          )
+                        ].join('\n');
+                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `tasks_export_${moment().format('YYYY-MM-DD')}.csv`;
+                        link.click();
+                        message.success(`${selectedRowKeys.length} task(s) exported`);
+                      }}
+                    >
+                      Export Selected
+                    </Button>
+                    <Button
+                      type="text"
+                      onClick={() => setSelectedRowKeys([])}
+                      style={{ color: '#666' }}
+                    >
+                      Clear Selection
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <div className="card-body" style={{ padding: 0 }}>
+                {isLoading ? (
+                  <div className="text-center py-5">
+                    <Spin size="large" tip="Loading..." />
+                  </div>
+                ) : (
+                  <Table
+                    rowSelection={{
+                      selectedRowKeys,
+                      onChange: (keys) => setSelectedRowKeys(keys),
+                    }}
+                    dataSource={filteredColumns?.flatMap(column => 
+                      column.tasks.map(task => {
+                        const taskDetails = allTasks.find(t => t._id === task.taskId);
+                        return {
+                          key: task.taskId,
+                          taskId: task.taskId,
+                          title: taskDetails?.title || task.title,
+                          project: BoardData?.projectName || BoardData?.board?.project?.projectName || '-',
+                          taskBoard: boardTitle || '-',
+                          tags: taskDetails?.tags || [],
+                          status: column.title,
+                          statusColor: column.color || 'primary',
+                          columnId: column._id,
+                          taskDetails: taskDetails,
+                        };
+                      })
+                    )}
+                    columns={[
+                      {
+                        title: 'Title',
+                        dataIndex: 'title',
+                        key: 'title',
+                        sorter: (a, b) => (a.title || '').localeCompare(b.title || ''),
+                        sortDirections: ['ascend', 'descend', 'ascend'],
+                        render: (text, record) => (
+                          <span 
+                            style={{ cursor: 'pointer', fontWeight: 500 }}
+                            onClick={() => {
+                              const taskDetails = record.taskDetails;
+                              if (taskDetails) {
+                                const taskAssignedDevelopers = taskDetails?.assignedDevelopers?.map(
+                                  (dev) => ({
+                                    ...dev,
+                                    ...(employees.find((emp) => emp._id === dev._id) || {}),
+                                  })
+                                );
+                                setSelectedTask({
+                                  ...taskDetails,
+                                  ProjectData: BoardData?._id
+                                    ? {
+                                        projectName: BoardData?.projectName,
+                                        _id: BoardData?._id,
+                                        assignedDevelopers: employees,
+                                      }
+                                    : BoardData?.board?.project
+                                    ? {
+                                        projectName: BoardData?.board?.project?.projectName,
+                                        _id: BoardData?.board?.project?._id,
+                                        assignedDevelopers: employees,
+                                      }
+                                    : {
+                                        boardTitle: BoardData?.board?.boardTitle,
+                                        _id: BoardData?.board?._id,
+                                        project: null,
+                                        assignedDevelopers: employees,
+                                      },
+                                  boardId: boardId,
+                                  columnId: record.columnId,
+                                  columnName: record.status,
+                                  assignedDevelopers: taskAssignedDevelopers,
+                                  columnColor: record.statusColor,
+                                  allColumns: columns.map((col) => ({
+                                    id: col._id,
+                                    title: col.title,
+                                    color: col.color || "primary",
+                                  })),
+                                });
+                                setViewModal(true);
+                              }
+                            }}
+                          >
+                            {text}
+                          </span>
+                        ),
+                      },
+                      {
+                        title: 'Project',
+                        dataIndex: 'project',
+                        key: 'project',
+                        sorter: (a, b) => (a.project || '').localeCompare(b.project || ''),
+                        sortDirections: ['ascend', 'descend', 'ascend'],
+                        render: (text) => (
+                          <span style={{ 
+                            maxWidth: '180px', 
+                            display: 'inline-block', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            whiteSpace: 'nowrap' 
+                          }}>
+                            {text}
+                          </span>
+                        ),
+                      },
+                      {
+                        title: 'Task Boards',
+                        dataIndex: 'taskBoard',
+                        key: 'taskBoard',
+                        sorter: (a, b) => (a.taskBoard || '').localeCompare(b.taskBoard || ''),
+                        sortDirections: ['ascend', 'descend', 'ascend'],
+                        render: (text) => text || '-',
+                      },
+                      {
+                        title: 'Tags',
+                        dataIndex: 'tags',
+                        key: 'tags',
+                        sorter: (a, b) => (a.tags?.join(',') || '').localeCompare(b.tags?.join(',') || ''),
+                        sortDirections: ['ascend', 'descend', 'ascend'],
+                        render: (tags) => (
+                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                            {tags?.length > 0 ? tags.map((tag, idx) => (
+                              <Tag 
+                                key={idx}
+                                style={{ 
+                                  borderRadius: '4px',
+                                  margin: 0,
+                                  backgroundColor: '#f5f5f5',
+                                  border: '1px solid #d9d9d9',
+                                  color: '#595959'
+                                }}
+                              >
+                                {tag}
+                              </Tag>
+                            )) : '-'}
+                          </div>
+                        ),
+                      },
+                      {
+                        title: 'Status',
+                        dataIndex: 'status',
+                        key: 'status',
+                        width: 160,
+                        sorter: (a, b) => (a.status || '').localeCompare(b.status || ''),
+                        sortDirections: ['ascend', 'descend', 'ascend'],
+                        render: (text, record) => {
+                          const colorMap = {
+                            primary: '#ff902f',
+                            success: '#55ce63',
+                            info: '#009efb',
+                            warning: '#ffbc34',
+                            danger: '#f62d51',
+                            purple: '#9368e9',
+                          };
+                          const statusColor = colorMap[record.statusColor] || '#ff902f';
+                          return (
+                            <Select
+                              value={text}
+                              style={{ width: '100%' }}
+                              bordered={false}
+                              dropdownMatchSelectWidth={false}
+                              onChange={(newStatus) => {
+                                const targetColumn = columns.find(col => col.title === newStatus);
+                                if (targetColumn && record.columnId !== targetColumn._id) {
+                                  // Move task to new column
+                                  const sourceColumn = columns.find(col => col._id === record.columnId);
+                                  const taskIndex = sourceColumn.tasks.findIndex(t => t.taskId === record.taskId);
+                                  
+                                  if (taskIndex !== -1) {
+                                    const [movedTask] = sourceColumn.tasks.splice(taskIndex, 1);
+                                    targetColumn.tasks.push(movedTask);
+                                    
+                                    // Update columns state
+                                    setColumns([...columns]);
+                                    
+                                    // Call API to update task status
+                                    apiServices(
+                                      "PUT",
+                                      `task/update-task/${record.taskId}`,
+                                      { columnId: targetColumn._id },
+                                      user_state
+                                    ).then(() => {
+                                      message.success('Task status updated');
+                                    }).catch(() => {
+                                      message.error('Failed to update task status');
+                                      // Revert on error
+                                      fetchBoard();
+                                    });
+                                  }
+                                }
+                              }}
+                            >
+                              {columns.map(col => {
+                                const colColor = colorMap[col.color] || '#ff902f';
+                                return (
+                                  <Select.Option key={col._id} value={col.title}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <span style={{
+                                        width: '8px',
+                                        height: '8px',
+                                        borderRadius: '50%',
+                                        backgroundColor: colColor,
+                                        display: 'inline-block'
+                                      }} />
+                                      {col.title}
+                                    </div>
+                                  </Select.Option>
+                                );
+                              })}
+                            </Select>
+                          );
+                        },
+                      },
+                      {
+                        title: 'Action',
+                        key: 'action',
+                        width: 80,
+                        align: 'center',
+                        render: (_, record) => (
+                          <div className="dropdown">
+                            <a
+                              style={{ cursor: 'pointer', fontSize: '18px', color: '#999' }}
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false"
+                            >
+                              <i className="fa fa-ellipsis-v" />
+                            </a>
+                            <div className="dropdown-menu dropdown-menu-right">
+                              <a
+                                className="dropdown-item"
+                                onClick={() => {
+                                  const taskDetails = record.taskDetails;
+                                  if (taskDetails) {
+                                    const taskAssignedDevelopers = taskDetails?.assignedDevelopers?.map(
+                                      (dev) => ({
+                                        ...dev,
+                                        ...(employees.find((emp) => emp._id === dev._id) || {}),
+                                      })
+                                    );
+                                    setSelectedTask({
+                                      ...taskDetails,
+                                      ProjectData: BoardData?._id
+                                        ? {
+                                            projectName: BoardData?.projectName,
+                                            _id: BoardData?._id,
+                                            assignedDevelopers: employees,
+                                          }
+                                        : BoardData?.board?.project
+                                        ? {
+                                            projectName: BoardData?.board?.project?.projectName,
+                                            _id: BoardData?.board?.project?._id,
+                                            assignedDevelopers: employees,
+                                          }
+                                        : {
+                                            boardTitle: BoardData?.board?.boardTitle,
+                                            _id: BoardData?.board?._id,
+                                            project: null,
+                                            assignedDevelopers: employees,
+                                          },
+                                      boardId: boardId,
+                                      columnId: record.columnId,
+                                      columnName: record.status,
+                                      assignedDevelopers: taskAssignedDevelopers,
+                                      columnColor: record.statusColor,
+                                      allColumns: columns.map((col) => ({
+                                        id: col._id,
+                                        title: col.title,
+                                        color: col.color || "primary",
+                                      })),
+                                      isEditing: true,
+                                    });
+                                    setViewModal(true);
+                                  }
+                                }}
+                              >
+                                Edit
+                              </a>
+                              {!(role === 'client' || role === 'focalperson') && (
+                                <a
+                                  className="dropdown-item"
+                                  onClick={() => {
+                                    const taskDetails = record.taskDetails;
+                                    setAddTask({
+                                      isDelOpen: true,
+                                      isAddOpen: false,
+                                      data: { taskId: record.taskId },
+                                      title: taskDetails?.title || record.title,
+                                    });
+                                    setColumnId(record.columnId);
+                                  }}
+                                >
+                                  Remove
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        ),
+                      },
+                    ]}
+                    pagination={{
+                      pageSize: 20,
+                      showSizeChanger: true,
+                      showTotal: (total) => `Total ${total} tasks`,
+                    }}
+                    scroll={{ x: 900 }}
+                    locale={{
+                      emptyText: (
+                        <Empty
+                          image={EmptyTable}
+                          imageStyle={{ height: 100 }}
+                          description="No tasks found"
+                        />
+                      ),
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Board View */}
+          {viewMode === 'board' && (
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable
               droppableId="all-columns"
@@ -2590,6 +3073,7 @@ const TaskBoard = () => {
               )}
             </Droppable>
           </DragDropContext>
+          )}
         </div>
         {/* /Page Content */}
         <Offcanvas />
@@ -2836,13 +3320,99 @@ const TaskBoard = () => {
       </Modal>
 
       <Modal
+        open={bulkDeleteModal}
+        onClose={() => setBulkDeleteModal(false)}
+        aria-labelledby="bulk-delete-modal"
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content" style={{ height: "280px" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <div className="form-header">
+                <h3 style={{ marginBottom: "30px" }}>Delete Selected Tasks</h3>
+                <p>
+                  Are you sure you want to delete {selectedRowKeys.length} selected task{selectedRowKeys.length > 1 ? 's' : ''}? This action cannot be undone.
+                </p>
+              </div>
+              <div className="modal-btn delete-action">
+                <div className="row">
+                  <div className="col-6">
+                    <Button
+                      className="btn btn-primary continue-btn"
+                      onClick={async () => {
+                        setBulkActionLoading(true);
+                        try {
+                          const res = await apiServices(
+                            "DELETE",
+                            "tasks/bulk-delete",
+                            {
+                              taskIds: selectedRowKeys,
+                              boardId: boardId
+                            },
+                            user_state
+                          );
+                          if (res?.data?.success) {
+                            message.success(res?.data?.msg || `${selectedRowKeys.length} task(s) deleted`);
+                            setSelectedRowKeys([]);
+                            setBulkDeleteModal(false);
+                            const boardIdToFetch = BoardData?._id
+                              ? BoardData?._id
+                              : BoardData?.board?.project
+                                ? BoardData?.board?.project?._id
+                                : BoardData?.board?._id;
+                            getTaskBoard(boardIdToFetch);
+                          } else {
+                            message.error(res?.data?.msg || 'Failed to delete tasks');
+                          }
+                        } catch (err) {
+                          message.error('Failed to delete tasks');
+                        } finally {
+                          setBulkActionLoading(false);
+                        }
+                      }}
+                      disabled={bulkActionLoading}
+                      style={{ width: "100%" }}
+                    >
+                      {bulkActionLoading ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
+                  </div>
+                  <div className="col-6">
+                    <Button
+                      onClick={() => setBulkDeleteModal(false)}
+                      className="btn btn-primary submit-btn"
+                      style={{ width: "100%" }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
         open={taskModal}
         onClose={closeTaskModal}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
         disableRestoreFocus
         BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
         }}
       >
         <div className="modal-dialog modal-dialog-centered" role="document">
@@ -2853,7 +3423,6 @@ const TaskBoard = () => {
                 <span aria-hidden="true">×</span>
               </button>
             </div>
-            {/* {columnId ? ( */}
             <div className="modal-body">
               <Form
                 name="control-hooks"
