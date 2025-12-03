@@ -217,7 +217,7 @@ const LeaveEmployee = () => {
             ),
         },
         {
-          title: t('requests.approvedBy'),
+          title: t('Actioned By'),
           dataIndex: 'approvedBy',
           render: (text, record) => (            
               <h2 className="table-avatar">

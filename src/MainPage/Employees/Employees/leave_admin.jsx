@@ -649,7 +649,7 @@ const handleDeclineSubmit = () => {
     },
 
     {
-title: t('requests.approvedBy'),
+title: t('Actioned By'),
 dataIndex: 'approver',
 render: (value) => {
   const isEmpty =
