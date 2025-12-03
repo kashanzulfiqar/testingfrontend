@@ -405,6 +405,8 @@ const TaskBoardList = () => {
       ...values,
       companyId: info?.companyId,
       assignedDevelopers: selectedTeamMembers.map((member) => member._id),
+      ticketPrefix: values.ticketPrefix?.toUpperCase() || 'TASK',
+      ticketStartingNumber: parseInt(values.ticketStartingNumber, 10) || 1,
     };
     setLoader(true);
     apiServices("POST", "taskBoard/add-taskBoard", updated_data, user_state)
@@ -966,6 +968,75 @@ const TaskBoardList = () => {
                         />
                       </Form.Item>
                     </div>
+                    
+                    {/* Ticket Settings */}
+                    <div className="row">
+                      <div className="col-6">
+                        <div className="form-group">
+                          <label>
+                            Ticket Prefix <span className="text-danger">*</span>
+                          </label>
+                          <Form.Item
+                            name="ticketPrefix"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter a ticket prefix",
+                              },
+                              {
+                                pattern: /^[A-Za-z]+$/,
+                                message: "Prefix can only contain letters",
+                              },
+                              {
+                                max: 10,
+                                message: "Max 10 characters",
+                              },
+                            ]}
+                            initialValue="TASK"
+                          >
+                            <Input
+                              maxLength={10}
+                              className="form-control"
+                              placeholder="e.g., TASK, BUG"
+                              style={{ textTransform: 'uppercase' }}
+                            />
+                          </Form.Item>
+                        </div>
+                      </div>
+                      <div className="col-6">
+                        <div className="form-group">
+                          <label>
+                            Starting Number <span className="text-danger">*</span>
+                          </label>
+                          <Form.Item
+                            name="ticketStartingNumber"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter a starting number",
+                              },
+                              {
+                                validator: (_, value) => {
+                                  if (value && (isNaN(value) || parseInt(value, 10) < 1)) {
+                                    return Promise.reject("Enter a valid number (min 1)");
+                                  }
+                                  return Promise.resolve();
+                                }
+                              }
+                            ]}
+                            initialValue={1}
+                          >
+                            <Input
+                              type="number"
+                              min={1}
+                              className="form-control"
+                              placeholder="e.g., 1"
+                            />
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div className="col-12">
                       <div className="form-group">
                         <label
