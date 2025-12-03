@@ -231,6 +231,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     // Initial setup of task data
     if (Object.keys(taskDatas).length !== 0) {
       setTaskData(taskDatas);
+      setInitialLoading(false);
     } else if (location.state?.taskData) {
       setTaskData(location.state.taskData);
       // Only fetch details on initial load if we have taskData in location state
@@ -310,8 +311,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
         ? res?.data?.Task?.docs?.[0]
         : res?.data?.Task;
         setTaskData(updatedTask);
-        // Update the location state to keep it in sync
-        navigate(location.pathname, {
+        navigate(location.pathname + location.search, {
           state: { ...location.state, taskData: updatedTask },
           replace: true,
         });
@@ -512,7 +512,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
       description: descriptionValue,
     };
     setTaskData(updatedTaskData);
-    navigate(location.pathname, {
+    navigate(location.pathname + location.search, {
       state: { ...location.state, taskData: updatedTaskData },
       replace: true,
     });
@@ -531,7 +531,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
       } else {
         // Revert changes if API call fails
         setTaskData(taskData);
-        navigate(location.pathname, {
+        navigate(location.pathname + location.search, {
           state: { ...location.state, taskData: taskData },
           replace: true,
         });
@@ -540,7 +540,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     } catch (err) {
       // Revert changes if API call fails
       setTaskData(taskData);
-      navigate(location.pathname, {
+      navigate(location.pathname + location.search, {
         state: { ...location.state, taskData: taskData },
         replace: true,
       });
@@ -1152,11 +1152,106 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   // In the return, show a spinner if initialLoading is true
   if (initialLoading) return <Spin size="large" style={{margin: '100px auto', display: 'block'}} />;
 
+  const copyTaskLink = () => {
+    const baseUrl = window.location.origin;
+    const currentPath = window.location.pathname;
+    const taskIdentifier = taskData?.ticketNumber || taskData?._id;
+    const taskUrl = `${baseUrl}${currentPath}?task=${encodeURIComponent(taskIdentifier)}`;
+    
+    navigator.clipboard.writeText(taskUrl).then(() => {
+      message.success('Task link copied to clipboard!');
+    }).catch(() => {
+      message.error('Failed to copy link');
+    });
+  };
+
   return (
     <div>
       <div className="content container-fluid bg-[#F7F7F7]">
         <div className="row">
           <div className="col-xl-9">
+            {/* Ticket Number & Copy Link */}
+            {(taskData?.ticketNumber || taskData?._id) && (
+              <div style={{ 
+                marginBottom: 16, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {taskData?.ticketNumber && (
+                    new URLSearchParams(location.search).get('task') ? (
+                      <span style={{
+                        background: '#FF9B44',
+                        color: 'white',
+                        padding: '4px 12px',
+                        borderRadius: 6,
+                        fontWeight: 600,
+                        fontSize: 13,
+                        letterSpacing: '0.5px'
+                      }}>
+                        {taskData.ticketNumber}
+                      </span>
+                    ) : (
+                      <Tooltip title="Click to open in new tab">
+                        <span 
+                          onClick={() => {
+                            const baseUrl = window.location.origin;
+                            const currentPath = window.location.pathname;
+                            const taskUrl = `${baseUrl}${currentPath}?task=${encodeURIComponent(taskData.ticketNumber)}`;
+                            window.open(taskUrl, '_blank');
+                          }}
+                          style={{
+                            background: '#FF9B44',
+                            color: 'white',
+                            padding: '4px 12px',
+                            borderRadius: 6,
+                            fontWeight: 600,
+                            fontSize: 13,
+                            letterSpacing: '0.5px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.background = '#ff8a2b';
+                            e.target.style.transform = 'translateY(-1px)';
+                            e.target.style.boxShadow = '0 2px 8px rgba(255,155,68,0.4)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.background = '#FF9B44';
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                        >
+                          {taskData.ticketNumber}
+                        </span>
+                      </Tooltip>
+                    )
+                  )}
+                </div>
+                <Tooltip title="Copy task link">
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<i className="fa fa-link" style={{ fontSize: 14 }} />}
+                    onClick={copyTaskLink}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      color: '#666',
+                      border: '1px solid #e1e5e9',
+                      borderRadius: 6,
+                      padding: '4px 12px',
+                      height: 'auto'
+                    }}
+                  >
+                    Copy Link
+                  </Button>
+                </Tooltip>
+              </div>
+            )}
+            
             {/* Task Name Section */}
             <div style={{ marginBottom: 24 }}>
               <div style={{ 

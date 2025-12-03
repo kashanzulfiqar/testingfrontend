@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Avatar_12, user_icon } from "../../../Entryfile/imagepath";
 import Offcanvas from "../../../Entryfile/offcanvance";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -36,6 +36,7 @@ import { useSelector } from "react-redux";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useForm } from "react-hook-form";
 import TaskModal from "./taskModal";
+import TaskContent from "./taskContents";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import moment from 'moment';
@@ -162,6 +163,9 @@ const TaskBoard = () => {
 
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { id: urlBoardId } = useParams();
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -198,7 +202,7 @@ const TaskBoard = () => {
             //setIsLoading(false);
             //setLoader(false);
             //message.success('Task Moved successfully')
-            //closeTaskModal();
+            //closeAddTaskModal();
             setDisableDrag(false);
           }
         })
@@ -250,7 +254,7 @@ const TaskBoard = () => {
               //setIsLoading(false);
               //setLoader(false);
               //message.success('Task Moved successfully')
-              //closeTaskModal();
+              //closeAddTaskModal();
               setDisableDrag(false);
             }
           })
@@ -289,7 +293,7 @@ const TaskBoard = () => {
               //setIsLoading(false);
               //setLoader(false);
               //message.success('Task Moved successfully')
-              //closeTaskModal();
+              //closeAddTaskModal();
               setDisableDrag(false);
             }
           })
@@ -357,11 +361,10 @@ const TaskBoard = () => {
   };
 
   const closeViewModal = () => {
-    console.log("hello");
     setViewModal(false);
   };
 
-  const closeTaskModal = () => {
+  const closeAddTaskModal = () => {
     setSelectedTeamMembers([]);
     setTaskModal(false);
     setOpenUser(false);
@@ -376,7 +379,7 @@ const TaskBoard = () => {
       data: "",
       title: "",
     });
-    closeTaskModal();
+    closeAddTaskModal();
     getAllTasks(
       BoardData?._id
         ? BoardData?._id
@@ -440,6 +443,11 @@ const TaskBoard = () => {
     return task ? task.priority : "";
   };
 
+  const getTaskTicketNumber = (taskId) => {
+    const task = allTasks.find((task) => task._id === taskId);
+    return task ? task.ticketNumber : "";
+  };
+
   const getTaskAssignee = (taskId) => {
     const task = allTasks.find((task) => task._id === taskId);
     if (!task) return null;
@@ -472,7 +480,7 @@ const TaskBoard = () => {
     if (role === 'client' || role === 'focalperson') {
       apiServices(
         "GET",
-        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&taskId=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}&populate=assignedDevelopers`,
+        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&taskBoardId=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived || false}&populate=assignedDevelopers`,
         null,
         user_state
       )
@@ -502,8 +510,7 @@ const TaskBoard = () => {
 
     apiServices(
       "GET",
-      `tasks?id=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived
-      }&populate=assignedDevelopers`,
+      `tasks?taskBoardId=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived || false}&populate=assignedDevelopers`,
       null,
       user_state
     )
@@ -534,8 +541,7 @@ const TaskBoard = () => {
   const getTasksOptions = (id) => {
     apiServices(
       "GET",
-      `tasks?id=${id}&lane=empty&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived
-      }`,
+      `tasks?taskBoardId=${id}&lane=empty&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived || false}`,
       null,
       user_state
     )
@@ -611,7 +617,7 @@ const TaskBoard = () => {
     // Default: existing endpoint
     apiServices(
       "GET",
-      `taskBoard/view-taskBoard?id=${taskboardId}&isArchived=${BoardData?.board?.isArchived}`,
+      `taskBoard/view-taskBoard?id=${taskboardId}&isArchived=${BoardData?.board?.isArchived || false}`,
       null,
       user_state
     )
@@ -662,23 +668,25 @@ const TaskBoard = () => {
       </Select.Option>
     ));
   };
+  // Get the effective board ID - from state or URL
+  const getEffectiveBoardId = useCallback(() => {
+    if (BoardData?._id) return BoardData._id;
+    if (BoardData?.board?.project?._id) return BoardData.board.project._id;
+    if (BoardData?.board?._id) return BoardData.board._id;
+    return urlBoardId;
+  }, [BoardData, urlBoardId]);
+
+  // Initial load - fetch board and tasks
   useEffect(() => {
+    const boardIdToUse = getEffectiveBoardId();
+    
+    if (!boardIdToUse) return;
+    
     setIsLoading(true);
     setIsTaskLoading(true);
-    getAllTasks(
-      BoardData?._id
-        ? BoardData?._id
-        : BoardData?.board?.project
-          ? BoardData?.board?.project?._id
-          : BoardData?.board?._id
-    );
-    getTaskBoard(
-      BoardData?._id
-        ? BoardData?._id
-        : BoardData?.board?.project
-          ? BoardData?.board?.project?._id
-          : BoardData?.board?._id
-    );
+    getTaskBoard(boardIdToUse);
+    getAllTasks(boardIdToUse);
+    
     const handleClickOutside = (event) => {
       if (!event.target.closest(".kanban-task-action")) {
         setActiveDropdown(null); // Close dropdown when clicking outside
@@ -689,7 +697,81 @@ const TaskBoard = () => {
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
-  }, []);
+  }, [urlBoardId]);
+
+  useEffect(() => {
+    if (boardId && allTasks.length === 0 && !isTaskLoading) {
+      setIsTaskLoading(true);
+      getAllTasks(boardId);
+    }
+  }, [boardId]);
+
+  // Check if we're viewing a specific task (separate screen)
+  const taskParam = searchParams.get('task');
+  const isTaskDetailView = !!taskParam;
+
+  // Load task for detail view
+  useEffect(() => {
+    if (!isTaskDetailView) return;
+    if (allTasks.length === 0 || columns.length === 0 || !boardId) return;
+    
+    // Find task in columns
+    let foundTask = null;
+    let taskColumnId = '';
+    let taskColumnTitle = '';
+    let taskColumnColor = 'primary';
+    
+    for (const col of columns) {
+      const colTask = col.tasks?.find(t => {
+        const taskData = allTasks.find(at => at._id === t.taskId);
+        return taskData?.ticketNumber?.toUpperCase() === taskParam.toUpperCase() || t.taskId === taskParam;
+      });
+      if (colTask) {
+        foundTask = allTasks.find(at => at._id === colTask.taskId);
+        taskColumnId = col._id;
+        taskColumnTitle = col.title;
+        taskColumnColor = col.color || 'primary';
+        break;
+      }
+    }
+    
+    if (!foundTask) return;
+    
+    const taskAssignedDevelopers = foundTask?.assignedDevelopers?.map(
+      (dev) => ({
+        ...dev,
+        ...(employees.find((emp) => emp._id === dev._id) || {}),
+      })
+    ) || [];
+    
+    const projectData = {
+      boardTitle: boardTitle,
+      _id: boardId,
+      project: null,
+      assignedDevelopers: employees,
+    };
+    
+    setSelectedTask({
+      ...foundTask,
+      ProjectData: projectData,
+      boardId: boardId,
+      columnId: taskColumnId,
+      columnName: taskColumnTitle,
+      assignedDevelopers: taskAssignedDevelopers,
+      columnColor: taskColumnColor,
+      allColumns: columns.map((col) => ({
+        id: col._id,
+        title: col.title,
+        color: col.color || "primary",
+      })),
+    });
+  }, [isTaskDetailView, taskParam, allTasks, columns, boardId, boardTitle, employees]);
+
+  const openTaskWithUrl = useCallback((task, columnId, columnTitle, columnColor) => {
+    const taskIdentifier = task.ticketNumber || task._id;
+    navigate(`/task-board/${boardId}?task=${taskIdentifier}`);
+  }, [boardId, navigate]);
+
 
   const onFinish = (values, info) => {
     setLoader(true);
@@ -809,7 +891,7 @@ const TaskBoard = () => {
             setIsLoading(false);
             setLoader(false);
             message.success("Task added successfully");
-            closeTaskModal();
+            closeAddTaskModal();
           }
         })
         .catch((err) => {
@@ -1151,7 +1233,7 @@ const TaskBoard = () => {
         if (res?.data?.success === true) {
           setEmployees(selectedEmployees);
           message.success("Board members updated successfully");
-          closeTaskModal();
+          closeAddTaskModal();
           getAllTasks(
             BoardData?._id
               ? BoardData?._id
@@ -1346,6 +1428,55 @@ const TaskBoard = () => {
 
     setFilteredColumns(filtered);
   }, [selectedAssigneeFilter, selectedTypeFilter, selectedPriorityFilter, selectedReporterFilter, columns, allTasks, searchQuery]);
+
+  // If viewing a specific task, show task detail page instead of board
+  if (isTaskDetailView) {
+    // Show loader if task is not loaded OR if task has no title (data not fully populated)
+    if (!selectedTask || !selectedTask.title || !selectedTask._id) {
+      return (
+        <div className="page-wrapper">
+          <div className="content container-fluid" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+            <Spin size="large" tip="Loading task..." />
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <>
+        <div className="page-wrapper">
+          <Helmet>
+            <title>{selectedTask.ticketNumber || 'Task'} - DaftarPro</title>
+            <meta name="description" content="Task Detail" />
+          </Helmet>
+          <div className="content container-fluid">
+            <div className="page-header">
+              <div className="row align-items-center">
+                <div className="col">
+                  <button 
+                    onClick={() => navigate(`/task-board/${boardId}`)} 
+                    className="btn btn-primary"
+                    style={{ marginBottom: '20px' }}
+                  >
+                    <i className="fa fa-arrow-left" style={{ marginRight: '8px' }}></i>
+                    Back to Board
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+              <TaskContent
+                closeModal={() => navigate(`/task-board/${boardId}`)}
+                taskDatas={selectedTask}
+                getTaskBoard={() => getTaskBoard(boardId)}
+                getAllTasks={getAllTasks}
+              />
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -1980,6 +2111,7 @@ const TaskBoard = () => {
                           key: task.taskId,
                           taskId: task.taskId,
                           title: taskDetails?.title || task.title,
+                          ticketNumber: taskDetails?.ticketNumber || '',
                           project: BoardData?.projectName || BoardData?.board?.project?.projectName || '-',
                           taskBoard: boardTitle || '-',
                           tags: taskDetails?.tags || [],
@@ -1998,8 +2130,8 @@ const TaskBoard = () => {
                         sorter: (a, b) => (a.title || '').localeCompare(b.title || ''),
                         sortDirections: ['ascend', 'descend', 'ascend'],
                         render: (text, record) => (
-                          <span 
-                            style={{ cursor: 'pointer', fontWeight: 500 }}
+                          <div 
+                            style={{ cursor: 'pointer' }}
                             onClick={() => {
                               const taskDetails = record.taskDetails;
                               if (taskDetails) {
@@ -2044,8 +2176,19 @@ const TaskBoard = () => {
                               }
                             }}
                           >
-                            {text}
-                          </span>
+                            {record.ticketNumber && (
+                              <span style={{
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color: '#FF9B44',
+                                display: 'block',
+                                marginBottom: '2px'
+                              }}>
+                                {record.ticketNumber}
+                              </span>
+                            )}
+                            <span style={{ fontWeight: 500 }}>{text}</span>
+                          </div>
                         ),
                       },
                       {
@@ -2515,113 +2658,30 @@ const TaskBoard = () => {
                                                             width: "100%",
                                                           }}
                                                         >
+                                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden', maxWidth: '100%' }}>
+                                                            {getTaskTicketNumber(task.taskId) && (
+                                                              <span style={{
+                                                                fontSize: '11px',
+                                                                fontWeight: 600,
+                                                                color: '#FF9B44',
+                                                                letterSpacing: '0.3px'
+                                                              }}>
+                                                                {getTaskTicketNumber(task.taskId)}
+                                                              </span>
+                                                            )}
                                                           <a
                                                             style={{
-                                                              wordBreak:
-                                                                "break-word",
+                                                                wordBreak: "break-word",
                                                               display: "block",
                                                               overflow: "hidden",
                                                               textOverflow: "ellipsis",
                                                               whiteSpace: "nowrap",
                                                               maxWidth: "100%"
                                                             }}
-                                                          // onClick={() => {
-                                                          //   const title =
-                                                          //     getTaskTitle(
-                                                          //       task.taskId
-                                                          //     );
-                                                          //   const tags =
-                                                          //     getTaskTags(
-                                                          //       task.taskId
-                                                          //     );
-                                                          //   const description =
-                                                          //     getTaskDescription(
-                                                          //       task.taskId
-                                                          //     );
-                                                          //   const status =
-                                                          //     column.title;
-                                                          //   const taskAssignedDevelopers =
-                                                          //     getTaskAssignedDevelopers(
-                                                          //       task.taskId
-                                                          //     );
-
-                                                          //   setSelectedTask({
-                                                          //     _id: task.taskId,
-                                                          //     title,
-                                                          //     tags,
-                                                          //     description,
-                                                          //     ProjectData:
-                                                          //       BoardData?._id
-                                                          //         ? {
-                                                          //             projectName:
-                                                          //               BoardData?.projectName,
-                                                          //             _id: BoardData?._id,
-                                                          //             assignedDevelopers:
-                                                          //               employees,
-                                                          //           }
-                                                          //         : BoardData
-                                                          //             ?.board
-                                                          //             ?.project
-                                                          //         ? {
-                                                          //             projectName:
-                                                          //               BoardData
-                                                          //                 ?.board
-                                                          //                 ?.project
-                                                          //                 ?.projectName,
-                                                          //             _id: BoardData
-                                                          //               ?.board
-                                                          //               ?.project
-                                                          //               ?._id,
-                                                          //             assignedDevelopers:
-                                                          //               employees,
-                                                          //           }
-                                                          //         : {
-                                                          //             boardTitle:
-                                                          //               BoardData
-                                                          //                 ?.board
-                                                          //                 ?.boardTitle,
-                                                          //             _id: BoardData
-                                                          //               ?.board
-                                                          //               ?._id,
-                                                          //             project:
-                                                          //               null,
-                                                          //             assignedDevelopers:
-                                                          //               employees,
-                                                          //           },
-                                                          //     status,
-                                                          //     boardId:
-                                                          //       boardId,
-                                                          //     columnId:
-                                                          //       column._id,
-                                                          //     columnName:
-                                                          //       column.title,
-                                                          //     assignedDevelopers:
-                                                          //       taskAssignedDevelopers,
-                                                          //     columnColor:
-                                                          //       column.color ||
-                                                          //       "primary", // Add column color
-                                                          //     allColumns:
-                                                          //       columns.map(
-                                                          //         (col) => ({
-                                                          //           // Add all columns data
-                                                          //           id: col._id,
-                                                          //           title:
-                                                          //             col.title,
-                                                          //           color:
-                                                          //             col.color ||
-                                                          //             "primary",
-                                                          //         })
-                                                          //       ),
-                                                          //   });
-                                                          //   setViewModal(
-                                                          //     true
-                                                          //   );
-                                                          // }}
-                                                          >
-                                                            {getTaskTitle(
-                                                              task.taskId
-                                                            )}
-                                                          </a>
+                                                            >
+                                                              {getTaskTitle(task.taskId)}
+                                                            </a>
+                                                          </div>
                                                           <div
                                                             style={{
                                                               display: "flex",
@@ -3407,7 +3467,7 @@ const TaskBoard = () => {
 
       <Modal
         open={taskModal}
-        onClose={closeTaskModal}
+        onClose={closeAddTaskModal}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
         disableRestoreFocus
@@ -3419,7 +3479,7 @@ const TaskBoard = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">{"Add Task"}</h5>
-              <button type="button" className="close" onClick={closeTaskModal}>
+              <button type="button" className="close" onClick={closeAddTaskModal}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>
@@ -3732,7 +3792,7 @@ const TaskBoard = () => {
 
       <Modal
         open={openUser}
-        onClose={closeTaskModal}
+        onClose={closeAddTaskModal}
         aria-labelledby="modal-modal-title"
         className="modalScroll"
         aria-describedby="modal-modal-description"
@@ -3747,7 +3807,7 @@ const TaskBoard = () => {
             <div className="modal-header">
               <h5 className="modal-title">Edit Board Members</h5>
 
-              <button type="button" className="close" onClick={closeTaskModal}>
+              <button type="button" className="close" onClick={closeAddTaskModal}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>
