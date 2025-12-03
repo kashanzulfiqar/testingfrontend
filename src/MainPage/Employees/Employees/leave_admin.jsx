@@ -604,7 +604,7 @@ const handleDeclineSubmit = () => {
             {loading[record._id] ? ( <Spin /> ) : (
               <>
             <i
-              className={`fa ${
+              className={`fa m-r-5 ${
                 text === "New"
                   ? "fa-dot-circle-o text-purple"
                   : text === "Pending"
@@ -646,6 +646,39 @@ const handleDeclineSubmit = () => {
       );
     }
       //sorter: (a, b) => a.status.localeCompare(b.status), // Sort by status
+    },
+
+    {
+title: t('Actioned By'),
+dataIndex: 'approver',
+render: (value) => {
+  const isEmpty =
+    value === null ||
+    value === undefined ||
+    value === "" ||
+    (typeof value === "object" && Object.keys(value).length === 0);
+
+  if (isEmpty) {
+    return (
+      <h2 className="table-avatar">
+        <span style={{ marginLeft: "40px" }}>-</span>
+      </h2>
+    );
+  }
+
+  const imgSrc = value.imageUrl || user_icon;
+  const fullName = value.fullName || "-";
+
+  return (
+    <h2 className="table-avatar">
+      <label className="avatar">
+        <img alt="" src={imgSrc} />
+      </label>
+      <label>{fullName}</label>
+    </h2>
+  );
+},
+
     },
 
     {
@@ -1052,6 +1085,8 @@ const handleDeclineSubmit = () => {
                       description: selectedRecord?.description || "",
 
                       declineReason: selectedRecord?.declineReason || "",
+
+                      approvedBy: selectedRecord?.approver?.fullName || "",
                     }}
                     autoComplete="off"
                   >
@@ -1164,6 +1199,28 @@ const handleDeclineSubmit = () => {
                           <Input.TextArea rows={3} className="form-control" readOnly />
                         </Form.Item>
                       </div>) : null }
+
+                    {selectedRecord?.status === "Approved" && (
+                      <div className="form-group">
+                        <label>
+                          {t('requests.approvedBy')}
+                        </label>
+                        <Form.Item name="approvedBy" className="custom-border">
+                          <Input className="form-control" readOnly />
+                        </Form.Item>
+                      </div>
+                    )}
+
+                    {selectedRecord?.status === "Declined" && (
+                      <div className="form-group">
+                        <label>
+                          Declined By
+                        </label>
+                        <Form.Item name="approvedBy" className="custom-border">
+                          <Input className="form-control" readOnly />
+                        </Form.Item>
+                      </div>
+                    )}
                     <div
                       style={{
                         display: "flex",
