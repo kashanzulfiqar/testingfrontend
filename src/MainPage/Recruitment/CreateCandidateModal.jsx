@@ -189,6 +189,7 @@ const CreateCandidateModal = ({
                 // Validate file size (5MB)
                 if (file.size > 5 * 1024 * 1024) {
                   message.error("Resume file size should not exceed 5MB");
+                  setUploadingResume(false);
                   return Upload.LIST_IGNORE;
                 }
 
@@ -196,12 +197,15 @@ const CreateCandidateModal = ({
                 const allowedTypes = ["application/pdf"];
                 if (!allowedTypes.includes(file.type)) {
                   message.error("Only PDF files are allowed");
+                  setUploadingResume(false);
                   return Upload.LIST_IGNORE;
                 }
 
-                const result = await uploadFunction([file]);
-                setUploadResult(result);
-                if (result && result[0]) {
+                const result = await uploadFunction([file], authState);
+                
+                if (result && Array.isArray(result) && result.length > 0) {
+                  setUploadResult(result);
+                  
                   const { candidateName, candidateEmail, candidateContact } =
                     result[0];
 
@@ -220,8 +224,18 @@ const CreateCandidateModal = ({
                     email: candidateEmail || "",
                     phoneNumber: candidateContact || "",
                   });
+                  
+                  message.success("Resume uploaded successfully");
+                } else {
+                  message.error("Failed to process resume");
+                  setUploadResult(null);
                 }
                 return false;
+              } catch (uploadError) {
+                console.error("Upload error:", uploadError);
+                message.error("Failed to upload resume. Please try again.");
+                setUploadResult(null);
+                return Upload.LIST_IGNORE;
               } finally {
                 setUploadingResume(false); // Set to false at end
               }
