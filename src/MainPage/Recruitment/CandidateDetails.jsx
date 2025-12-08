@@ -97,6 +97,7 @@ const CandidateDetails = () => {
   const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [submittingOffer, setSubmittingOffer] = useState(false);
   const [offer, setOffer] = useState(null);
@@ -881,6 +882,7 @@ const CandidateDetails = () => {
     }
 
     try {
+      setCreatingTask(true);
       // Create FormData for task creation
       const formData = new FormData();
 
@@ -961,6 +963,8 @@ const CandidateDetails = () => {
       } else {
         message.error("Error creating task. Please try again");
       }
+    } finally {
+      setCreatingTask(false);
     }
   };
 
@@ -3315,6 +3319,7 @@ const CandidateDetails = () => {
           onSubmit={handleTaskSubmit}
           candidate={candidate}
           authState={authState}
+          loading={creatingTask}
         />
 
         {/* Send Offer Modal */}
