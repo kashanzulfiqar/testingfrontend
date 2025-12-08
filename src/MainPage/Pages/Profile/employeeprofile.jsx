@@ -113,6 +113,7 @@ const EmployeeProfile = () => {
   const [uploadFile, setUploadFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState({});
+  const [documentsLoading, setDocumentsLoading] = useState(false);
   
 
   const [deleteDocModal, setDeleteDocModal] = useState(false);
@@ -232,6 +233,7 @@ const EmployeeProfile = () => {
 
   const fetchDocuments = async () => {
     if (!allData?._id) return;
+    setDocumentsLoading(true);
     try {
       const res = await apiServices("GET", `user/documents/${allData._id}`, null, user_state);
       if (res.data.success) {
@@ -239,6 +241,8 @@ const EmployeeProfile = () => {
       }
     } catch (error) {
       console.error("Failed to fetch documents:", error);
+    } finally {
+      setDocumentsLoading(false);
     }
   };
 
@@ -2249,6 +2253,11 @@ const EmployeeProfile = () => {
                           </a>
                         </div>
                         <div className="table-responsive">
+                          {documentsLoading ? (
+                            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                              <Spin size="large" />
+                            </div>
+                          ) : (
                           <table className="table table-striped custom-table mb-0">
                             <thead>
                               <tr>
@@ -2328,6 +2337,7 @@ const EmployeeProfile = () => {
                               )}
                             </tbody>
                           </table>
+                          )}
                         </div>
                       </div>
                     </div>
