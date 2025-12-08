@@ -68,6 +68,7 @@ import EmployeeTimesheet from "../MainPage/Employees/Employees/EmployeeTimesheet
 import AdminTimeSheet from "../MainPage/Employees/Employees/timesheetAdmin";
 import ViewDetailTimesheet from "../MainPage/Employees/Employees/ViewDetailTimesheet";
 import AttendanceReport from "../MainPage/HR/Reports/attendancereport";
+import AssetsReport from "../MainPage/HR/Reports/assetsreport";
 import EmployeesReport from "../MainPage/HR/Reports/EmployeesReport";
 import TaskBoard from "../MainPage/Employees/Projects/taskboard";
 import TaskBoardList from "../MainPage/Employees/Projects/taskboardlist";
@@ -319,6 +320,7 @@ const App = () => {
           <Route path="/profit-loss/view" element={<ViewPL />} />
 
           <Route path="/attendance-report" element={<AttendanceReport />} />
+          <Route path="/assets-report" element={<AssetsReport />} />
           <Route path="/lead-report" element={<LeadReport />} />
           <Route path="/client-report" element={<ClientReport />} />
           <Route path="/assets" element={<Assets />} />
