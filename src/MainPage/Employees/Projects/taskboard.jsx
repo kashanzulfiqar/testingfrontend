@@ -39,6 +39,7 @@ import TaskModal from "./taskModal";
 import TaskContent from "./taskContents";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import JoditEditor from 'jodit-react';
 import moment from 'moment';
 
 const TaskBoard = () => {
@@ -766,6 +767,7 @@ const TaskBoard = () => {
       })),
     });
   }, [isTaskDetailView, taskParam, allTasks, columns, boardId, boardTitle, employees]);
+
 
   const openTaskWithUrl = useCallback((task, columnId, columnTitle, columnColor) => {
     const taskIdentifier = task.ticketNumber || task._id;
@@ -4024,9 +4026,6 @@ const TaskBoard = () => {
                             if (!plain || plain.trim() === '') {
                               return Promise.reject(t('Tasks.pleaseenterdescription'));
                             }
-                            if (/\s{2,}/.test(plain)) {
-                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                            }
                             if (plain.length <= 4) {
                               return Promise.reject(t('Tasks.descriptionLength'));
                             }
@@ -4035,20 +4034,44 @@ const TaskBoard = () => {
                         }]}
                         className="custom-border"
                       >
-                        <ReactQuill 
-                          value={descValue} 
-                          onChange={setDescValue} 
-                          theme="snow" 
-                          style={{ minHeight: 150, maxHeight: 300 }}
-                          modules={{
-                            toolbar: [
-                              ['bold', 'italic', 'underline', 'strike'],
-                              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                              ['link'],
-                              ['clean']
-                            ]
-                          }}
-                        />
+                        <div className="jodit-description-editor">
+                          <style>{`
+                            .jodit-description-editor .jodit-wysiwyg ul { list-style-type: disc !important; padding-left: 20px !important; margin-left: 10px !important; }
+                            .jodit-description-editor .jodit-wysiwyg ol { list-style-type: decimal !important; padding-left: 20px !important; margin-left: 10px !important; }
+                            .jodit-description-editor .jodit-wysiwyg li { display: list-item !important; }
+                          `}</style>
+                          <JoditEditor
+                            value={descValue}
+                            onBlur={(content) => setDescValue(content)}
+                            config={{
+                              readonly: false,
+                              height: 150,
+                              toolbar: true,
+                              toolbarButtonSize: 'small',
+                              buttons: [
+                                { name: 'bold' },
+                                { name: 'italic' },
+                                {
+                                  name: 'ul',
+                                  list: null
+                                },
+                                {
+                                  name: 'ol', 
+                                  list: null
+                                },
+                                { name: 'paragraph' }
+                              ],
+                              placeholder: 'Enter description...',
+                              showCharsCounter: false,
+                              showWordsCounter: false,
+                              showXPathInStatusbar: false,
+                              askBeforePasteHTML: false,
+                              askBeforePasteFromWord: false,
+                              statusbar: false,
+                              disablePlugins: 'add-new-line',
+                            }}
+                          />
+                        </div>
                       </Form.Item>
                     </div>
                   </div>
