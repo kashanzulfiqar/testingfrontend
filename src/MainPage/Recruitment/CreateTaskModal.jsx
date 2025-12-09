@@ -306,6 +306,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState, 
                 style={{ width: '100%' }} 
                 placeholder="Select Date"
                 format="DD-MM-YYYY"
+                inputReadOnly
                 className='custom-datepicker'
               />
             </Form.Item>
