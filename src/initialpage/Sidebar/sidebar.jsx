@@ -2641,6 +2641,17 @@ const Sidebar = (props) => {
                             Client Report{" "}
                           </Link>
                         </li>
+                        <li>
+                          <Link
+                            className={
+                              pathname.includes("assets-report") ? "active" : ""
+                            }
+                            to="/assets-report"
+                          >
+                            {" "}
+                            Assets Report{" "}
+                          </Link>
+                        </li>
                       </ul>
                     ) : (
                       ""

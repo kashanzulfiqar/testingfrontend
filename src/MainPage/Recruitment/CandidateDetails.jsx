@@ -97,6 +97,7 @@ const CandidateDetails = () => {
   const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [submittingOffer, setSubmittingOffer] = useState(false);
   const [offer, setOffer] = useState(null);
@@ -881,6 +882,7 @@ const CandidateDetails = () => {
     }
 
     try {
+      setCreatingTask(true);
       // Create FormData for task creation
       const formData = new FormData();
 
@@ -952,8 +954,7 @@ const CandidateDetails = () => {
     } catch (error) {
       console.error("Error creating task:", error);
       if (error.response?.status === 401) {
-        message.error("Session expired. Please login again");
-        navigate("/login");
+      message.error("Only HR and admin allowed to create task");
       } else if (error.response?.status === 413) {
         message.error("File size too large. Maximum size is 5MB");
       } else if (error.response?.status === 400) {
@@ -961,6 +962,8 @@ const CandidateDetails = () => {
       } else {
         message.error("Error creating task. Please try again");
       }
+    } finally {
+      setCreatingTask(false);
     }
   };
 
@@ -3315,6 +3318,7 @@ const CandidateDetails = () => {
           onSubmit={handleTaskSubmit}
           candidate={candidate}
           authState={authState}
+          loading={creatingTask}
         />
 
         {/* Send Offer Modal */}
