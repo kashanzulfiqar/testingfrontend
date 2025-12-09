@@ -1406,25 +1406,32 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         users={boardAssociatedUsers}
                       />
                 ) : (
-                      <div
-                        style={{
-                      color: taskData?.description ? '#333' : '#999',
-                      lineHeight: '1.6',
-                      fontSize: '14px',
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      cursor: 'pointer',
-                      minHeight: '80px',
-                      fontStyle: taskData?.description ? 'normal' : 'italic'
-                    }}
-                    dangerouslySetInnerHTML={{ 
-                      __html: taskData?.description || "Enter task description..." 
-                    }}
-                    onClick={() => {
-                      setDescriptionValue(taskData?.description || "");
-                      setIsEditing(true);
-                    }}
-                  />
+                      <>
+                        <style>{`
+                          .task-description-content ul { list-style-type: disc !important; padding-left: 20px !important; margin-left: 10px !important; margin-bottom: 10px !important; }
+                          .task-description-content ol { list-style-type: decimal !important; padding-left: 20px !important; margin-left: 10px !important; margin-bottom: 10px !important; }
+                          .task-description-content li { display: list-item !important; margin-bottom: 4px !important; }
+                        `}</style>
+                        <div
+                          className="task-description-content"
+                          style={{
+                            color: taskData?.description ? '#333' : '#999',
+                            lineHeight: '1.6',
+                            fontSize: '14px',
+                            wordBreak: 'break-word',
+                            cursor: 'pointer',
+                            minHeight: '80px',
+                            fontStyle: taskData?.description ? 'normal' : 'italic'
+                          }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: taskData?.description || "Enter task description..." 
+                          }}
+                          onClick={() => {
+                            setDescriptionValue(taskData?.description || "");
+                            setIsEditing(true);
+                          }}
+                        />
+                      </>
                 )}
                                 </div>
               
