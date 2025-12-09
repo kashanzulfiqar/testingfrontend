@@ -954,8 +954,7 @@ const CandidateDetails = () => {
     } catch (error) {
       console.error("Error creating task:", error);
       if (error.response?.status === 401) {
-        message.error("Session expired. Please login again");
-        navigate("/login");
+      message.error("Only HR and admin allowed to create task");
       } else if (error.response?.status === 413) {
         message.error("File size too large. Maximum size is 5MB");
       } else if (error.response?.status === 400) {
