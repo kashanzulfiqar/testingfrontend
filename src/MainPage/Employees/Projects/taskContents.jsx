@@ -28,6 +28,7 @@ import EmojiIcon from "../../../assets/Icons/emojicon.svg";
 import EditIcon from "../../../assets/Icons/Edit.svg";
 import { BASE_URL } from '../../../config/apiConfig';
 import '../../../assets/css/taskDetails.css';
+import CommentText from "../../../Components/CommentText";
 
 const getPriorityIcon = (priority) => {
   switch (priority?.toLowerCase()) {
@@ -210,6 +211,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   // Add user state from Redux
   const user_state = useSelector((state) => state?.user?.loginvalue);
   const userRole = user_state?.user?.role;
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
 
   // Add editing states at the top of the component
   const [editingAssignee, setEditingAssignee] = useState(false);
@@ -1905,20 +1907,10 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                       </div>
                                     ) : (
                                       <>
-                                        <div 
+                                        <CommentText
+                                          html={c.text || ''}
+                                          mentions={c.mentions || []}
                                           className="comment-content"
-                                          style={{
-                                            color: '#333',
-                                            fontSize: 14,
-                                            lineHeight: '1.5',
-                                            marginBottom: c.attachments?.length > 0 ? 8 : 12
-                                          }}
-                                          dangerouslySetInnerHTML={{ 
-                                            __html: c.text?.replace(
-                                              /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g, 
-                                              '<span style="background-color: #e6f7ff; color: #1890ff; padding: 2px 4px; border-radius: 4px; font-weight: 500;">@$1</span>'
-                                            ) || ''
-                                          }}
                                         />
                                         {c.attachments && c.attachments.length > 0 && (
                                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
