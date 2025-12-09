@@ -1,14 +1,15 @@
-import { Extension } from '@tiptap/core';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
-import { Decoration, DecorationSet } from '@tiptap/pm/view';
+// MentionExtension.js
+import { Extension } from "@tiptap/core";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 export const MentionExtension = Extension.create({
-  name: 'mention',
+  name: "mention",
 
   addOptions() {
     return {
       HTMLAttributes: {
-        class: 'mention',
+        class: "mention",
       },
       teamMembers: [],
     };
@@ -17,34 +18,101 @@ export const MentionExtension = Extension.create({
   addProseMirrorPlugins() {
     let currentPopup = null;
     const extension = this;
-    
-    const showMentionSuggestions = (view, pos, teamMembers, searchQuery = '') => {
-     
-      // Remove existing popup
-      if (currentPopup) {
-        currentPopup.remove();
-        currentPopup = null;
+
+    const removeCurrentPopup = () => {
+      if (currentPopup && currentPopup.popupEl) {
+        try {
+          currentPopup.popupEl.remove();
+        } catch (e) {}
+      }
+      currentPopup = null;
+    };
+
+    const createItemNode = (member, index, isActive) => {
+      const item = document.createElement("div");
+      item.className = "mention-item";
+      item.style.cssText = `
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      `;
+
+      if (isActive) {
+        item.style.backgroundColor = "#f0f0f0";
+      } else {
+        item.style.backgroundColor = "transparent";
       }
 
+      const avatar = document.createElement("div");
+      avatar.style.cssText = `
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #1890ff;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+      `;
+      avatar.textContent =
+        member.fullName
+          ?.split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase() || "U";
+
+      const name = document.createElement("span");
+      name.textContent = member.fullName || "Unknown User";
+      name.style.fontSize = "14px";
+
+      item.appendChild(avatar);
+      item.appendChild(name);
+
+      return item;
+    };
+
+    const showMentionSuggestions = (
+      view,
+      pos,
+      teamMembers,
+      searchQuery = ""
+    ) => {
+      removeCurrentPopup();
+
       if (!teamMembers || teamMembers.length === 0) {
-        console.log('No team members available - teamMembers:', teamMembers);
+        console.log("No team members available - teamMembers:", teamMembers);
         return;
       }
 
-      // Filter team members based on search query
-      const filteredMembers = searchQuery 
-        ? teamMembers.filter(member => 
+      const filteredMembers = searchQuery
+        ? teamMembers.filter((member) =>
             member.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
           )
         : teamMembers;
 
-      // Find the closest scrollable container or use document.body
-      const editorElement = view.dom.closest('.ql-editor') || view.dom.closest('.ProseMirror') || view.dom;
-      const container = editorElement.closest('.modal-body') || editorElement.closest('.ant-modal-body') || document.body;
+      if (!filteredMembers || filteredMembers.length === 0) {
+        return;
+      }
 
-      // Create suggestion popup
-      const popup = document.createElement('div');
-      popup.className = 'mention-suggestions';
+      // Determine container for positioning
+      const editorElement =
+        view.dom.closest(".ql-editor") ||
+        view.dom.closest(".ProseMirror") ||
+        view.dom;
+      const container =
+        (editorElement &&
+          (editorElement.closest(".modal-body") ||
+            editorElement.closest(".ant-modal-body"))) ||
+        document.body;
+
+      // create popup element
+      const popup = document.createElement("div");
+      popup.className = "mention-suggestions";
       popup.style.cssText = `
         position: absolute;
         background: white;
@@ -57,240 +125,274 @@ export const MentionExtension = Extension.create({
         min-width: 150px;
       `;
 
-      // Filter and show suggestions
+      // store items and activeIndex on currentPopup
+      currentPopup = {
+        popupEl: popup,
+        items: filteredMembers,
+        activeIndex: 0,
+        view,
+        pos,
+      };
+
+      // fill popup
       filteredMembers.forEach((member, index) => {
-        const item = document.createElement('div');
-        item.className = 'mention-item';
-        item.style.cssText = `
-          padding: 8px 12px;
-          cursor: pointer;
-          border-bottom: 1px solid #f0f0f0;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        `;
-        
-        if (index === 0) {
-          item.style.backgroundColor = '#f0f0f0';
-        }
-        
-        // Create avatar
-        const avatar = document.createElement('div');
-        avatar.style.cssText = `
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: #1890ff;
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          font-weight: 600;
-        `;
-        avatar.textContent = member.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
-        
-        // Create name
-        const name = document.createElement('span');
-        name.textContent = member.fullName || 'Unknown User';
-        name.style.fontSize = '14px';
-        
-        item.appendChild(avatar);
-        item.appendChild(name);
-        
-        item.addEventListener('click', () => {
+        const item = createItemNode(member, index, index === 0);
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
           insertMention(view, member);
-          popup.remove();
-          currentPopup = null;
+          removeCurrentPopup();
         });
-        
+
         popup.appendChild(item);
       });
 
-      // Position popup relative to the container
+      // position popup relative to container
       const coords = view.coordsAtPos(pos);
       const containerRect = container.getBoundingClientRect();
-      
-      // Calculate position relative to container
       const left = coords.left - containerRect.left;
       const top = coords.bottom - containerRect.top + 5;
-      
+
       popup.style.left = `${left}px`;
       popup.style.top = `${top}px`;
-      
-      // Ensure container has relative positioning
+
       if (container !== document.body) {
         const containerStyle = window.getComputedStyle(container);
-        if (containerStyle.position === 'static') {
-          container.style.position = 'relative';
+        if (containerStyle.position === "static") {
+          container.style.position = "relative";
         }
       }
-      
+
       container.appendChild(popup);
-      currentPopup = popup;
-      console.log('Popup created and appended:', popup);
-      
-      // Remove popup when clicking outside
-      const removePopup = (e) => {
-        if (!popup.contains(e.target)) {
-          popup.remove();
-          currentPopup = null;
-          document.removeEventListener('click', removePopup);
-        }
-      };
-      
+
+      // make sure popup is focusable for keyboard handling (we keep key handling on the editor)
       setTimeout(() => {
-        document.addEventListener('click', removePopup);
-      }, 100);
+        // Click outside to remove
+        const removePopupOnClick = (e) => {
+          if (!popup.contains(e.target)) {
+            removeCurrentPopup();
+            document.removeEventListener("click", removePopupOnClick);
+          }
+        };
+        document.addEventListener("click", removePopupOnClick);
+      }, 50);
     };
 
-         const insertMention = (view, member) => {
-       const { state, dispatch } = view;
-       const { selection } = state;
-       const { $from } = selection;
-       
-       // Get the current text content
-       const textContent = $from.parent.textContent;
-       const cursorPos = $from.parentOffset;
-       
-       // Find the @ symbol before the cursor
-       const textBeforeCursor = textContent.slice(0, cursorPos);
-       const atIndex = textBeforeCursor.lastIndexOf('@');
-       
-       if (atIndex !== -1) {
-         const tr = state.tr;
-         
-         // Calculate the actual position in the document
-         const startPos = $from.start() + atIndex;
-         const endPos = $from.start() + cursorPos;
-         
-                   // Create the mention text - only first two words
-          const firstTwoWords = member.fullName?.split(' ').slice(0, 2).join(' ') || member.fullName;
-          const mentionText = `@${firstTwoWords}`;
-         
-         // Replace the text from @ to cursor position
-         tr.replaceWith(startPos, endPos, state.schema.text(mentionText + ' '));
-         
-         dispatch(tr);
-       }
-     };
-    
+    const updatePopupActiveItem = () => {
+      if (!currentPopup || !currentPopup.popupEl) return;
+      const children = Array.from(currentPopup.popupEl.children);
+      children.forEach((child, idx) => {
+        if (idx === currentPopup.activeIndex) {
+          child.style.backgroundColor = "#f0f0f0";
+          // ensure item is visible inside scroll
+          if (child.scrollIntoView) {
+            try {
+              child.scrollIntoView({ block: "nearest" });
+            } catch (e) {}
+          }
+        } else {
+          child.style.backgroundColor = "transparent";
+        }
+      });
+    };
+
+    const insertMention = (view, member) => {
+      const { state, dispatch } = view;
+      const { selection } = state;
+      const { $from } = selection;
+
+      const textContent = $from.parent.textContent;
+      const cursorPos = $from.parentOffset;
+      const textBeforeCursor = textContent.slice(0, cursorPos);
+      const atIndex = textBeforeCursor.lastIndexOf("@");
+
+      if (atIndex !== -1) {
+        const tr = state.tr;
+
+        // Calculate start and end in document coords
+        const startPos = $from.start() + atIndex;
+        const endPos = $from.start() + cursorPos;
+
+        // Insert only the first two words of member.fullName (maintains original behavior)
+        const firstTwoWords =
+          member.fullName?.split(" ").slice(0, 2).join(" ") || member.fullName;
+        const mentionText = `@${firstTwoWords}`;
+
+        // Replace from startPos to endPos with mention text plus a trailing space
+        tr.insertText(mentionText + " ", startPos, endPos);
+
+        dispatch(tr);
+
+        // Focus back the editor and set selection to after inserted text.
+        // Using setTimeout to ensure transaction applied.
+        setTimeout(() => {
+          try {
+            view.focus();
+            // Move selection cursor to end of the inserted mention
+            const newPos = startPos + (mentionText + " ").length;
+            const resolved = view.state.doc.resolve(newPos);
+            const tr2 = view.state.tr.setSelection(
+              view.state.selection.constructor.near(resolved)
+            );
+            view.dispatch(tr2);
+          } catch (e) {
+            // fallback: just focus
+            view.focus();
+          }
+        }, 10);
+      }
+    };
+
     return [
       new Plugin({
-        key: new PluginKey('mention'),
+        key: new PluginKey("mention"),
         props: {
           handleKeyDown: (view, event) => {
-            console.log('Key pressed:', event.key, 'Extension options:', extension.options);
-            
-            // Handle backspace/delete to update suggestions
-            if (event.key === 'Backspace' || event.key === 'Delete') {
+            // If popup is open, manage keyboard navigation
+            if (currentPopup && currentPopup.popupEl) {
+              const key = event.key;
+              if (key === "ArrowDown") {
+                event.preventDefault();
+                currentPopup.activeIndex = Math.min(
+                  currentPopup.activeIndex + 1,
+                  currentPopup.items.length - 1
+                );
+                updatePopupActiveItem();
+                return true;
+              }
+              if (key === "ArrowUp") {
+                event.preventDefault();
+                currentPopup.activeIndex = Math.max(
+                  currentPopup.activeIndex - 1,
+                  0
+                );
+                updatePopupActiveItem();
+                return true;
+              }
+              if (key === "Enter") {
+                event.preventDefault();
+                const member = currentPopup.items[currentPopup.activeIndex];
+                if (member) {
+                  insertMention(view, member);
+                }
+                removeCurrentPopup();
+                return true;
+              }
+              if (key === "Escape") {
+                event.preventDefault();
+                removeCurrentPopup();
+                return true;
+              }
+            }
+
+            // Backspace/Delete handling: update suggestions if necessary
+            if (event.key === "Backspace" || event.key === "Delete") {
               setTimeout(() => {
+                if (!view) return;
                 const { state } = view;
                 const { selection } = state;
                 const { $from } = selection;
-                
                 const textContent = $from.parent.textContent;
                 const cursorPos = $from.parentOffset;
                 const textBeforeCursor = textContent.slice(0, cursorPos);
-                const atIndex = textBeforeCursor.lastIndexOf('@');
-                
+                const atIndex = textBeforeCursor.lastIndexOf("@");
+
                 if (atIndex !== -1) {
                   const afterAt = textBeforeCursor.slice(atIndex + 1);
-                  if (!afterAt.includes(' ')) {
+                  if (!afterAt.includes(" ")) {
                     const searchQuery = afterAt;
-                    console.log('Backspace - Search query:', searchQuery);
-                    showMentionSuggestions(view, $from.pos, extension.options.teamMembers || [], searchQuery);
+                    showMentionSuggestions(
+                      view,
+                      $from.pos,
+                      extension.options.teamMembers || [],
+                      searchQuery
+                    );
                   } else if (currentPopup) {
-                    currentPopup.remove();
-                    currentPopup = null;
+                    removeCurrentPopup();
                   }
                 } else if (currentPopup) {
-                  currentPopup.remove();
-                  currentPopup = null;
+                  removeCurrentPopup();
                 }
               }, 10);
             }
-            
-            // Check if user typed @
-            if (event.key === '@') {
-              console.log('@ key pressed, teamMembers:', extension.options.teamMembers);
+
+            // If user typed '@' show suggestions (keep original behaviour)
+            if (event.key === "@") {
               const { state } = view;
               const { selection } = state;
               const { $from } = selection;
-              
-              // Show mention suggestions after a short delay to ensure @ is inserted
+
               setTimeout(() => {
-                console.log('About to show suggestions with pos:', $from.pos);
-                showMentionSuggestions(view, $from.pos + 1, extension.options.teamMembers || []);
+                showMentionSuggestions(
+                  view,
+                  $from.pos + 1,
+                  extension.options.teamMembers || []
+                );
               }, 50);
-              
-              return false; // Don't prevent default, let @ be inserted
+
+              return false; // don't swallow default (we want '@' inserted)
             }
-            
+
             return false;
           },
+
           handleTextInput: (view, from, to, text) => {
-            // Handle any text input to update suggestions
+            // update suggestions on typing
             setTimeout(() => {
+              if (!view) return;
               const { state } = view;
               const { selection } = state;
               const { $from } = selection;
-              
-              // Get the current text content
               const textContent = $from.parent.textContent;
               const cursorPos = $from.parentOffset;
-              
-              // Find the @ symbol before the cursor
               const textBeforeCursor = textContent.slice(0, cursorPos);
-              const atIndex = textBeforeCursor.lastIndexOf('@');
-              
+              const atIndex = textBeforeCursor.lastIndexOf("@");
+
               if (atIndex !== -1) {
-                // Check if there's a space after @ (which would end the mention)
                 const afterAt = textBeforeCursor.slice(atIndex + 1);
-                if (!afterAt.includes(' ')) {
-                  // Extract the search query after @
+                if (!afterAt.includes(" ")) {
                   const searchQuery = afterAt;
-                  console.log('Search query:', searchQuery);
-                  showMentionSuggestions(view, $from.pos, extension.options.teamMembers || [], searchQuery);
+                  showMentionSuggestions(
+                    view,
+                    $from.pos,
+                    extension.options.teamMembers || [],
+                    searchQuery
+                  );
                 } else if (currentPopup) {
-                  currentPopup.remove();
-                  currentPopup = null;
+                  removeCurrentPopup();
                 }
               } else if (currentPopup) {
-                // No @ found, remove popup
-                currentPopup.remove();
-                currentPopup = null;
+                removeCurrentPopup();
               }
             }, 10);
-            
+
             return false;
           },
-                     decorations: (state) => {
-             const { doc } = state;
-             const decorations = [];
-                           // Regex to match @ followed by maximum 2 words
-              const mentionRegex = /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g;
- 
-             doc.descendants((node, pos) => {
-               if (node.isText) {
-                 let match;
-                 while ((match = mentionRegex.exec(node.text)) !== null) {
-                   const from = pos + match.index;
-                   const to = from + match[0].length;
-                   
-                   decorations.push(
-                     Decoration.inline(from, to, {
-                       class: 'mention-highlight',
-                     })
-                   );
-                 }
-               }
-             });
- 
-             return DecorationSet.create(doc, decorations);
-           },
+
+          decorations: (state) => {
+            const { doc } = state;
+            const decorations = [];
+            const mentionRegex = /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g;
+
+            doc.descendants((node, pos) => {
+              if (node.isText) {
+                let match;
+                while ((match = mentionRegex.exec(node.text)) !== null) {
+                  const from = pos + match.index;
+                  const to = from + match[0].length;
+
+                  decorations.push(
+                    Decoration.inline(from, to, {
+                      class: "mention-highlight",
+                    })
+                  );
+                }
+              }
+            });
+
+            return DecorationSet.create(doc, decorations);
+          },
         },
       }),
     ];
   },
-}); 
+});
