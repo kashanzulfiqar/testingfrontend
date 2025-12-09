@@ -3929,8 +3929,8 @@ const TaskBoard = () => {
           overflowY: "scroll",
         }}
       >
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content">
+        <div className="modal-dialog modal-dialog-centered modal-lg" role="document" style={{ maxWidth: '1000px', width: '95%' }}>
+          <div className="modal-content" style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             <div className="modal-header">
               <h5 className="modal-title">
                 {t("holiday.add")} {t("Timesheetemployee.task")}
@@ -3939,7 +3939,7 @@ const TaskBoard = () => {
                 <span aria-hidden="true">×</span>
               </button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body" style={{ overflowY: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
               <Form
                 form={form2}
                 onFinish={(values) => {
@@ -4035,11 +4035,24 @@ const TaskBoard = () => {
                         }]}
                         className="custom-border"
                       >
-                        <ReactQuill value={descValue} onChange={setDescValue} theme="snow" style={{ minHeight: 100 }} />
+                        <ReactQuill 
+                          value={descValue} 
+                          onChange={setDescValue} 
+                          theme="snow" 
+                          style={{ minHeight: 150, maxHeight: 300 }}
+                          modules={{
+                            toolbar: [
+                              ['bold', 'italic', 'underline', 'strike'],
+                              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                              ['link'],
+                              ['clean']
+                            ]
+                          }}
+                        />
                       </Form.Item>
                     </div>
                   </div>
-                  <div className="col-12">
+                  <div className="col-md-6">
                     <div className="form-group">
                       <label>
                         Assignee :
@@ -4069,7 +4082,7 @@ const TaskBoard = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-12">
+                  <div className="col-md-6">
                     <div className="form-group">
                       <label>
                         Priority :
