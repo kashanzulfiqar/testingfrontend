@@ -39,6 +39,7 @@ import TaskModal from "./taskModal";
 import TaskContent from "./taskContents";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import JoditEditor from 'jodit-react';
 import moment from 'moment';
 
 const TaskBoard = () => {
@@ -766,6 +767,7 @@ const TaskBoard = () => {
       })),
     });
   }, [isTaskDetailView, taskParam, allTasks, columns, boardId, boardTitle, employees]);
+
 
   const openTaskWithUrl = useCallback((task, columnId, columnTitle, columnColor) => {
     const taskIdentifier = task.ticketNumber || task._id;
@@ -3929,8 +3931,8 @@ const TaskBoard = () => {
           overflowY: "scroll",
         }}
       >
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content">
+        <div className="modal-dialog modal-dialog-centered modal-lg" role="document" style={{ maxWidth: '1000px', width: '95%' }}>
+          <div className="modal-content" style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             <div className="modal-header">
               <h5 className="modal-title">
                 {t("holiday.add")} {t("Timesheetemployee.task")}
@@ -3939,7 +3941,7 @@ const TaskBoard = () => {
                 <span aria-hidden="true">×</span>
               </button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body" style={{ overflowY: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
               <Form
                 form={form2}
                 onFinish={(values) => {
@@ -4024,9 +4026,6 @@ const TaskBoard = () => {
                             if (!plain || plain.trim() === '') {
                               return Promise.reject(t('Tasks.pleaseenterdescription'));
                             }
-                            if (/\s{2,}/.test(plain)) {
-                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                            }
                             if (plain.length <= 4) {
                               return Promise.reject(t('Tasks.descriptionLength'));
                             }
@@ -4035,11 +4034,48 @@ const TaskBoard = () => {
                         }]}
                         className="custom-border"
                       >
-                        <ReactQuill value={descValue} onChange={setDescValue} theme="snow" style={{ minHeight: 100 }} />
+                        <div className="jodit-description-editor">
+                          <style>{`
+                            .jodit-description-editor .jodit-wysiwyg ul { list-style-type: disc !important; padding-left: 20px !important; margin-left: 10px !important; }
+                            .jodit-description-editor .jodit-wysiwyg ol { list-style-type: decimal !important; padding-left: 20px !important; margin-left: 10px !important; }
+                            .jodit-description-editor .jodit-wysiwyg li { display: list-item !important; }
+                          `}</style>
+                          <JoditEditor
+                            value={descValue}
+                            onBlur={(content) => setDescValue(content)}
+                            config={{
+                              readonly: false,
+                              height: 150,
+                              toolbar: true,
+                              toolbarButtonSize: 'small',
+                              buttons: [
+                                { name: 'bold' },
+                                { name: 'italic' },
+                                {
+                                  name: 'ul',
+                                  list: null
+                                },
+                                {
+                                  name: 'ol', 
+                                  list: null
+                                },
+                                { name: 'paragraph' }
+                              ],
+                              placeholder: 'Enter description...',
+                              showCharsCounter: false,
+                              showWordsCounter: false,
+                              showXPathInStatusbar: false,
+                              askBeforePasteHTML: false,
+                              askBeforePasteFromWord: false,
+                              statusbar: false,
+                              disablePlugins: 'add-new-line',
+                            }}
+                          />
+                        </div>
                       </Form.Item>
                     </div>
                   </div>
-                  <div className="col-12">
+                  <div className="col-md-6">
                     <div className="form-group">
                       <label>
                         Assignee :
@@ -4069,7 +4105,7 @@ const TaskBoard = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-12">
+                  <div className="col-md-6">
                     <div className="form-group">
                       <label>
                         Priority :
