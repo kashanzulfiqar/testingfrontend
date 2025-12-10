@@ -9,9 +9,11 @@ import { useSelector } from 'react-redux';
 import FocalPerson from './clientProfileScreens/FocalPerson';
 import InvoicesScreen from './clientProfileScreens/InvoicesScreen';
 import ProjectsScreen from './clientProfileScreens/ProjectsScreen';
+import AddClientModal from './modals/AddClientModal';
 import { apiServices } from '../../../Services/apiServices';
 import { Spin, message } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { getAllISOCodes } from 'iso-country-currency';
 
 const ClientProfile = () => {
   const { t, i18n } = useTranslation()
@@ -27,6 +29,8 @@ const ClientProfile = () => {
   const [clientData, setClientData] = useState({})
   const [activeTab, setActiveTab] = useState(clients_tab ? clients_tab : active ? active : 'projects')
   const [loader, setLoader] = useState(true)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [allCountries, setAllCountries] = useState([])
 
   useEffect(() => {
     console.log('Effect running with:', {
@@ -118,6 +122,22 @@ const ClientProfile = () => {
   useEffect(() => {
     localStorage.setItem(`active_tab`, `${activeTab}`)
   }, [activeTab])
+
+  useEffect(() => {
+    const fetchCountries = () => {
+      try {
+        const isoCodes = getAllISOCodes();
+        const sorted_data = isoCodes.sort((a, b) =>
+          a.countryName.localeCompare(b.countryName)
+        );
+        setAllCountries(sorted_data);
+      } catch (error) {
+        console.error('Error loading countries:', error);
+        setAllCountries([]);
+      }
+    };
+    fetchCountries();
+  }, []);
 
   const getSingleClient = () => {
     apiServices("GET", `client/get-client-info?_id=${user_state?.user?._id}`, null, user_state)
@@ -215,6 +235,22 @@ const ClientProfile = () => {
                             </div>
                           </div>
                         </div>
+                        {role === "admin" && (
+                          <div className="pro-edit">
+                            <a
+                              href="javascript:void(0)"
+                              className="edit-icon"
+                              onClick={() =>
+                                setEditModalOpen({
+                                  isAddOpen: true,
+                                  data: clientData,
+                                })
+                              }
+                            >
+                              <i className="fa fa-pencil" />
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -422,6 +458,23 @@ const ClientProfile = () => {
            </div>
            {/* /Page Content */}
          </div>
+         {/* Edit Client Modal */}
+         <AddClientModal
+           open={editModalOpen}
+           setOpen={setEditModalOpen}
+           user_state={user_state}
+           allClients={[clientData]}
+           setAllClients={(updater) => {
+             if (typeof updater === 'function') {
+               setClientData(prev => updater([prev])?.[0] || prev);
+             } else {
+               setClientData(updater?.[0] || clientData);
+             }
+           }}
+           setPaginationDetail={() => {}}
+           paginationDetail={{}}
+           allCountries={allCountries}
+         />
          {/* <Offcanvas/> */}
       </>
        
