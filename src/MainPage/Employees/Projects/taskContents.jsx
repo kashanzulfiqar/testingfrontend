@@ -647,19 +647,47 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   const startEditComment = (comment) => {
     setEditingCommentId(comment._id);
     setEditingCommentText(comment.text);
+    setEditingCommentAttachments(comment.attachments || []);
+    setRemoveAttachmentIds([]);
   };
 
   const cancelEditComment = () => {
     setEditingCommentId(null);
     setEditingCommentText("");
+    setEditingCommentAttachments([]);
+    setRemoveAttachmentIds([]);
+  };
+
+  const handleEditCommentFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const newFiles = files.map(file => ({
+      file,
+      isNew: true,
+      filename: file.name,
+      type: file.type,
+      bytes: file.size
+    }));
+    setEditingCommentAttachments(prev => [...prev, ...newFiles]);
+    e.target.value = '';
+  };
+
+  const removeEditingAttachment = (index) => {
+    const attachment = editingCommentAttachments[index];
+    if (attachment._id) {
+      setRemoveAttachmentIds(prev => [...prev, attachment._id]);
+    }
+    setEditingCommentAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const updateComment = async () => {
     // Enhanced validation for empty comments
     const trimmedComment = editingCommentText?.trim();
-    if (!trimmedComment || trimmedComment === '' || trimmedComment === '<p></p>' || trimmedComment === '<p><br></p>' || !taskData?._id) {
+    const hasAttachments = editingCommentAttachments.length > 0;
+    if ((!trimmedComment || trimmedComment === '' || trimmedComment === '<p></p>' || trimmedComment === '<p><br></p>') && !hasAttachments) {
       return;
     }
+    if (!taskData?._id) return;
+    
     setUpdatingComment(true);
     try {
       // Extract mentions from the comment text
@@ -681,14 +709,35 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
         }
       }
 
-      const res = await apiServices("PUT", `tasks/${taskData._id}/comments/${editingCommentId}`, { 
-        text: editingCommentText,
-        mentions: mentions
-      }, user_state);
+      
+      const formData = new FormData();
+      formData.append('text', editingCommentText || '');
+      if (mentions.length > 0) {
+        formData.append('mentions', JSON.stringify(mentions));
+      }
+      
+      editingCommentAttachments.forEach(att => {
+        if (att.isNew && att.file) {
+          formData.append('attachments', att.file);
+        }
+      });
+      
+      if (removeAttachmentIds.length > 0) {
+        formData.append('removeAttachmentIds', JSON.stringify(removeAttachmentIds));
+      }
+
+      const res = await axios.put(`${BASE_URL}/tasks/${taskData._id}/comments/${editingCommentId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${user_state?.access_token?.accessToken}`
+        }
+      });
       
       if (res?.data?.success) {
         setEditingCommentId(null);
         setEditingCommentText("");
+        setEditingCommentAttachments([]);
+        setRemoveAttachmentIds([]);
         fetchComments(taskData._id);
         // Refresh activity feed
         fetchHistory(taskData._id);
@@ -1878,38 +1927,128 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                           </div>
                                         </div>
                                         
+                                        {/* Edit Comment Attachments Display */}
+                                        {editingCommentAttachments.length > 0 && (
+                                          <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                            {editingCommentAttachments.map((att, idx) => {
+                                              const isImage = att.isNew 
+                                                ? att.type?.startsWith('image/') 
+                                                : (att.type?.startsWith('image/') && !att.filename?.toLowerCase().endsWith('.pdf'));
+                                              const fileSize = att.bytes 
+                                                ? att.bytes > 1024 * 1024 
+                                                  ? `${(att.bytes / (1024 * 1024)).toFixed(1)} MB`
+                                                  : `${(att.bytes / 1024).toFixed(1)} KB`
+                                                : '';
+                                              
+                                              return (
+                                                <div key={idx} style={{
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  gap: 8,
+                                                  padding: '8px 12px',
+                                                  background: '#f5f5f5',
+                                                  borderRadius: 6,
+                                                  border: '1px solid #e8e8e8'
+                                                }}>
+                                                  {isImage ? (
+                                                    <img 
+                                                      src={att.isNew ? URL.createObjectURL(att.file) : att.url} 
+                                                      alt={att.filename}
+                                                      style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 4 }}
+                                                    />
+                                                  ) : (
+                                                    <div style={{
+                                                      width: 32,
+                                                      height: 32,
+                                                      borderRadius: 4,
+                                                      background: att.filename?.toLowerCase().endsWith('.pdf') ? '#ff4d4f' : '#FF9B44',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center',
+                                                      color: 'white',
+                                                      fontSize: 9,
+                                                      fontWeight: 600
+                                                    }}>
+                                                      {att.filename?.split('.').pop()?.toUpperCase() || 'FILE'}
+                                                    </div>
+                                                  )}
+                                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ 
+                                                      fontSize: 12, 
+                                                      fontWeight: 500,
+                                                      overflow: 'hidden',
+                                                      textOverflow: 'ellipsis',
+                                                      whiteSpace: 'nowrap',
+                                                      maxWidth: 120
+                                                    }}>
+                                                      {att.filename}
+                                                    </div>
+                                                    {fileSize && <div style={{ fontSize: 10, color: '#888' }}>{fileSize}</div>}
+                                                  </div>
+                                                  <CloseOutlined 
+                                                    style={{ cursor: 'pointer', color: '#999', fontSize: 12 }}
+                                                    onClick={() => removeEditingAttachment(idx)}
+                                                  />
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                        
                                         {/* Edit Action Buttons */}
                                         <div style={{
                                           display: 'flex',
-                                          justifyContent: 'flex-end',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'center',
                                           marginTop: 12,
                                           gap: 8
                                         }}>
-                                          <Button 
-                                            size="small"
-                                            onClick={cancelEditComment}
-                                            style={{
-                                              background: 'transparent',
-                                              border: '1px solid #d9d9d9',
-                                              borderRadius: 6,
-                                              color: '#666'
-                                            }}
-                                          >
-                                            Cancel
-                                          </Button>
-                                          <Button 
-                                            size="small"
-                                            onClick={updateComment}
-                                            loading={updatingComment}
-                                            style={{
-                                              background: '#FF9B44',
-                                              border: '1px solid #FF9B44',
-                                              borderRadius: 6,
-                                              color: 'white'
-                                            }}
-                                          >
-                                            Update
-                                          </Button>
+                                          <div>
+                                            <input
+                                              type="file"
+                                              ref={editCommentFileInputRef}
+                                              onChange={handleEditCommentFileSelect}
+                                              multiple
+                                              style={{ display: 'none' }}
+                                              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                                            />
+                                            <Button
+                                              type="text"
+                                              size="small"
+                                              icon={<PaperClipOutlined />}
+                                              onClick={() => editCommentFileInputRef.current?.click()}
+                                              style={{ color: '#666' }}
+                                            >
+                                              Attach
+                                            </Button>
+                                          </div>
+                                          <div style={{ display: 'flex', gap: 8 }}>
+                                            <Button 
+                                              size="small"
+                                              onClick={cancelEditComment}
+                                              style={{
+                                                background: 'transparent',
+                                                border: '1px solid #d9d9d9',
+                                                borderRadius: 6,
+                                                color: '#666'
+                                              }}
+                                            >
+                                              Cancel
+                                            </Button>
+                                            <Button 
+                                              size="small"
+                                              onClick={updateComment}
+                                              loading={updatingComment}
+                                              style={{
+                                                background: '#FF9B44',
+                                                border: '1px solid #FF9B44',
+                                                borderRadius: 6,
+                                                color: 'white'
+                                              }}
+                                            >
+                                              Update
+                                            </Button>
+                                          </div>
                                         </div>
                                       </div>
                                     ) : (
