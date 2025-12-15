@@ -119,6 +119,11 @@ const EmployeeProfile = () => {
   const [deleteDocModal, setDeleteDocModal] = useState(false);
   const [docToDelete, setDocToDelete] = useState(null);
 
+  const [editDocModal, setEditDocModal] = useState(false);
+  const [docToEdit, setDocToEdit] = useState(null);
+  const [editFile, setEditFile] = useState(null);
+  const [editUploading, setEditUploading] = useState(false);
+
   const DOCUMENT_TYPES = {
     cv: { label: "CV", extensions: [".pdf"], maxSize: 5 * 1024 * 1024, maxSizeLabel: "5MB" },
     idCard: { label: "ID Card", extensions: [".pdf", ".png", ".jpg", ".jpeg"], maxSize: 5 * 1024 * 1024, maxSizeLabel: "5MB" },
@@ -127,22 +132,17 @@ const EmployeeProfile = () => {
   };
 
   const showUploadModal = () => {
-   
-    if (role !== "admin") {
-     
-      const uploadedDocTypes = Object.keys(documents || {}).filter(
-        key => DOCUMENT_TYPES[key] && documents[key]
-      );
-      
-      const availableDocTypes = Object.keys(DOCUMENT_TYPES).filter(
-        type => !uploadedDocTypes.includes(type)
-      );
-      
-
-      if (availableDocTypes.length === 0) {
-        message.error("All documents have been uploaded. Contact admin to re-upload.");
-        return;
-      }
+    const uploadedDocTypes = Object.keys(documents || {}).filter(
+      key => DOCUMENT_TYPES[key] && documents[key]
+    );
+    
+    const availableDocTypes = Object.keys(DOCUMENT_TYPES).filter(
+      type => !uploadedDocTypes.includes(type)
+    );
+    
+    if (availableDocTypes.length === 0) {
+      message.error("All documents have been uploaded. Contact admin to re-upload.");
+      return;
     }
     
     setUploadModalVisible(true);
@@ -311,6 +311,85 @@ const EmployeeProfile = () => {
     setDeleteDocModal(false);
     setDocToDelete(null);
   };
+
+  const handleEditDocument = (docType, doc) => {
+    setDocToEdit({ type: docType, data: doc });
+    setEditFile(null);
+    setEditDocModal(true);
+  };
+
+  const handleEditFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (docToEdit) {
+        const config = DOCUMENT_TYPES[docToEdit.type];
+        const fileExtension = "." + file.name.split(".").pop().toLowerCase();
+        
+        if (!config.extensions.includes(fileExtension)) {
+          message.error(`Invalid file type. Allowed types: ${config.extensions.join(", ")}`);
+          return;
+        }
+        
+        if (file.size > config.maxSize) {
+          message.error(`File size exceeds ${config.maxSizeLabel} limit`);
+          return;
+        }
+      }
+      setEditFile(file);
+    }
+  };
+
+  const handleEditDocumentUpload = async () => {
+    if (!editFile || !docToEdit) {
+      message.error("Please select a file");
+      return;
+    }
+
+    setEditUploading(true);
+    const hide = message.loading("Updating document...", 0);
+    
+    try {
+      // Upload file to S3/Cloudinary
+      const uploadedFiles = await uploadFunction([editFile], user_state);
+      
+      if (!uploadedFiles || uploadedFiles.length === 0) {
+        throw new Error("File upload failed");
+      }
+
+      const uploadedFileObject = uploadedFiles[0];
+
+      // Update document metadata
+      const payload = {
+        userId: allData._id,
+        type: docToEdit.type,
+        file: uploadedFileObject,
+      };
+
+      const res = await apiServices("PUT", "user/documents", payload, user_state);
+
+      if (res.data.success) {
+        message.success("Document updated successfully");
+        closeEditModal();
+        fetchDocuments();
+      } else {
+        throw new Error(res.data.msg || "Failed to update document");
+      }
+
+    } catch (error) {
+      console.error("Update error:", error);
+      message.error(error.message || "An error occurred during update");
+    } finally {
+      hide();
+      setEditUploading(false);
+    }
+  };
+
+  const closeEditModal = () => {
+    setEditDocModal(false);
+    setDocToEdit(null);
+    setEditFile(null);
+  };
+
  const uploadedCount = Object.entries(DOCUMENT_TYPES).filter(([key]) => documents?.[key]).length;
 
 
@@ -2264,6 +2343,7 @@ const EmployeeProfile = () => {
                                 <th>Name</th>
                                 <th>Type</th>
                                 <th>Date</th>
+                                <th>Updated Date</th>
                                 <th>Actions</th>
                               </tr>
                             </thead>
@@ -2289,14 +2369,23 @@ const EmployeeProfile = () => {
                                       Download
                                     </Menu.Item>
                                     {role === "admin" && (
-                                      <Menu.Item 
-                                        key="delete" 
-                                        onClick={() => handleDeleteDocument(key, config)}
-                                        icon={<i className="fa fa-trash" />}
-                                        danger
-                                      >
-                                        Delete
-                                      </Menu.Item>
+                                      <>
+                                        <Menu.Item 
+                                          key="edit" 
+                                          onClick={() => handleEditDocument(key, doc)}
+                                          icon={<i className="fa fa-edit" />}
+                                        >
+                                          Edit
+                                        </Menu.Item>
+                                        <Menu.Item 
+                                          key="delete" 
+                                          onClick={() => handleDeleteDocument(key, config)}
+                                          icon={<i className="fa fa-trash" />}
+                                          danger
+                                        >
+                                          Delete
+                                        </Menu.Item>
+                                      </>
                                     )}
                                   </Menu>
                                 );
@@ -2320,6 +2409,7 @@ const EmployeeProfile = () => {
                                     </td>
                                     <td>{config.label}</td>
                                     <td>{doc.uploadedAt ? moment(doc.uploadedAt).format("DD MMM YYYY") : "-"}</td>
+                                    <td>{doc.updatedAt ? moment(doc.updatedAt).format("DD MMM YYYY") : "-"}</td>
                                     <td>
                                       <Dropdown overlay={menu} trigger={['click']}>
                                         <a className="action-icon" href="javascript:void(0)" onClick={(e) => e.preventDefault()}>
@@ -2332,7 +2422,7 @@ const EmployeeProfile = () => {
                               })}
                               {uploadedCount === 0 &&(
                                 <tr>
-                                  <td colSpan="4" className="text-center">No documents uploaded</td>
+                                  <td colSpan="5" className="text-center">No documents uploaded</td>
                                 </tr>
                               )}
                             </tbody>
@@ -3592,9 +3682,7 @@ const EmployeeProfile = () => {
           >
             {Object.entries(DOCUMENT_TYPES)
               .filter(([key, config]) => {
-               
-                if (role === "admin") return true;
-               
+                // Hide already uploaded documents for all users (including admins)
                 return !documents?.[key];
               })
               .map(([key, config]) => (
@@ -3718,6 +3806,57 @@ const EmployeeProfile = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Document Modal */}
+      <Modal
+        open={editDocModal}
+        onClose={closeEditModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">
+                Update {docToEdit?.data?.fileName || DOCUMENT_TYPES[docToEdit?.type]?.label}
+              </h5>
+              <button type="button" className="btn-close" onClick={closeEditModal}></button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label className="col-form-label">Select New File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  accept={DOCUMENT_TYPES[docToEdit?.type]?.extensions?.join(",")}
+                  onChange={handleEditFileChange}
+                />
+             
+              </div>
+            </div>
+            <div className="modal-footer">
+              <Button onClick={closeEditModal} className="btn btn-secondary">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleEditDocumentUpload}
+                className="btn btn-primary"
+                disabled={!editFile || editUploading}
+              >
+                {editUploading ? (
+                  <Spin size="small" indicator={antIcon} />
+                ) : (
+                  "Update Document"
+                )}
+              </Button>
             </div>
           </div>
         </div>
