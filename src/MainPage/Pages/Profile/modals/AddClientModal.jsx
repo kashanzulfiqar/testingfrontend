@@ -26,7 +26,7 @@ useEffect(() => {
     if(open?.data){
         form.setFieldsValue(open?.data)
     }
-  }, [])
+  }, [open?.data, form])
 
 const onFinishAdd = (values) => {
     const replacer = (key, value) => {
