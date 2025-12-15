@@ -260,13 +260,28 @@ const EmployeeProfile = () => {
 
   const handleDownloadDocument = (doc) => {
     if (doc?.imageUrl) {
-      const link = document.createElement('a');
-      link.href = doc.imageUrl;
-      link.download = doc.fileName || 'document';
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Try to fetch the file and download as blob to force download
+      (async () => {
+        try {
+          const response = await fetch(doc.imageUrl, { method: 'GET' });
+          if (!response.ok) throw new Error('Failed to fetch file');
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          // Use provided filename or fallback
+          const filename = doc.fileName || (doc?.file && doc.file.originalname) || 'document';
+          link.setAttribute('download', filename);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error('Download failed, falling back to direct open:', error);
+          // Fallback to opening in new tab if fetch/download fails
+          window.open(doc.imageUrl, '_blank');
+        }
+      })();
     }
   };
 
