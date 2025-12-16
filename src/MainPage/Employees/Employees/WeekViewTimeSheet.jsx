@@ -71,6 +71,7 @@ function WeekViewTimeSheet({
     isDelOpen: false,
     data: "",
   });
+  const [openTimePickers, setOpenTimePickers] = useState({});
   // Build a stable key for a row (project or board + task + date)
   const rowKey = (e) =>
     `${moment(e.date).format('YYYY-MM-DD')}::${e.projectId?._id || e.projectId || ''}::${e.taskId?._id || e.taskId || ''}`;
@@ -751,6 +752,23 @@ const handleCancel = () => {
                         ? moment(displayData?.hoursWorked, "HH:mm")
                         : null
                     }
+                    open={openTimePickers[`${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}`] || false}
+                    onOpenChange={(open) => {
+                      const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}`;
+                      setOpenTimePickers(prev => ({ ...prev, [pickerKey]: open }));
+                    }}
+                    onSelect={(value) => {
+                      handleTimePickerChange(
+                        cellDate,
+                        record?.projectId,
+                        record?.taskId,
+                        moment(value).format("HH:mm"),
+                        "Update"
+                      );
+                      setSaveButton(false);
+                      const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}`;
+                      setOpenTimePickers(prev => ({ ...prev, [pickerKey]: false }));
+                    }}
                     onClick={() => {
                       if (!isFuture1) {
                         const cardData = draftEntry || specific_date_data;
@@ -801,21 +819,15 @@ const handleCancel = () => {
                       }
                     }}
                     onChange={(value) => {
-                      /**
-                       * 🔁 Update local workingData (no server call)
-                       * Using the local handleTimePickerChange function
-                       */
+                      
                       handleTimePickerChange(
-                        moment(
-                          new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
-                        ).format("YYYY-MM-DD"),
+                        cellDate,
                         record?.projectId,
                         record?.taskId,
                         moment(value).format("HH:mm"),
                         "Update"
                       );
-
-                      setSaveButton(false); // enable "Save All" later if needed
+                      setSaveButton(false);
                     }}
                     suffixIcon={false}
                   />
@@ -825,86 +837,103 @@ const handleCancel = () => {
                     <Form.Item
                       name={`${index}${index2}`}
                     >
-                      <TimePicker
-                        disabled={isFuture1}
-                        allowClear={false}
-                        className="form-control timePickerWithData"
-                        placeholder="00:00"
-                        format="HH:mm"
-                        value={
-                          record?.hoursWorked
-                            ? moment(record?.hoursWorked, "HH:mm")
-                            : null
-                        }
-                        onClick={() => {
-                          if (!isFuture1) {
-                            // 🧱 Build local reference object for the open card
-                            const cellDate = moment(
-                              new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
-                            ).format("YYYY-MM-DD");
-                            
-                            const d = {
-                              projectId: {
-                                _id: record?.projectId?._id,
-                                projectName: record?.projectId?.projectName,
-                              },
-                              boardId: {
-                                _id: record?.boardId?._id,
-                                boardTitle: record?.boardId?.boardTitle,
-                              },
-                              taskId: {
-                                _id: record?.taskId?._id,
-                                title: record?.taskId?.title,
-                              },
-                              date: cellDate,
-                              indexId: `${index}${index2}`,
-                            };
-
-                            const currentCardDate = showCard?.data?.date 
-                              ? moment(showCard.data.date).format("YYYY-MM-DD")
-                              : null;
-                            const isSameCell = currentCardDate === cellDate &&
-                              idOf(showCard?.data?.projectId) === idOf(record?.projectId) &&
-                              idOf(showCard?.data?.taskId) === idOf(record?.taskId);
-
-                            setShowCard({ isShown: true, data: d });
-                            
-                            if (isSameCell) {
-                              const entry = workingData.find(
-                                (e) =>
-                                  moment(e.date).format('YYYY-MM-DD') === cellDate &&
-                                  idOf(e.projectId) === idOf(record?.projectId) &&
-                                  idOf(e.boardId) === idOf(record?.boardId) &&
-                                  idOf(e.taskId) === idOf(record?.taskId)
-                              );
-                              
-                              const notes = entry?.notes ?? "";
-                              const hours = entry?.hoursWorked ?? "";
-                              
-                              setCardReason(notes);
-                              setUpdatedDuration(hours);
-                              setDescLength(notes.length || 0);
-                              setOldDurationValue(hours);
+                      {(() => {
+                        const cellDate = moment(
+                          new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
+                        ).format("YYYY-MM-DD");
+                        const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}_${index}${index2}`;
+                        
+                        return (
+                          <TimePicker
+                            disabled={isFuture1}
+                            allowClear={false}
+                            className="form-control timePickerWithData"
+                            placeholder="00:00"
+                            format="HH:mm"
+                            value={
+                              record?.hoursWorked
+                                ? moment(record?.hoursWorked, "HH:mm")
+                                : null
                             }
-                            
-                            setSaveButton(true);
-                          }
-                        }}
-                        onChange={(value) => {
-                          handleTimePickerChange(
-                            moment(
-                              new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
-                            ).format("YYYY-MM-DD"),
-                            record?.projectId,
-                            record?.taskId,
-                            moment(value).format("HH:mm"),
-                            "Add"
-                          );
+                            open={openTimePickers[pickerKey] || false}
+                            onOpenChange={(open) => {
+                              setOpenTimePickers(prev => ({ ...prev, [pickerKey]: open }));
+                            }}
+                            onSelect={(value) => {
+                              handleTimePickerChange(
+                                cellDate,
+                                record?.projectId,
+                                record?.taskId,
+                                moment(value).format("HH:mm"),
+                                "Add"
+                              );
+                              setSaveButton(false);
+                              setOpenTimePickers(prev => ({ ...prev, [pickerKey]: false }));
+                            }}
+                            onClick={() => {
+                              if (!isFuture1) {
+                                const d = {
+                                  projectId: {
+                                    _id: record?.projectId?._id,
+                                    projectName: record?.projectId?.projectName,
+                                  },
+                                  boardId: {
+                                    _id: record?.boardId?._id,
+                                    boardTitle: record?.boardId?.boardTitle,
+                                  },
+                                  taskId: {
+                                    _id: record?.taskId?._id,
+                                    title: record?.taskId?.title,
+                                  },
+                                  date: cellDate,
+                                  indexId: `${index}${index2}`,
+                                };
 
-                          setSaveButton(false);
-                        }}
-                        suffixIcon={false}
-                      />
+                                const currentCardDate = showCard?.data?.date 
+                                  ? moment(showCard.data.date).format("YYYY-MM-DD")
+                                  : null;
+                                const isSameCell = currentCardDate === cellDate &&
+                                  idOf(showCard?.data?.projectId) === idOf(record?.projectId) &&
+                                  idOf(showCard?.data?.taskId) === idOf(record?.taskId);
+
+                                setShowCard({ isShown: true, data: d });
+                                
+                                if (isSameCell) {
+                                  const entry = workingData.find(
+                                    (e) =>
+                                      moment(e.date).format('YYYY-MM-DD') === cellDate &&
+                                      idOf(e.projectId) === idOf(record?.projectId) &&
+                                      idOf(e.boardId) === idOf(record?.boardId) &&
+                                      idOf(e.taskId) === idOf(record?.taskId)
+                                  );
+                                  
+                                  const notes = entry?.notes ?? "";
+                                  const hours = entry?.hoursWorked ?? "";
+                                  
+                                  setCardReason(notes);
+                                  setUpdatedDuration(hours);
+                                  setDescLength(notes.length || 0);
+                                  setOldDurationValue(hours);
+                                }
+                                
+                                setSaveButton(true);
+                              }
+                            }}
+                            onChange={(value) => {
+                              handleTimePickerChange(
+                                cellDate,
+                                record?.projectId,
+                                record?.taskId,
+                                moment(value).format("HH:mm"),
+                                "Add"
+                              );
+
+                              setSaveButton(false);
+                            }}
+                            suffixIcon={false}
+                          />
+                        );
+                      })()}
 
                     </Form.Item>
                   </Form>
