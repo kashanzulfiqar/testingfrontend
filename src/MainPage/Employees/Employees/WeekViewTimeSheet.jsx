@@ -71,6 +71,7 @@ function WeekViewTimeSheet({
     isDelOpen: false,
     data: "",
   });
+  const [openTimePickers, setOpenTimePickers] = useState({});
   // Build a stable key for a row (project or board + task + date)
   const rowKey = (e) =>
     `${moment(e.date).format('YYYY-MM-DD')}::${e.projectId?._id || e.projectId || ''}::${e.taskId?._id || e.taskId || ''}`;
@@ -131,12 +132,49 @@ function WeekViewTimeSheet({
     setOldDurationValue("");
   }, [currentWeekDates]);
 
+  useEffect(() => {
+    if (showCard?.isShown && showCard?.data) {
+      const dateStr = moment(showCard.data.date).format('YYYY-MM-DD');
+      const projectId = idOf(showCard.data.projectId);
+      const boardId = idOf(showCard.data.boardId);
+      const taskId = idOf(showCard.data.taskId);
+      
+      const draftEntry = workingData.find(
+        (e) =>
+          moment(e.date).format('YYYY-MM-DD') === dateStr &&
+          idOf(e.projectId) === projectId &&
+          idOf(e.boardId) === boardId &&
+          idOf(e.taskId) === taskId
+      );
+      
+      const notes = draftEntry?.notes ?? showCard.data.notes ?? "";
+      const hours = draftEntry?.hoursWorked ?? showCard.data.hoursWorked ?? "";
+      
+      setCardReason(notes);
+      setUpdatedDuration(hours);
+      setDescLength(notes.length || 0);
+      setOldDurationValue(hours);
+    } else if (!showCard?.isShown) {
+      setCardReason("");
+      setUpdatedDuration("");
+      setDescLength(0);
+      setOldDurationValue("");
+    }
+  }, [
+    showCard?.isShown ? `${moment(showCard?.data?.date).format('YYYY-MM-DD')}_${idOf(showCard?.data?.projectId)}_${idOf(showCard?.data?.taskId)}` : null,
+  ]);
+
+
   const getData = async (current_page, page_size) => {
   const from_data = currentWeekDates[0];
   const to_data = currentWeekDates[currentWeekDates.length - 1];
 
   setTableLoader(true);
-  setWorkingData([]); //wipe previous local edits
+  
+  const currentDrafts = workingData.filter(item => {
+    const key = `${moment(item.date).format('YYYY-MM-DD')}_${idOf(item.projectId)}_${idOf(item.taskId)}`;
+    return pendingChanges[key] || item.isDirty;
+  });
 
   try {
     const res = await apiServices(
@@ -156,19 +194,18 @@ function WeekViewTimeSheet({
       // ✅ Keep API version in allData for reference
       setAllData(fetched);
 
-      // ✅ Merge with local edits instead of wiping them
-      setWorkingData(prev => {
-        if (!prev.length) return fetched; // initial load
-        const merged = [...prev];
-
-        fetched.forEach(entry => {
-          const exists = merged.some(
-            e =>
-              e.date === entry.date &&
-              e.taskId === entry.taskId &&
-              e.projectId === entry.projectId
-          );
-          if (!exists) merged.push(entry);
+      
+      setWorkingData(() => {
+        const merged = [...fetched];
+        
+        currentDrafts.forEach(draft => {
+          const key = rowKey(draft);
+          const existingIndex = merged.findIndex(e => rowKey(e) === key);
+          if (existingIndex >= 0) {
+            merged[existingIndex] = { ...merged[existingIndex], ...draft };
+          } else {
+            merged.push(draft);
+          }
         });
 
         return merged;
@@ -342,25 +379,25 @@ function WeekViewTimeSheet({
   };
 
   const handleTimePickerChange = (date, project, task, time, type) => {
-    // Block edits for future dates
-    const isFuture = moment(date).isAfter(moment(), 'day');
+    const dateStr = moment(date).format('YYYY-MM-DD');
+    
+    const isFuture = moment(dateStr).isAfter(moment(), 'day');
     if (isFuture) return;
 
     setUpdatedDuration(time);
-    const key = `${date}_${project?._id || project}_${task?._id || task}`;
-
+    const key = `${dateStr}_${idOf(project)}_${idOf(task)}`;
 
     const patch = {
-      date, // e.g. 'YYYY-MM-DD'
-      projectId: project?._id || project,
-      boardId: project?.boardId?._id || project?.boardId,
-      taskId: task?._id || task,
+      date: dateStr,
+      projectId: idOf(project),
+      boardId: idOf(project?.boardId) || idOf(showCard?.data?.boardId) || null,
+      taskId: idOf(task),
       hoursWorked: time,
       // Keep live card notes if editing the same row
       ...(showCard?.isShown &&
-      moment(showCard?.data?.date).format('YYYY-MM-DD') === date &&
-      (showCard?.data?.projectId?._id || showCard?.data?.projectId) === (project?._id || project) &&
-      (showCard?.data?.taskId?._id || showCard?.data?.taskId) === (task?._id || task)
+      moment(showCard?.data?.date).format('YYYY-MM-DD') === dateStr &&
+      idOf(showCard?.data?.projectId) === idOf(project) &&
+      idOf(showCard?.data?.taskId) === idOf(task)
         ? { notes: cardReason }
         : {}),
       submittedForApproval: false,
@@ -376,22 +413,24 @@ function WeekViewTimeSheet({
 
 
 const handleNoteChange = (date, project, task, note) => {
+  const dateStr = moment(date).format('YYYY-MM-DD');
+  
   // block future dates
-  const isFuture = moment(date).isAfter(moment(), 'day');
-  const key = `${date}_${project?._id || project}_${task?._id || task}`;
+  const isFuture = moment(dateStr).isAfter(moment(), 'day');
+  const key = `${dateStr}_${idOf(project)}_${idOf(task)}`;
 
   if (isFuture) return;
 
   const patch = {
-    date,
-    projectId: project?._id || project,
-    boardId: project?.boardId?._id || project?.boardId,
-    taskId: task?._id || task,
+    date: dateStr,
+    projectId: idOf(project),
+    boardId: idOf(project?.boardId) || idOf(showCard?.data?.boardId) || null,
+    taskId: idOf(task),
     notes: note,
     ...(showCard?.isShown &&
-    moment(showCard?.data?.date).format('YYYY-MM-DD') === date &&
-    (showCard?.data?.projectId?._id || showCard?.data?.projectId) === (project?._id || project) &&
-    (showCard?.data?.taskId?._id || showCard?.data?.taskId) === (task?._id || task)
+    moment(showCard?.data?.date).format('YYYY-MM-DD') === dateStr &&
+    idOf(showCard?.data?.projectId) === idOf(project) &&
+    idOf(showCard?.data?.taskId) === idOf(task)
       ? { hoursWorked: updatedDuration }
       : {}),
     submittedForApproval: false,
@@ -409,8 +448,9 @@ const handleNoteChange = (date, project, task, note) => {
 
 const handleUpdate = () => {
   if (!showCard?.data) return;
+  const dateStr = moment(showCard.data.date).format('YYYY-MM-DD');
   const patch = {
-    date: moment(showCard.data.date).format('YYYY-MM-DD'),
+    date: dateStr,
     projectId: showCard.data.projectId?._id || showCard.data.projectId,
     boardId: showCard.data.boardId?._id || showCard.data.boardId,
     taskId: showCard.data.taskId?._id || showCard.data.taskId,
@@ -418,18 +458,23 @@ const handleUpdate = () => {
     notes: cardReason,
     submittedForApproval: false,
     status: 'No-Status',
+    isDirty: true,
   };
 
   setWorkingData(prev => upsertWorking(prev, patch));
+  
+  const key = `${dateStr}_${idOf(patch.projectId)}_${idOf(patch.taskId)}`;
+  setPendingChanges(prev => ({ ...prev, [key]: patch }));
+  
   setShowCard({ isShown: false, data: null });
   setSaveButton(true);
-  message.success(t('Timesheetemployee.timesheetLocallyUpdated')); // create this i18n key if needed
 };
 
 const handleCreate = () => {
   if (!showCard?.data) return;
+  const dateStr = moment(showCard.data.date).format('YYYY-MM-DD');
   const patch = {
-    date: moment(showCard.data.date).format('YYYY-MM-DD'),
+    date: dateStr,
     projectId: showCard.data.projectId?._id || showCard.data.projectId,
     boardId: showCard.data.boardId?._id || showCard.data.boardId,
     taskId: showCard.data.taskId?._id || showCard.data.taskId,
@@ -437,13 +482,17 @@ const handleCreate = () => {
     notes: cardReason,
     submittedForApproval: false,
     status: 'No-Status',
+    isDirty: true,
   };
 
   setWorkingData(prev => upsertWorking(prev, patch));
+  
+  const key = `${dateStr}_${idOf(patch.projectId)}_${idOf(patch.taskId)}`;
+  setPendingChanges(prev => ({ ...prev, [key]: patch }));
+  
   setShowCard({ isShown: false, data: null });
   formduration.resetFields();
   setSaveButton(false);
-  message.success(t('Timesheetemployee.timesheetRowAddedLocally')); // create this i18n key if needed
 };
 
 
@@ -569,23 +618,41 @@ const handleSaveAll = async () => {
 const handleCancel = () => {
   if (!showCard?.data) return;
 
-  // derive rowKey for this row
+  const dateStr = moment(showCard.data.date).format('YYYY-MM-DD');
   const key = rowKey({
-    date: moment(showCard.data.date).format('YYYY-MM-DD'),
+    date: dateStr,
     projectId: showCard.data.projectId?._id || showCard.data.projectId,
     taskId: showCard.data.taskId?._id || showCard.data.taskId,
   });
 
-  // revert hours in workingData for the row
-  setWorkingData(prev =>
-    prev.map(item =>
-      rowKey(item) === key ? { ...item, hoursWorked: oldDurationValue } : item,
-    ),
+  const originalEntry = allData.find(
+    (e) =>
+      moment(e.date).format('YYYY-MM-DD') === dateStr &&
+      idOf(e.projectId) === idOf(showCard.data.projectId) &&
+      idOf(e.taskId) === idOf(showCard.data.taskId)
   );
+
+  const pendingKey = `${dateStr}_${idOf(showCard.data.projectId)}_${idOf(showCard.data.taskId)}`;
+  setPendingChanges(prev => {
+    const next = { ...prev };
+    delete next[pendingKey];
+    return next;
+  });
+
+  if (originalEntry) {
+    setWorkingData(prev =>
+      prev.map(item =>
+        rowKey(item) === key ? { ...originalEntry } : item,
+      ),
+    );
+  } else {
+    setWorkingData(prev => prev.filter(item => rowKey(item) !== key));
+  }
 
   // reset card and state
   setShowCard({ isShown: false, data: null });
   setUpdatedDuration(oldDurationValue);
+  setCardReason(originalEntry?.notes || "");
 };
 
 
@@ -640,82 +707,127 @@ const handleCancel = () => {
       key: day,
       render: (text, record, index2) => {
         if (record?.projectId || record?.boardId) {
+          const cellDate = moment(
+            new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
+          ).format("YYYY-MM-DD");
+          
           const d = record?.data?.filter(
             (rec) =>
-              moment(rec?.date).format("YYYY-MM-DD") ===
-              moment(
-                new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
-              ).format("YYYY-MM-DD")
+              moment(rec?.date).format("YYYY-MM-DD") === cellDate
           );
           const [specific_date_data] = d;
+          
+          const draftEntry = workingData.find(
+            (e) =>
+              moment(e.date).format("YYYY-MM-DD") === cellDate &&
+              idOf(e.projectId) === idOf(record?.projectId) &&
+              idOf(e.boardId) === idOf(record?.boardId) &&
+              idOf(e.taskId) === idOf(record?.taskId)
+          );
+          
+          const displayData = draftEntry || specific_date_data;
+          const status = draftEntry?.status || specific_date_data?.status;
+          
           return (
             <>
               {
 
-                specific_date_data?.date ? (
+                displayData?.date || draftEntry ? (
                   <TimePicker
                     allowClear={false}
                     disabled={isFuture1}
                     className={`form-control timePickerWithData ${
-                      specific_date_data?.status === "Pending"
+                      status === "Pending"
                         ? "timePickerPending"
-                        : specific_date_data?.status === "Approved"
+                        : status === "Approved"
                         ? "timePickerApproved"
-                        : specific_date_data?.status === "Declined"
+                        : status === "Declined"
                         ? "timePickerDeclined"
                         : ""
                     }`}
                     placeholder="00:00"
                     format="HH:mm"
-                    /**
-                     * ❌ Remove defaultValue — React warns if both value and defaultValue are used.
-                     * ✅ The value prop alone controls it now (from workingData).
-                     */
                     value={
-                      specific_date_data?.hoursWorked
-                        ? moment(specific_date_data?.hoursWorked, "HH:mm")
+                      displayData?.hoursWorked
+                        ? moment(displayData?.hoursWorked, "HH:mm")
                         : null
                     }
-                    onClick={() => {
-                      if (
-                        !isFuture1 &&
-                        (!showCard?.isShown ||
-                          (showCard?.isShown &&
-                            specific_date_data?._id !== showCard?.data?._id))
-                      ) {
-                        // 🧠 Open the details card with current cell’s data
-                        setShowCard({
-                          isShown: true,
-                          data: specific_date_data,
-                        });
-
-                        // 🧩 Fill contextual state (local-only)
-                        setCardReason(specific_date_data?.notes || "");
-                        setUpdatedDuration(specific_date_data?.hoursWorked || "");
-                        setDescLength(specific_date_data?.notes?.length || 0);
-                        setOldDurationValue(specific_date_data?.hoursWorked || "");
-
-                        formduration.resetFields(); // optional reset for card form only
-                        console.log("specific_date_data", specific_date_data);
-                        // setSaveButton(true);
-                      }
+                    open={openTimePickers[`${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}`] || false}
+                    onOpenChange={(open) => {
+                      const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}`;
+                      setOpenTimePickers(prev => ({ ...prev, [pickerKey]: open }));
                     }}
-                    onChange={(value) => {
-                      /**
-                       * 🔁 Update local workingData (no server call)
-                       * Using the local handleTimePickerChange function
-                       */
+                    onSelect={(value) => {
                       handleTimePickerChange(
-                        moment(
-                          new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
-                        ).format("YYYY-MM-DD"),
+                        cellDate,
                         record?.projectId,
                         record?.taskId,
                         moment(value).format("HH:mm"),
                         "Update"
                       );
+                      setSaveButton(false);
+                      const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}`;
+                      setOpenTimePickers(prev => ({ ...prev, [pickerKey]: false }));
+                    }}
+                    onClick={() => {
+                      if (!isFuture1) {
+                        const cardData = draftEntry || specific_date_data;
+                        
+                        const currentCardDate = showCard?.data?.date 
+                          ? moment(showCard.data.date).format("YYYY-MM-DD")
+                          : null;
+                        const isSameCell = currentCardDate === cellDate &&
+                          idOf(showCard?.data?.projectId) === idOf(record?.projectId) &&
+                          idOf(showCard?.data?.taskId) === idOf(record?.taskId);
+                        
+                        setShowCard({
+                          isShown: true,
+                          data: {
+                            ...(cardData || {}),
+                            projectId: cardData?.projectId || record?.projectId,
+                            boardId: cardData?.boardId || record?.boardId,
+                            taskId: cardData?.taskId || record?.taskId,
+                            date: cellDate,
+                            _id: cardData?._id,
+                          },
+                        });
 
-                      setSaveButton(false); // enable "Save All" later if needed
+                        if (isSameCell) {
+                          const dateStr = cellDate;
+                          const projectId = idOf(record?.projectId);
+                          const boardId = idOf(record?.boardId);
+                          const taskId = idOf(record?.taskId);
+                          
+                          const entry = workingData.find(
+                            (e) =>
+                              moment(e.date).format('YYYY-MM-DD') === dateStr &&
+                              idOf(e.projectId) === projectId &&
+                              idOf(e.boardId) === boardId &&
+                              idOf(e.taskId) === taskId
+                          );
+                          
+                          const notes = entry?.notes ?? cardData?.notes ?? "";
+                          const hours = entry?.hoursWorked ?? cardData?.hoursWorked ?? "";
+                          
+                          setCardReason(notes);
+                          setUpdatedDuration(hours);
+                          setDescLength(notes.length || 0);
+                          setOldDurationValue(hours);
+                        }
+                        
+                        formduration.resetFields(); // optional reset for card form only
+                      }
+                    }}
+                    onChange={(value) => {
+                      
+                      handleTimePickerChange(
+                        cellDate,
+                        record?.projectId,
+                        record?.taskId,
+                        moment(value).format("HH:mm"),
+                        "Update"
+                      );
+                      setSaveButton(false);
                     }}
                     suffixIcon={false}
                   />
@@ -725,76 +837,103 @@ const handleCancel = () => {
                     <Form.Item
                       name={`${index}${index2}`}
                     >
-                      <TimePicker
-                        disabled={isFuture1}
-                        allowClear={false}
-                        className="form-control timePickerWithData"
-                        placeholder="00:00"
-                        format="HH:mm"
-                        value={
-                          record?.hoursWorked
-                            ? moment(record?.hoursWorked, "HH:mm")
-                            : null
-                        }
-                        onClick={() => {
-                          if (
-                            !isFuture1 &&
-                            (!showCard?.isShown ||
-                              (showCard?.isShown &&
-                                `${index}${index2}` !== showCard?.data?.indexId))
-                          ) {
-                            // 🧱 Build local reference object for the open card
-                            const d = {
-                              projectId: {
-                                _id: record?.projectId?._id,
-                                projectName: record?.projectId?.projectName,
-                              },
-                              boardId: {
-                                _id: record?.boardId?._id,
-                                boardTitle: record?.boardId?.boardTitle,
-                              },
-                              taskId: {
-                                _id: record?.taskId?._id,
-                                title: record?.taskId?.title,
-                              },
-                              date: moment(
-                                new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
-                              ).format("YYYY-MM-DD"),
-                              indexId: `${index}${index2}`,
-                            };
+                      {(() => {
+                        const cellDate = moment(
+                          new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
+                        ).format("YYYY-MM-DD");
+                        const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}_${index}${index2}`;
+                        
+                        return (
+                          <TimePicker
+                            disabled={isFuture1}
+                            allowClear={false}
+                            className="form-control timePickerWithData"
+                            placeholder="00:00"
+                            format="HH:mm"
+                            value={
+                              record?.hoursWorked
+                                ? moment(record?.hoursWorked, "HH:mm")
+                                : null
+                            }
+                            open={openTimePickers[pickerKey] || false}
+                            onOpenChange={(open) => {
+                              setOpenTimePickers(prev => ({ ...prev, [pickerKey]: open }));
+                            }}
+                            onSelect={(value) => {
+                              handleTimePickerChange(
+                                cellDate,
+                                record?.projectId,
+                                record?.taskId,
+                                moment(value).format("HH:mm"),
+                                "Add"
+                              );
+                              setSaveButton(false);
+                              setOpenTimePickers(prev => ({ ...prev, [pickerKey]: false }));
+                            }}
+                            onClick={() => {
+                              if (!isFuture1) {
+                                const d = {
+                                  projectId: {
+                                    _id: record?.projectId?._id,
+                                    projectName: record?.projectId?.projectName,
+                                  },
+                                  boardId: {
+                                    _id: record?.boardId?._id,
+                                    boardTitle: record?.boardId?.boardTitle,
+                                  },
+                                  taskId: {
+                                    _id: record?.taskId?._id,
+                                    title: record?.taskId?.title,
+                                  },
+                                  date: cellDate,
+                                  indexId: `${index}${index2}`,
+                                };
 
-                            // 🧠 Open notes/time card for this cell
-                            setShowCard({ isShown: true, data: d });
+                                const currentCardDate = showCard?.data?.date 
+                                  ? moment(showCard.data.date).format("YYYY-MM-DD")
+                                  : null;
+                                const isSameCell = currentCardDate === cellDate &&
+                                  idOf(showCard?.data?.projectId) === idOf(record?.projectId) &&
+                                  idOf(showCard?.data?.taskId) === idOf(record?.taskId);
 
-                            // Keep existing unsaved edits if they exist
-                            const existing = workingData.find(
-                              (e) =>
-                                e.date === d.date &&
-                                (e.projectId?._id || e.projectId) === d.projectId._id &&
-                                (e.taskId?._id || e.taskId) === d.taskId._id
-                            );
-                            setCardReason(existing?.notes || "");
-                            setUpdatedDuration(existing?.hoursWorked || "");
-                            setDescLength(existing?.notes?.length || 0);
-                            setSaveButton(true);
-                            console.log("Opened card for:", d);
-                          }
-                        }}
-                        onChange={(value) => {
-                          handleTimePickerChange(
-                            moment(
-                              new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
-                            ).format("YYYY-MM-DD"),
-                            record?.projectId,
-                            record?.taskId,
-                            moment(value).format("HH:mm"),
-                            "Add"
-                          );
+                                setShowCard({ isShown: true, data: d });
+                                
+                                if (isSameCell) {
+                                  const entry = workingData.find(
+                                    (e) =>
+                                      moment(e.date).format('YYYY-MM-DD') === cellDate &&
+                                      idOf(e.projectId) === idOf(record?.projectId) &&
+                                      idOf(e.boardId) === idOf(record?.boardId) &&
+                                      idOf(e.taskId) === idOf(record?.taskId)
+                                  );
+                                  
+                                  const notes = entry?.notes ?? "";
+                                  const hours = entry?.hoursWorked ?? "";
+                                  
+                                  setCardReason(notes);
+                                  setUpdatedDuration(hours);
+                                  setDescLength(notes.length || 0);
+                                  setOldDurationValue(hours);
+                                }
+                                
+                                setSaveButton(true);
+                              }
+                            }}
+                            onChange={(value) => {
+                              handleTimePickerChange(
+                                cellDate,
+                                record?.projectId,
+                                record?.taskId,
+                                moment(value).format("HH:mm"),
+                                "Add"
+                              );
 
-                          setSaveButton(false);
-                        }}
-                        suffixIcon={false}
-                      />
+                              setSaveButton(false);
+                            }}
+                            suffixIcon={false}
+                          />
+                        );
+                      })()}
 
                     </Form.Item>
                   </Form>

@@ -26,6 +26,8 @@ import moment from "moment";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
 import { useTranslation } from "react-i18next";
+import { exportTimesheetToExcel, exportTimesheetToPDF } from "../../../utils/timesheetExport";
+import { DownloadOutlined, FileExcelOutlined, FilePdfOutlined } from "@ant-design/icons";
 
 const AdminTimeSheet = () => {
   const { t, i18n } = useTranslation();
@@ -39,6 +41,7 @@ const AdminTimeSheet = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [downloadLoading, setDownloadLoading] = useState({ excel: false, pdf: false });
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -285,6 +288,110 @@ const AdminTimeSheet = () => {
       .finally(() => {
         setIsLoading(false);
       });
+  };
+
+  // Download handlers for project-level timesheet export
+  const handleDownloadExcel = async () => {
+    setDownloadLoading({ ...downloadLoading, excel: true });
+    try {
+      const response = await apiServices(
+        "GET",
+        `timesheet/?userName=${filters.name || ''}&page=${1}&limit=${99999}&timesheetFrom=${startDate}&timesheetTo=${endDate}&employeeOnly=${false}`,
+        null,
+        user_state
+      );
+
+      if (response?.data?.success === true) {
+        const timesheetData = response?.data?.Timesheet?.docs || [];
+        
+        if (timesheetData.length > 0) {
+          // Determine export type: if filtered by employee name, it's single resource, otherwise project-level
+          const exportType = filters.name ? 'single' : 'project';
+          
+          // If project-level, try to get project name from first entry
+          let projectName = 'All Projects';
+          if (exportType === 'project' && timesheetData.length > 0) {
+            const firstProject = timesheetData[0]?.projectId?.projectName || 
+                                timesheetData[0]?.boardId?.boardTitle;
+            if (firstProject) {
+              projectName = firstProject;
+            }
+          }
+          
+          await exportTimesheetToExcel(timesheetData, {
+            type: exportType,
+            resourceName: filters.name || '',
+            projectName: projectName,
+            dateFrom: startDate,
+            dateTo: endDate,
+          });
+          message.success(t('Timesheetadmin.timesheetExportedSuccessfully') || 'Timesheet exported successfully');
+        } else {
+          message.warning(t('Timesheetadmin.noTimesheetDataFound') || 'No timesheet data found');
+        }
+      }
+    } catch (err) {
+      console.error('Download error:', err);
+      message.error(
+        err?.response?.data?.msg ||
+        t('Timesheetadmin.errorDownloadingTimesheet') ||
+        'Error downloading timesheet'
+      );
+    } finally {
+      setDownloadLoading({ ...downloadLoading, excel: false });
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setDownloadLoading({ ...downloadLoading, pdf: true });
+    try {
+      const response = await apiServices(
+        "GET",
+        `timesheet/?userName=${filters.name || ''}&page=${1}&limit=${99999}&timesheetFrom=${startDate}&timesheetTo=${endDate}&employeeOnly=${false}`,
+        null,
+        user_state
+      );
+
+      if (response?.data?.success === true) {
+        const timesheetData = response?.data?.Timesheet?.docs || [];
+        
+        if (timesheetData.length > 0) {
+          // Determine export type: if filtered by employee name, it's single resource, otherwise project-level
+          const exportType = filters.name ? 'single' : 'project';
+          
+          // If project-level, try to get project name from first entry
+          let projectName = 'All Projects';
+          if (exportType === 'project' && timesheetData.length > 0) {
+            const firstProject = timesheetData[0]?.projectId?.projectName || 
+                                timesheetData[0]?.boardId?.boardTitle;
+            if (firstProject) {
+              projectName = firstProject;
+            }
+          }
+          
+          exportTimesheetToPDF(timesheetData, {
+            type: exportType,
+            resourceName: filters.name || '',
+            projectName: projectName,
+            dateFrom: startDate,
+            dateTo: endDate,
+            userName: user_state?.user?.fullName || '',
+          });
+          message.success(t('Timesheetadmin.timesheetExportedSuccessfully') || 'Timesheet exported successfully');
+        } else {
+          message.warning(t('Timesheetadmin.noTimesheetDataFound') || 'No timesheet data found');
+        }
+      }
+    } catch (err) {
+      console.error('Download error:', err);
+      message.error(
+        err?.response?.data?.msg ||
+        t('Timesheetadmin.errorDownloadingTimesheet') ||
+        'Error downloading timesheet'
+      );
+    } finally {
+      setDownloadLoading({ ...downloadLoading, pdf: false });
+    }
   };
 
   function categorizeTimesheetByWeek(timesheetData, startDate, endDate) {
@@ -759,6 +866,47 @@ const generateWeekColumns = (weekData, finalData) => {
               }}
             >
               {t('reset')}
+            </Button>
+          </div>
+        </div>
+        <div className="col-sm-6 col-md-4 col-lg-2 col-xl-2">
+          <div className="form-group">
+            <Button
+              type="primary"
+              icon={<FileExcelOutlined />}
+              onClick={handleDownloadExcel}
+              loading={downloadLoading.excel}
+              className="btn-success btn-block w-100"
+              style={{
+                borderRadius: "5px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#28a745",
+                borderColor: "#28a745"
+              }}
+            >
+              {t('downloadExcel') || 'Excel'}
+            </Button>
+          </div>
+        </div>
+        <div className="col-sm-6 col-md-4 col-lg-2 col-xl-2">
+          <div className="form-group">
+            <Button
+              type="primary"
+              icon={<FilePdfOutlined />}
+              onClick={handleDownloadPDF}
+              loading={downloadLoading.pdf}
+              danger
+              className="btn-block w-100"
+              style={{
+                borderRadius: "5px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center"
+              }}
+            >
+              {t('downloadPDF') || 'PDF'}
             </Button>
           </div>
         </div>

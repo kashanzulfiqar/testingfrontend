@@ -14,6 +14,8 @@ import { apiServices } from '../../../Services/apiServices';
 import DayViewTimesheet from './DayViewTimesheet';
 import WeekViewTimeSheet from './WeekViewTimeSheet';
 import { useTranslation } from 'react-i18next';
+import { exportTimesheetToExcel, exportTimesheetToPDF } from '../../../utils/timesheetExport';
+import { FileExcelOutlined, FilePdfOutlined } from '@ant-design/icons';
 
 const EmployeeTimesheet = () => {
   const { t, i18n } = useTranslation();
@@ -43,6 +45,7 @@ const EmployeeTimesheet = () => {
   const [tableStartDate, setTableStartDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const [view, setView] = useState('Day');
+  const [downloadLoading, setDownloadLoading] = useState({ excel: false, pdf: false });
 
 //   useEffect(() => {
 //     if(role === 'admin' || permissions?.projectManagement) {
@@ -206,6 +209,96 @@ const EmployeeTimesheet = () => {
     return current && current > new Date();
   };
 
+  // Download handlers for single resource timesheet export
+  const handleDownloadExcel = async () => {
+    setDownloadLoading({ ...downloadLoading, excel: true });
+    try {
+      const dateFrom = view === 'Day' 
+        ? moment(selectedDate).format('YYYY-MM-DD')
+        : currentWeekDates[0];
+      const dateTo = view === 'Day'
+        ? moment(selectedDate).format('YYYY-MM-DD')
+        : currentWeekDates[currentWeekDates.length - 1];
+
+      const response = await apiServices(
+        "GET",
+        `timesheet?page=${1}&limit=${99999}&timesheetFrom=${dateFrom}&timesheetTo=${dateTo}&employeeOnly=true`,
+        null,
+        user_state
+      );
+
+      if (response?.data?.success === true) {
+        const timesheetData = response?.data?.Timesheet?.docs || [];
+        
+        if (timesheetData.length > 0) {
+          await exportTimesheetToExcel(timesheetData, {
+            type: 'single',
+            resourceName: user_state?.user?.fullName || 'Employee',
+            dateFrom: dateFrom,
+            dateTo: dateTo,
+          });
+          message.success(t('Timesheetemployee.timesheetExportedSuccessfully') || 'Timesheet exported successfully');
+        } else {
+          message.warning(t('Timesheetemployee.noTimesheetDataFound') || 'No timesheet data found');
+        }
+      }
+    } catch (err) {
+      console.error('Download error:', err);
+      message.error(
+        err?.response?.data?.msg ||
+        t('Timesheetemployee.errorDownloadingTimesheet') ||
+        'Error downloading timesheet'
+      );
+    } finally {
+      setDownloadLoading({ ...downloadLoading, excel: false });
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setDownloadLoading({ ...downloadLoading, pdf: true });
+    try {
+      const dateFrom = view === 'Day' 
+        ? moment(selectedDate).format('YYYY-MM-DD')
+        : currentWeekDates[0];
+      const dateTo = view === 'Day'
+        ? moment(selectedDate).format('YYYY-MM-DD')
+        : currentWeekDates[currentWeekDates.length - 1];
+
+      const response = await apiServices(
+        "GET",
+        `timesheet?page=${1}&limit=${99999}&timesheetFrom=${dateFrom}&timesheetTo=${dateTo}&employeeOnly=true`,
+        null,
+        user_state
+      );
+
+      if (response?.data?.success === true) {
+        const timesheetData = response?.data?.Timesheet?.docs || [];
+        
+        if (timesheetData.length > 0) {
+          exportTimesheetToPDF(timesheetData, {
+            type: 'single',
+            resourceName: user_state?.user?.fullName || 'Employee',
+            dateFrom: dateFrom,
+            dateTo: dateTo,
+            userName: user_state?.user?.fullName || '',
+          });
+          message.success(t('Timesheetemployee.timesheetExportedSuccessfully') || 'Timesheet exported successfully');
+        } else {
+          message.warning(t('Timesheetemployee.noTimesheetDataFound') || 'No timesheet data found');
+        }
+      }
+    } catch (err) {
+      console.error('Download error:', err);
+      message.error(
+        err?.response?.data?.msg ||
+        t('Timesheetemployee.errorDownloadingTimesheet') ||
+        'Error downloading timesheet'
+      );
+    } finally {
+      setDownloadLoading({ ...downloadLoading, pdf: false });
+    }
+  };
+
       return (
         <>
         <div className="page-wrapper">
@@ -252,6 +345,37 @@ const EmployeeTimesheet = () => {
                   :
                   <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddWeekOpen: true, data: '' }); getAllProjects(); getAllTaskBoards(); setShowCalendar(false); }}><i className="fa fa-plus" /> {t('Timesheetemployee.addrow')}</a>
                 }
+                <Button
+                  type="primary"
+                  icon={<FileExcelOutlined />}
+                  onClick={handleDownloadExcel}
+                  loading={downloadLoading.excel}
+                  style={{
+                    borderRadius: "5px",
+                    backgroundColor: "#28a745",
+                    borderColor: "#28a745",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px"
+                  }}
+                >
+                  {t('downloadExcel') || 'Excel'}
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<FilePdfOutlined />}
+                  onClick={handleDownloadPDF}
+                  loading={downloadLoading.pdf}
+                  danger
+                  style={{
+                    borderRadius: "5px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px"
+                  }}
+                >
+                  {t('downloadPDF') || 'PDF'}
+                </Button>
               </div>
             </div>
           </div>
