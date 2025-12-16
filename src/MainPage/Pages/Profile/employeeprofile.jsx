@@ -3840,7 +3840,7 @@ const EmployeeProfile = () => {
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">
+              <h5 className="modal-title" style={{ wordWrap: "break-word", overflowWrap: "break-word", maxWidth: "85%", lineHeight: "1.4" }}>
                 Update {docToEdit?.data?.fileName || DOCUMENT_TYPES[docToEdit?.type]?.label}
               </h5>
               <button type="button" className="btn-close" onClick={closeEditModal}></button>
