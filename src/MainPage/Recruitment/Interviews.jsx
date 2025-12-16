@@ -61,6 +61,7 @@ const Interviews = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const user_state = useSelector((state) => state.user.loginvalue?.user);
 
   useEffect(() => {
     const token =
@@ -100,9 +101,15 @@ const Interviews = () => {
 
       console.log("Fetching interviews with params:", queryParams);
 
+      // Use assigned interviews endpoint for non-admin users with assigned interviews
+      const endpoint = 
+        user_state?.role !== "admin" && user_state?.hasAssignedInterviews
+          ? `interview/assigned/list?${new URLSearchParams(queryParams).toString()}`
+          : `interview/list?${new URLSearchParams(queryParams).toString()}`;
+
       const response = await apiServices(
         "GET",
-        `interview/list?${new URLSearchParams(queryParams).toString()}`,
+        endpoint,
         null,
         {
           access_token: {
@@ -297,10 +304,16 @@ const Interviews = () => {
       render: (_, record) => {
         const MainInterviewer = record.interviewerId;
         const OptionalInterviewer = record?.assignedTo || [];
-        const allInterviewers = [
-          MainInterviewer,
-          ...OptionalInterviewer,
-        ].filter(Boolean);
+        // Combine and dedupe interviewers by _id to avoid showing the same user twice
+        const combined = [MainInterviewer, ...OptionalInterviewer].filter(Boolean);
+        const seenIds = new Set();
+        const allInterviewers = combined.filter((iv) => {
+          const id = (iv && (iv._id || iv.id)) ? (iv._id || iv.id).toString() : null;
+          if (!id) return false;
+          if (seenIds.has(id)) return false;
+          seenIds.add(id);
+          return true;
+        });
         console.log("record of interviewers", record);
         return (
           <div className="project-members" style={{ margin: "4px auto" }}>

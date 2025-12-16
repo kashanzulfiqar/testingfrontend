@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
+import { useSelector } from 'react-redux';
 import Header from '../../initialpage/Sidebar/header';
 import Dashboard from './Dashboard';
 import Jobs from './Jobs';
@@ -32,6 +33,14 @@ const RecruitmentLayout = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const pathname = location.pathname;
+  
+  const user_state = useSelector((state) => state.user.loginvalue?.user);
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
+
+  // Check if user has full recruitment access (admin or recruitment manager)
+  const hasFullRecruitmentAccess = user_state?.role === "admin" || permissions?.recruitmentManagement;
+  // Interview-only users (assigned interviews but not full recruitment access)
+  const isInterviewOnlyUser = user_state?.hasAssignedInterviews && !hasFullRecruitmentAccess;
 
   const [oldOpenMenu, setOldOpenMenu] = useState("");
   const [isSideMenu, setSideMenu] = useState("");
@@ -156,6 +165,7 @@ const RecruitmentLayout = () => {
           <div style={{ position: "absolute", inset: "0px", overflowX: "hidden", marginRight: "-15px", marginBottom: "-15px" }}>
             <div className="sidebar-inner slimscroll">
               <div id="sidebar-menu" className="sidebar-menu">
+                {hasFullRecruitmentAccess && (
                 <ul>
                   <li className="menu-title align-items-center" style={{ gap: '5px' }}>
                     <div style={{ height: "4px", width: "4px", borderRadius: "50%", background: "#ff9244" }}></div>
@@ -167,7 +177,9 @@ const RecruitmentLayout = () => {
                     </Link>
                   </li>
                 </ul>
+                )}
 
+                {hasFullRecruitmentAccess ? (
                 <ul style={{ marginTop: "10px" }}>
                   <li className="menu-title align-items-center" style={{ gap: '5px' }}>
                     <div style={{ height: "4px", width: "4px", borderRadius: "50%", background: "#ff9244" }}></div>
@@ -238,75 +250,84 @@ const RecruitmentLayout = () => {
                     </Link>
                   </li>
                   <li className={`submenu ${isSideMenu === "resumes" ? "active subdrop" : ""}`}>
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleSidebar("resumes");
-                      }}
-                    >
-                      <img src={filecheck} style={{ fontSize: "20px", minWidth: "20px", color:'#8B96A2  ' }} />
-                      <span>Resumes</span>
-                      <span className="menu-arrow" />
-                    </a>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleSidebar("resumes");
+                    }}
+                  >
+                    <img src={filecheck} style={{ fontSize: "20px", minWidth: "20px", color:'#8B96A2  ' }} />
+                    <span>Resumes</span>
+                    <span className="menu-arrow" />
+                  </a>
 
-                    <ul style={{ display: isSideMenu === "resumes" ? "block" : "none" }}>
-                      <li className={pathname.includes("/recruitment/resume-converter") ? "active" : ""}>
-                        <Link
-                          to="/recruitment/resume-converter"
-                          onClick={closeSidebarOnMobile}
-                          style={{ display: "flex", alignItems: "center" }}
-                        >
-                          <div
-                            style={{
-                              background: "#ff9244",
-                              height: "4px",
-                              width: "4px",
-                              borderRadius: "50%",
-                            }}
-                          ></div>
-                          <span>Resume Converter</span>
-                        </Link>
-                      </li>
+                  <ul style={{ display: isSideMenu === "resumes" ? "block" : "none" }}>
+                    <li className={pathname.includes("/recruitment/resume-converter") ? "active" : ""}>
+                      <Link
+                        to="/recruitment/resume-converter"
+                        onClick={closeSidebarOnMobile}
+                        style={{ display: "flex", alignItems: "center" }}
+                      >
+                        <div
+                          style={{
+                            background: "#ff9244",
+                            height: "4px",
+                            width: "4px",
+                            borderRadius: "50%",
+                          }}
+                        ></div>
+                        <span>Resume Converter</span>
+                      </Link>
+                    </li>
 
-                      <li className={pathname.includes("/recruitment/resume-history") ? "active" : ""}>
-                        <Link
-                          to="/recruitment/resume-history"
-                          onClick={closeSidebarOnMobile}
-                          style={{ display: "flex", alignItems: "center" }}
-                        >
-                          <div
-                            style={{
-                              background: "#ff9244",
-                              height: "4px",
-                              width: "4px",
-                              borderRadius: "50%",
-                            }}
-                          ></div>
-                          <span>Resume History</span>
-                        </Link>
-                      </li>
+                    <li className={pathname.includes("/recruitment/resume-history") ? "active" : ""}>
+                      <Link
+                        to="/recruitment/resume-history"
+                        onClick={closeSidebarOnMobile}
+                        style={{ display: "flex", alignItems: "center" }}
+                      >
+                        <div
+                          style={{
+                            background: "#ff9244",
+                            height: "4px",
+                            width: "4px",
+                            borderRadius: "50%",
+                          }}
+                        ></div>
+                        <span>Resume History</span>
+                      </Link>
+                    </li>
 
-                      <li className={pathname.includes("/recruitment/resume-settings") ? "active" : ""}>
-                        <Link
-                          to="/recruitment/resume-settings"
-                          onClick={closeSidebarOnMobile}
-                          style={{ display: "flex", alignItems: "center" }}
-                        >
-                          <div
-                            style={{
-                              background: "#ff9244",
-                              height: "4px",
-                              width: "4px",
-                              borderRadius: "50%",
-                            }}
-                          ></div>
-                          <span>Resume Settings</span>
-                        </Link>
-                      </li>
-                    </ul>
-                  </li>
+                    <li className={pathname.includes("/recruitment/resume-settings") ? "active" : ""}>
+                      <Link
+                        to="/recruitment/resume-settings"
+                        onClick={closeSidebarOnMobile}
+                        style={{ display: "flex", alignItems: "center" }}
+                      >
+                        <div
+                          style={{
+                            background: "#ff9244",
+                            height: "4px",
+                            width: "4px",
+                            borderRadius: "50%",
+                          }}
+                        ></div>
+                        <span>Resume Settings</span>
+                      </Link>
+                    </li>
+                  </ul>
+                </li>
                 </ul>
+                ) : isInterviewOnlyUser ? (
+                  <ul style={{ marginTop: "10px" }}>
+                    <li className={pathname.includes("/recruitment/interviews") ? "active" : ""}>
+                      <Link to="/recruitment/interviews" onClick={closeSidebarOnMobile}>
+                        <img src={interviewIcon} style={{ minHeight: "20px", minWidth: "20px" }} /> <span>Interviews</span>
+                      </Link>
+                    </li>
+                  </ul>
+                ) : null }
               </div>
             </div>
           </div>
@@ -316,26 +337,26 @@ const RecruitmentLayout = () => {
       {/* Main Content */}
       <div className="page-wrapper">
         <Routes>
-          <Route path="/" element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="jobs" element={<Jobs />} />
-          <Route path="jobs/:jobId" element={<JobDetails />} />
-          <Route path="jobs/:jobId/edit" element={<EditJob />} />
-          <Route path="candidates/processing" element={<Candidates />} />
-          <Route path="candidates/hired" element={<HiredCandidates />} />
-          <Route path="candidates/offered" element={<OfferedCandidates />} />
-          <Route path="candidates/blacklist" element={<BlacklistedCandidates />} />
-          <Route path="candidates/screened" element={<ScreenedCandidates />} />
-          <Route path="candidates/:id" element={<CandidateDetails />} />
-          <Route path="candidates/:id/edit" element={<EditCandidate />} />
+          <Route path="/" element={<Navigate to={isInterviewOnlyUser ? "interviews" : "dashboard"} replace />} />
+          {hasFullRecruitmentAccess && <Route path="dashboard" element={<Dashboard />} />}
+          {hasFullRecruitmentAccess && <Route path="jobs" element={<Jobs />} />}
+          {hasFullRecruitmentAccess && <Route path="jobs/:jobId" element={<JobDetails />} />}
+          {hasFullRecruitmentAccess && <Route path="jobs/:jobId/edit" element={<EditJob />} />}
+          {hasFullRecruitmentAccess && <Route path="candidates/processing" element={<Candidates />} />}
+          {hasFullRecruitmentAccess && <Route path="candidates/hired" element={<HiredCandidates />} />}
+          {hasFullRecruitmentAccess && <Route path="candidates/offered" element={<OfferedCandidates />} />}
+          {hasFullRecruitmentAccess && <Route path="candidates/blacklist" element={<BlacklistedCandidates />} />}
+          {hasFullRecruitmentAccess && <Route path="candidates/screened" element={<ScreenedCandidates />} />}
+          {hasFullRecruitmentAccess && <Route path="candidates/:id" element={<CandidateDetails />} />}
+          {hasFullRecruitmentAccess && <Route path="candidates/:id/edit" element={<EditCandidate />} />}
           <Route path="interviews" element={<Interviews />} />
           <Route path="interviews/:id" element={<InterviewDetails />} />
-          <Route path="tasks" element={<Tasks />} />
-          <Route path="tasks/:id" element={<TaskDetails />} />
-          <Route path="resume-converter" element={<ResumeConverter />} />
-          <Route path="resume-history" element={<ResumeHistory />} />
-          <Route path="resume-settings" element={<ResumeSettings />} />
-          <Route path="*" element={<Navigate to="dashboard" replace />} />
+          {hasFullRecruitmentAccess && <Route path="tasks" element={<Tasks />} />}
+          {hasFullRecruitmentAccess && <Route path="tasks/:id" element={<TaskDetails />} />}
+          {hasFullRecruitmentAccess && <Route path="resume-converter" element={<ResumeConverter />} />}
+          {hasFullRecruitmentAccess && <Route path="resume-history" element={<ResumeHistory />} />}
+          {hasFullRecruitmentAccess && <Route path="resume-settings" element={<ResumeSettings />} />}
+          <Route path="*" element={<Navigate to={isInterviewOnlyUser ? "interviews" : "dashboard"} replace />} />
         </Routes>
       </div>
     </div>
