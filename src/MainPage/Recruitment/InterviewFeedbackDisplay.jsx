@@ -4,8 +4,8 @@ import { StarFilled } from '@ant-design/icons';
 import moment from 'moment';
 import star from '../../assets/iconsRecruitment/star.svg';
 import editIcon from '../../assets/iconsRecruitment/editIcon.svg';
-
-const InterviewFeedbackDisplay = ({ feedback, onEdit }) => {
+import { user_icon } from '../../Entryfile/imagepath';
+const InterviewFeedbackDisplay = ({ feedback, onEdit, loggedInUser }) => {
   const r = feedback?.ratings || {};
   const hasLegacy =
     r?.softSkillRating !== undefined ||
@@ -18,6 +18,12 @@ const InterviewFeedbackDisplay = ({ feedback, onEdit }) => {
     r?.EfficientWorkingSkills !== undefined ||
     r?.ProblemSolvingSkills !== undefined ||
     r?.PresentationSkills !== undefined;
+
+  // Check if current user can edit this feedback
+  const canEditFeedback = 
+    loggedInUser &&
+    (loggedInUser?.role === "admin" || 
+     (loggedInUser?._id && feedback?.submittedBy?._id === loggedInUser._id));
 
   const data = hasLegacy
     ? [
@@ -49,11 +55,11 @@ const InterviewFeedbackDisplay = ({ feedback, onEdit }) => {
       <div className="feedback-header-row">
         <div className="feedback-reviewer">
           <span className="feedback-title">Interview Feedback by</span>
-          {feedback.submittedBy?.imageUrl && (
-            <img src={feedback.submittedBy.imageUrl} className="feedback-avatar" alt="Reviewer" />
+          {feedback.submittedBy && (
+            <img src={feedback.submittedBy?.imageUrl || user_icon} className="feedback-avatar" alt="Reviewer" />
           )}
-          {feedback?.reviewerId?.imageUrl && (
-            <img src={feedback.reviewerId.imageUrl} className="feedback-avatar" alt="Reviewer" />
+          {feedback?.reviewerId && (
+            <img src={feedback.reviewerId?.imageUrl || user_icon} className="feedback-avatar" alt="Reviewer" />
           )}
           <span className="feedback-reviewer-name">{feedback.submittedBy?.fullName}</span>
           <span className="feedback-reviewer-name">{feedback.reviewerId?.fullName}</span>
@@ -62,7 +68,7 @@ const InterviewFeedbackDisplay = ({ feedback, onEdit }) => {
           <div className="feedback-date">
             {moment(feedback.createdAt).format("ddd, MMM DD @ hh:mm a")}
           </div>
-          {onEdit && (
+          {onEdit && canEditFeedback && (
             <a
               href="javascript:void(0)"
               className="edit-icon"

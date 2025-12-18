@@ -8,6 +8,8 @@ import {
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../Entryfile/features/users.jsx";
+import { apiServices } from "../Services/apiServices";
+import { setHasAssignedInterviews } from "../Entryfile/features/users.jsx";
 
 import LoginPage from "./loginpage";
 import RegistrationPage from "./RegistrationPage";
@@ -163,6 +165,25 @@ const App = () => {
       // nav('/employee/dashboard');
     }
   }, []);
+
+  // On app load or when loginState changes, refresh 'hasAssignedInterviews' flag
+  useEffect(() => {
+    const checkAssigned = async () => {
+      try {
+        if (!loginState || !loginState.access_token) return;
+        const res = await apiServices("GET", "interview/assigned/check", null, loginState);
+        if (res && res.data) {
+          const hasAssigned = !!res.data.hasAssignedInterviews || !!res.data?.data?.hasAssignedInterviews;
+          dispatch(setHasAssignedInterviews(hasAssigned));
+        }
+      } catch (err) {
+        // silently ignore; no assigned interviews or auth issues handled elsewhere
+        console.debug('Failed to refresh assigned-interviews flag', err?.message || err);
+      }
+    };
+
+    checkAssigned();
+  }, [loginState, dispatch]);
 
   useEffect(() => {
     if (location?.pathname !== "/profile/employee-profile") {
