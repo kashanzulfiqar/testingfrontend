@@ -46,6 +46,12 @@ export const exportTimesheetToExcel = async (timesheetData, options = {}) => {
 
   if (type === 'project' && resourceName) {
     sheet.mergeCells(metaRow, 1, metaRow, 8);
+    const employeeLabel = resourceName.includes(',') ? 'Employees' : 'Employee';
+    sheet.getCell(metaRow, 1).value = `${employeeLabel}: ${resourceName}`;
+    sheet.getCell(metaRow, 1).font = { size: 12 };
+    metaRow++;
+  } else if (type === 'single' && resourceName) {
+    sheet.mergeCells(metaRow, 1, metaRow, 8);
     sheet.getCell(metaRow, 1).value = `Employee: ${resourceName}`;
     sheet.getCell(metaRow, 1).font = { size: 12 };
     metaRow++;
@@ -187,6 +193,10 @@ export const exportTimesheetToPDF = (timesheetData, options = {}) => {
     yPos += 7;
   }
   if (type === 'project' && resourceName) {
+    const employeeLabel = resourceName.includes(',') ? 'Employees' : 'Employee';
+    doc.text(`${employeeLabel}: ${resourceName}`, 10, yPos);
+    yPos += 7;
+  } else if (type === 'single' && resourceName) {
     doc.text(`Employee: ${resourceName}`, 10, yPos);
     yPos += 7;
   }
