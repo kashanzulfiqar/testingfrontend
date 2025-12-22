@@ -344,9 +344,7 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
 
   const MainInterviewer = interview.interviewerId;
   const OptionalInterviewer = interview?.assignedTo || [];
-  const allInterviewers = [MainInterviewer, ...OptionalInterviewer].filter(
-    Boolean
-  );
+  const allInterviewers = OptionalInterviewer.filter(Boolean);
   console.log("record of interviewers", allInterviewers);
   return (
     <>
@@ -862,13 +860,20 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
 
           {interview?.status === "completed" && (
             <div>
-              {interview?.feedback?.map((feedback, index) => (
-                <InterviewFeedbackDisplay 
-                  key={index} 
-                  feedback={feedback} 
-                  onEdit={handleEditFeedback}
-                />
-              ))}
+              {interview?.feedback?.map((feedback, index) => {
+                const canEdit =
+                  loggedInUser?.role === "admin" ||
+                  (loggedInUser?._id && feedback?.submittedBy?._id === loggedInUser._id);
+
+                return (
+                  <InterviewFeedbackDisplay
+                    key={index}
+                    feedback={feedback}
+                    onEdit={canEdit ? handleEditFeedback : undefined}
+                    loggedInUser={loggedInUser}
+                  />
+                );
+              })}
             </div>
           )}
         </div>

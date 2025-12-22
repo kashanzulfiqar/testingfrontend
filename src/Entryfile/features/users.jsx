@@ -40,6 +40,11 @@ export const userSlice = createSlice({
             localStorage.removeItem('token');
             sessionStorage.clear();
         },
+        setHasAssignedInterviews: (state, { payload }) => {
+            if (state.loginvalue && state.loginvalue.user) {
+                state.loginvalue.user.hasAssignedInterviews = !!payload;
+            }
+        },
         // Initialize auth state from stored token
         initAuth: (state) => {
             const storedToken = localStorage.getItem('token');
@@ -50,5 +55,5 @@ export const userSlice = createSlice({
     }
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout, initAuth } = userSlice.actions;
+export const { loginStart, loginSuccess, loginFailure, logout, setHasAssignedInterviews, initAuth } = userSlice.actions;
 export default userSlice.reducer;
