@@ -89,6 +89,7 @@ const CandidateDetails = () => {
   const [candidate, setCandidate] = useState(null);
   const [activeTab, setActiveTab] = useState("timeline");
   const authState = useSelector((state) => state.user.loginvalue);
+  const loggedInUser = useSelector((state) => state.user.loginvalue?.user);
   const [isInterviewModalVisible, setIsInterviewModalVisible] = useState(false);
   const [editingInterview, setEditingInterview] = useState(null);
   const [interviews, setInterviews] = useState([]);
@@ -2370,6 +2371,7 @@ const CandidateDetails = () => {
                                       <InterviewFeedbackDisplay
                                         key={index}
                                         feedback={feedback}
+                                        loggedInUser={loggedInUser}
                                       />
                                     )
                                   )}
@@ -2401,55 +2403,6 @@ const CandidateDetails = () => {
                                         paddingBottom: "10px",
                                       }}
                                     >
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          minWidth: "fit-content",
-                                          flexShrink: 0,
-                                        }}
-                                      >
-                                        <div
-                                          style={{
-                                            height: "32px",
-                                            width: "32px",
-                                          }}
-                                        >
-                                          <img
-                                            src={
-                                              interview?.interviewerId
-                                                ?.imageUrl || user_icon
-                                            }
-                                            style={{
-                                              height: "100%",
-                                              width: "100%",
-                                              borderRadius: "50%",
-                                            }}
-                                          ></img>
-                                        </div>
-                                        <div style={{ marginLeft: "10px" }}>
-                                          <h3
-                                            style={{
-                                              fontSize: "14px",
-                                              fontWeight: "500",
-                                              marginBottom: "0",
-                                            }}
-                                          >
-                                            {interview.interviewerId?.fullName}
-                                          </h3>
-                                          <p
-                                            style={{
-                                              fontSize: "12px",
-                                              fontWeight: "450",
-                                              color: "#56616b",
-                                            }}
-                                          >
-                                            {
-                                              interview.interviewerId
-                                                ?.designationName
-                                            }
-                                          </p>
-                                        </div>
-                                      </div>
                                       {interview.assignedTo?.map(
                                         (interviewer) => (
                                           <div
@@ -2687,6 +2640,7 @@ const CandidateDetails = () => {
                                       <InterviewFeedbackDisplay
                                         key={index}
                                         feedback={feedback}
+                                        loggedInUser={loggedInUser}
                                       />
                                     )
                                   )}
