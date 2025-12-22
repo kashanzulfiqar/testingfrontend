@@ -303,12 +303,18 @@ const AdminTimeSheet = () => {
   const handleDownloadExcel = async () => {
     setDownloadLoading({ ...downloadLoading, excel: true });
     try {
+      const monthToUse = filters.month || selectedMonth || moment().format('YYYY-MM');
+      const monthArray = monthToUse.split("-");
+      const year = monthArray[0];
+      const month = monthArray[1];
+      const { startDate: apiStartDate, endDate: apiEndDate } = getMonthStartEndDate(month, year);
+
       const projectIdParam = filters.projectId ? `&projectId=${filters.projectId}` : '';
       const userNameParam = filters.name ? `&userName=${filters.name}` : '';
 
       const response = await apiServices(
         "GET",
-        `timesheet/?${userNameParam}&page=${1}&limit=${99999}&timesheetFrom=${startDate}&timesheetTo=${endDate}&employeeOnly=${false}${projectIdParam}`,
+        `timesheet/?${userNameParam}&page=${1}&limit=${99999}&timesheetFrom=${apiStartDate}&timesheetTo=${apiEndDate}&employeeOnly=${false}${projectIdParam}`,
         null,
         user_state
       );
@@ -338,9 +344,9 @@ const AdminTimeSheet = () => {
             dateFrom: apiStartDate,
             dateTo: apiEndDate,
           });
-          message.success(t('Timesheetadmin.timesheetExportedSuccessfully') || 'Timesheet exported successfully');
+          message.success('Timesheet exported successfully');
         } else {
-          message.warning(t('Timesheetadmin.noTimesheetDataFound') || 'No timesheet data found');
+          message.warning('No timesheet data found');
         }
       }
     } catch (err) {
@@ -811,6 +817,17 @@ const generateWeekColumns = (weekData, finalData) => {
   
   return (
     <>
+      <style>
+        {`
+          .timesheet-filter-select .ant-select-selector {
+            height: 40px !important;
+          }
+          .timesheet-filter-select .ant-select-selection-item,
+          .timesheet-filter-select .ant-select-selection-placeholder {
+            line-height: 38px !important;
+          }
+        `}
+      </style>
       <div className="page-wrapper">
         <Helmet>
           <title>{t('Timesheetemployee.timesheetTitle')}</title>
@@ -867,7 +884,7 @@ const generateWeekColumns = (weekData, finalData) => {
               <Select
                 showSearch
                 allowClear
-                placeholder={t('selectProject') || 'Select Project'}
+                placeholder={t('Select Project') || 'Select Project'}
                 size="large"
                 loading={projectsLoading}
                 value={selectedFilters.projectId || undefined}
@@ -877,6 +894,7 @@ const generateWeekColumns = (weekData, finalData) => {
                 }}
                 onChange={(value) => handleFilterChange(value || '', "projectId")}
                 style={{ width: '100%' }}
+                className="timesheet-filter-select"
               >
                 {allProjects.map((project) => (
                   <Select.Option key={project._id} value={project._id}>
@@ -891,7 +909,7 @@ const generateWeekColumns = (weekData, finalData) => {
           <div className="form-group">
             <Form.Item name="month" style={{ marginBottom: 0 }}>
               <DatePicker.MonthPicker
-                style={{ width: "100%" }}
+                style={{ width: "100%", height: "40px" }}
                 placeholder={t('aAttend.selectMonth')}
                 size="large"
                 allowClear={false}
@@ -912,6 +930,7 @@ const generateWeekColumns = (weekData, finalData) => {
                 value={selectedFilters.name || ''}
                 onChange={(e) => handleFilterChange(e.target.value, "name")}
                 size="large"
+                style={{ height: "40px" }}
               />
             </Form.Item>
           </div>
