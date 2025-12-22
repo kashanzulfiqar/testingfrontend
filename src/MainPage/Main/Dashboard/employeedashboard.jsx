@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { clockin, holidaycalendar } from "../../../Entryfile/imagepath.jsx";
 //import { avatar1, avatar13, avatar16, avatar18, avatar19, avatar2, avatar20, avatar21, avatar23, avatar26, avatar4, avatar6, avatar8, clockin, employeeimg, holidaycalendar } from "../../../../../Routes/ImagePath";
 import Chart from "react-apexcharts";
@@ -14,19 +14,24 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { Spin, Table, Empty, DatePicker, message, Tooltip, Avatar } from "antd";
 import { GiftOutlined, PushpinOutlined } from "@ant-design/icons";
 import { Cake, Celebration, PushPin } from "@mui/icons-material";
+import {
+  joinNotificationRooms,
+  subscribeToNewNotifications,
+  subscribeToNotificationRefresh,
+} from "../../../Services/socketClient";
 
 const EmployeeDashboard = () => {
   const moment = require("moment");
   let nowdate = new Date(Date.now());
   const todayDate = moment(nowdate).format("dddd, DD MMM YYYY");
   const firstDate = moment(nowdate).format("YYYY-MM-DD");
-
+  const nav = useNavigate();
   const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
 
   const [employees, setEmployees] = useState([]);
-
+  const [notifList, setNotifList] = useState([]);
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -34,7 +39,7 @@ const EmployeeDashboard = () => {
   const [requestData, setRequestData] = useState([]);
   const [sevenDays, setSevenDays] = useState([]);
   const [tableData, setTableData] = useState([]);
-
+  const userIdForSocket = user_state?.user?._id || user_state?.email;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardsToShow, setCardsToShow] = useState(3);
 
@@ -91,6 +96,76 @@ const EmployeeDashboard = () => {
   //     fetchattendance();
   //   }
   // }, [checkIn, checkOut]);
+
+  const notificationRouteMap = {
+    task_comment: "/projects/tasks",
+    task_assignment: "/projects/tasks",
+    task_removal: "/projects/tasks",
+  
+    project_assignment: "/projects/project_dashboard",
+    projectReminder: "/projects/project_dashboard",
+    project_removal: "/projects/project_dashboard",
+  
+    taskboard_assigned: "/task-board",
+    taskboard_removal: "/task-board",
+  
+    leave_status_change: "/employee/requests",
+    payment_success: "/payroll/payslip",
+    celebration: "/employee/dashboard",
+  };
+
+  const loadNotifications = () => {
+    apiServices("GET", "notifications", null, user_state).then((res) => {
+      if (res?.data?.success && res?.data?.data?.length > 0) {
+        setNotifList(res.data.data);
+      }
+    });
+  };
+
+  const handleNotificationClick = (item) => {
+    const route = notificationRouteMap[item.type];
+    if (route) {
+      nav(route);
+    }
+  };
+
+  useEffect(() => {
+    if (!userIdForSocket) {
+      return;
+    }
+
+    joinNotificationRooms({
+      userId: userIdForSocket,
+      companyId: user_state?.user?.companyId,
+    });
+
+    const unsubscribe = subscribeToNewNotifications((notification) => {
+      if (!notification) {
+        return;
+      }
+
+      setNotifList((prev) => {
+        const alreadyExists = prev.some(
+          (item) => item?._id === notification?._id
+        );
+        if (alreadyExists) {
+          return prev.map((item) =>
+            item?._id === notification?._id ? notification : item
+          );
+        }
+        return [notification, ...prev];
+      });
+    });
+
+    const unsubscribeRefresh = subscribeToNotificationRefresh(() => {
+      loadNotifications();
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeRefresh();
+    };
+  }, [userIdForSocket, user_state?.user?.companyId]);
 
   useEffect(() => {
     // setTableLoader(true);
@@ -930,6 +1005,7 @@ const EmployeeDashboard = () => {
   };
 
   useEffect(() => {
+    loadNotifications();
     //fetchEmployees();
     GetListProjects();
     getSelfRequests();
@@ -1661,9 +1737,7 @@ const EmployeeDashboard = () => {
                         alignItems: "center",
                       }}
                     />
-                  ) : requestData?.SelfRequests?.length > 0 ||
-                    requestData?.workAnniversary?.length > 0 ||
-                    requestData?.todayBirthdays?.length > 0 ? (
+                  ) : notifList?.length > 0 ? (
                     <div className="notification-tab">
                       <ul className="nav nav-tabs">
                         <li>
@@ -1682,7 +1756,7 @@ const EmployeeDashboard = () => {
                       <div className="tab-content">
                         <div className="tab-pane active" id="notification_tab">
                           <div className="scrollable-requests">
-                            {requestData?.workAnniversary?.map(
+                            {/* {requestData?.workAnniversary?.map(
                               (employee, index) => {
                                 const joiningDate = new Date(
                                   employee.joiningDate
@@ -1901,6 +1975,42 @@ const EmployeeDashboard = () => {
                               </>
                             ) : (
                               ""
+                            )} */}
+                            {notifList?.map(
+                              (item, index) => (
+                                (
+                                  <div key={index} className="employee-noti-content" style={{ cursor: "pointer" }}
+                                  onClick={() => handleNotificationClick(item)} >
+                                    <ul className="employee-notification-list">
+                                        <li className="employee-notification-grid">
+                                          <div className="employee-notification-icon">
+                                            <span className="badge-soft-danger rounded-circle">
+                                              <i className="fa fa-bell"></i>
+                                            </span>
+                                          </div>
+                                          <div className="employee-notification-content">
+                                            <h6>
+                                              <label>
+                                                {item.title}
+                                              </label>
+                                            </h6>
+                                            <ul
+                                              className="nav"
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                              }}
+                                            >
+                                              <li>
+                                                {item.message}
+                                              </li>
+                                            </ul>
+                                          </div>
+                                        </li>
+                                      </ul>
+                                  </div>
+                                )
+                              )
                             )}
                           </div>
                         </div>

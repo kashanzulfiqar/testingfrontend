@@ -17,6 +17,7 @@ import {
   subscribeToNewNotifications,
   subscribeToNotificationRefresh,
 } from "../../Services/socketClient";
+import { ensurePushSubscription } from "../../Services/pushNotifications";
 
 const Header = (props) => {
   const { t, i18n } = useTranslation();
@@ -66,6 +67,23 @@ const Header = (props) => {
       });
   };
 
+  const notificationRouteMap = {
+    task_comment: "/projects/tasks",
+    task_assignment: "/projects/tasks",
+    task_removal: "/projects/tasks",
+  
+    project_assignment: "/projects/project_dashboard",
+    projectReminder: "/projects/project_dashboard",
+    project_removal: "/projects/project_dashboard",
+  
+    taskboard_assigned: "/task-board",
+    taskboard_removal: "/task-board",
+  
+    leave_status_change: "/employee/requests",
+    payment_success: "/payroll/payslip",
+    celebration: "/employee/dashboard",
+  };
+  
   const LangMenu = (
     <Menu>
       <Menu.Item key="en" onClick={() => changeLanguage("en")}>
@@ -142,6 +160,13 @@ const Header = (props) => {
     });
   };
 
+  const handleNotificationClick = (item) => {
+    const route = notificationRouteMap[item.type];
+    if (route) {
+      nav(route);
+    }
+  };
+  
   let pathname = location.pathname;
   // const { loginvalue } = useSelector((state) => state.user);
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -191,6 +216,20 @@ const Header = (props) => {
     };
   }, [userIdForSocket, user_state?.user?.companyId]);
 
+  useEffect(() => {
+    const setupPush = async () => {
+      try {
+        await ensurePushSubscription({ user: user_state });
+      } catch (error) {
+        console.error("Push subscription failed", error);
+      }
+    };
+
+    if (userIdForSocket) {
+      setupPush();
+    }
+  }, [userIdForSocket]);
+
   const markNotificationRead = (id) => {
     apiServices("PATCH", `notifications/${id}/mark-read`, null, user_state)
       .then((res) => {
@@ -222,40 +261,31 @@ const Header = (props) => {
           <p className="text-muted mb-0">No notifications</p>
         )}
 
-        {notifList.map(
+        {notifList.slice(0, 5).map(
           (item, index) => (
-            console.log(item, "item"),
             (
-              <div key={index} className="border-bottom py-2">
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
+              <div key={index} className="border-bottom py-2" style={{ cursor: "pointer" }}
+              onClick={() => handleNotificationClick(item)} >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <strong>{item.title}</strong>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      markNotificationRead(item._id);
-                    }}
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      cursor: "pointer",
-                      color: "#007bff",
-                      fontSize: "16px",
-                      marginLeft: "10px",
-                    }}
-                  >
-                    ✔️
-                  </button>
                 </div>
                 <p className="mb-1">{item.message}</p>
               </div>
             )
           )
+        )}
+        {notifList.length > 5 && (
+          <div
+            className="text-center mt-2"
+            style={{
+              cursor: "pointer",
+              color: "#007bff",
+              fontWeight: 500,
+            }}
+            onClick={() => nav("/employee/dashboard")}
+          >
+            View all notifications
+          </div>
         )}
       </div>
     </div>
@@ -519,8 +549,9 @@ const Header = (props) => {
                 <p className="text-muted mb-0">No notifications</p>
               )}
 
-              {notifList.map((item, index) => (
-                <div key={index} className="border-bottom py-2">
+              {notifList.slice(0, 5).map((item, index) => (
+                <div key={index} className="border-bottom py-2"  style={{ cursor: "pointer" }}
+                onClick={() => handleNotificationClick(item)} >
                   <div
                     style={{
                       display: "flex",
@@ -529,26 +560,23 @@ const Header = (props) => {
                     }}
                   >
                     <strong>{item.title}</strong>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        markNotificationRead(item._id);
-                      }}
-                      style={{
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
-                        color: "#007bff",
-                        fontSize: "16px",
-                        marginLeft: "10px",
-                      }}
-                    >
-                      ✔️
-                    </button>
                   </div>
                   <p className="mb-1">{item.message}</p>
                 </div>
               ))}
+              {notifList.length > 5 && (
+                <div
+                  className="text-center mt-2"
+                  style={{
+                    cursor: "pointer",
+                    color: "#007bff",
+                    fontWeight: 500,
+                  }}
+                  onClick={() => nav("/employee/dashboard")}
+                >
+                  View all notifications
+                </div>
+              )}
             </div>
           )}
 
