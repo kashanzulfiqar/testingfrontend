@@ -129,6 +129,21 @@ const EmployeeDashboard = () => {
     }
   };
 
+  const markNotificationRead = (id) => {
+    apiServices("PATCH", `notifications/${id}/mark-read`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success) {
+          setNotifList((prev) =>
+            prev.map((notif) =>
+              notif._id === id ? { ...notif, read: true } : notif
+            )
+          );
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to mark notification as read");
+      });
+  };
   useEffect(() => {
     if (!userIdForSocket) {
       return;
@@ -1718,7 +1733,7 @@ const EmployeeDashboard = () => {
               <div className="card flex-fill">
                 <div className="card-body">
                   <div className="statistic-header">
-                    <h4>Important</h4>
+                    <h4>Notifications</h4>
                     {/* <div className="important-notification">
                       <Link to="/employee/requests">
                         <span className="me-1">View All</span>
@@ -1740,9 +1755,7 @@ const EmployeeDashboard = () => {
                   ) : notifList?.length > 0 ? (
                     <div className="notification-tab">
                       <ul className="nav nav-tabs">
-                        <li>
-                          <i className="la la-bell" /> Notifications
-                        </li>
+                      
                         {/* <li>
                         <Link
                           to="#"
@@ -1978,11 +1991,26 @@ const EmployeeDashboard = () => {
                             )} */}
                             {notifList?.map(
                               (item, index) => (
-                                (
-                                  <div key={index} className="employee-noti-content" style={{ cursor: "pointer" }}
-                                  onClick={() => handleNotificationClick(item)} >
-                                    <ul className="employee-notification-list">
-                                        <li className="employee-notification-grid">
+                                <div 
+                                  key={index} 
+                                  className="employee-noti-content" 
+                                  style={{ 
+                                    cursor: "pointer",
+                                    backgroundColor: item.read ? "#ffffff" : "#fff3e0",
+                                    padding: "12px",
+                                    borderRadius: "6px",
+                                    marginBottom: "8px"
+                                  }}
+                                  onClick={() => {
+                                    handleNotificationClick(item);
+                                    if (!item.read) {
+                                      markNotificationRead(item._id);
+                                    }
+                                  }}
+                                >
+                                  <ul className="employee-notification-list">
+                                      <li className="employee-notification-grid" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                                        <div style={{ display: "flex", gap: "12px", flex: 1 }}>
                                           <div className="employee-notification-icon">
                                             <span className="badge-soft-danger rounded-circle">
                                               <i className="fa fa-bell"></i>
@@ -2006,10 +2034,27 @@ const EmployeeDashboard = () => {
                                               </li>
                                             </ul>
                                           </div>
-                                        </li>
-                                      </ul>
-                                  </div>
-                                )
+                                        </div>
+                                        <span
+                                          style={{
+                                            fontSize: "14px",
+                                            color: "#999",
+                                            cursor: "pointer",
+                                            marginLeft: "8px",
+                                            minWidth: "20px",
+                                            textAlign: "center"
+                                          }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            markNotificationRead(item._id);
+                                          }}
+                                          title={item.read ? "Mark as unread" : "Mark as read"}
+                                        >
+                                          {item.read ? "✓" : "•"}
+                                        </span>
+                                      </li>
+                                    </ul>
+                                </div>
                               )
                             )}
                           </div>

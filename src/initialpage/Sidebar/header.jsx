@@ -263,15 +263,43 @@ const Header = (props) => {
 
         {notifList.slice(0, 5).map(
           (item, index) => (
-            (
-              <div key={index} className="border-bottom py-2" style={{ cursor: "pointer" }}
-              onClick={() => handleNotificationClick(item)} >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <strong>{item.title}</strong>
-                </div>
-                <p className="mb-1">{item.message}</p>
+            <div 
+              key={index} 
+              className="border-bottom py-2" 
+              style={{ 
+                cursor: "pointer",
+                backgroundColor: item.read ? "#ffffff" : "#fff3e0",
+                padding: "8px",
+                borderRadius: "4px",
+                marginBottom: "5px"
+              }}
+              onClick={() => {
+                handleNotificationClick(item);
+                if (!item.read) {
+                  markNotificationRead(item._id);
+                }
+              }} 
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <strong>{item.title}</strong>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#999",
+                    cursor: "pointer",
+                    marginLeft: "8px"
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    markNotificationRead(item._id);
+                  }}
+                  title={item.read ? "Mark as unread" : "Mark as read"}
+                >
+                  {item.read ? "✓" : "•"}
+                </span>
               </div>
-            )
+              <p className="mb-1">{item.message}</p>
+            </div>
           )
         )}
         {notifList.length > 5 && (
@@ -383,7 +411,7 @@ const Header = (props) => {
           >
             <i className="fa fa-bell" style={{ fontSize: "18px" }}></i>
 
-            {notifList.length > 0 && (
+            {notifList.filter(n => !n.read).length > 0 && (
               <span
                 className="badge bg-danger"
                 style={{
@@ -393,7 +421,7 @@ const Header = (props) => {
                   fontSize: "10px",
                 }}
               >
-                {notifList.length}
+                {notifList.filter(n => !n.read).length}
               </span>
             )}
           </a>
@@ -521,7 +549,7 @@ const Header = (props) => {
             }}
           >
             <i className="fa fa-bell me-2"></i> Notifications
-            {notifList.length > 0 && (
+            {notifList.filter(n => !n.read).length > 0 && (
               <span
                 className="badge bg-danger"
                 style={{
@@ -531,7 +559,7 @@ const Header = (props) => {
                   fontSize: "10px",
                 }}
               >
-                {notifList.length}
+                {notifList.filter(n => !n.read).length}
               </span>
             )}
           </a>
@@ -550,8 +578,23 @@ const Header = (props) => {
               )}
 
               {notifList.slice(0, 5).map((item, index) => (
-                <div key={index} className="border-bottom py-2"  style={{ cursor: "pointer" }}
-                onClick={() => handleNotificationClick(item)} >
+                <div 
+                  key={index} 
+                  className="border-bottom py-2"  
+                  style={{ 
+                    cursor: "pointer",
+                    backgroundColor: item.read ? "#ffffff" : "#fff3e0",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    marginBottom: "5px"
+                  }}
+                  onClick={() => {
+                    handleNotificationClick(item);
+                    if (!item.read) {
+                      markNotificationRead(item._id);
+                    }
+                  }}
+                >
                   <div
                     style={{
                       display: "flex",
@@ -560,6 +603,21 @@ const Header = (props) => {
                     }}
                   >
                     <strong>{item.title}</strong>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#999",
+                        cursor: "pointer",
+                        marginLeft: "8px"
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        markNotificationRead(item._id);
+                      }}
+                      title={item.read ? "Mark as unread" : "Mark as read"}
+                    >
+                      {item.read ? "✓" : "•"}
+                    </span>
                   </div>
                   <p className="mb-1">{item.message}</p>
                 </div>
