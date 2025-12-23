@@ -89,6 +89,7 @@ const CandidateDetails = () => {
   const [candidate, setCandidate] = useState(null);
   const [activeTab, setActiveTab] = useState("timeline");
   const authState = useSelector((state) => state.user.loginvalue);
+  const loggedInUser = useSelector((state) => state.user.loginvalue?.user);
   const [isInterviewModalVisible, setIsInterviewModalVisible] = useState(false);
   const [editingInterview, setEditingInterview] = useState(null);
   const [interviews, setInterviews] = useState([]);
@@ -97,6 +98,7 @@ const CandidateDetails = () => {
   const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [submittingOffer, setSubmittingOffer] = useState(false);
   const [offer, setOffer] = useState(null);
@@ -881,6 +883,7 @@ const CandidateDetails = () => {
     }
 
     try {
+      setCreatingTask(true);
       // Create FormData for task creation
       const formData = new FormData();
 
@@ -952,8 +955,7 @@ const CandidateDetails = () => {
     } catch (error) {
       console.error("Error creating task:", error);
       if (error.response?.status === 401) {
-        message.error("Session expired. Please login again");
-        navigate("/login");
+      message.error("Only HR and admin allowed to create task");
       } else if (error.response?.status === 413) {
         message.error("File size too large. Maximum size is 5MB");
       } else if (error.response?.status === 400) {
@@ -961,6 +963,8 @@ const CandidateDetails = () => {
       } else {
         message.error("Error creating task. Please try again");
       }
+    } finally {
+      setCreatingTask(false);
     }
   };
 
@@ -1106,23 +1110,51 @@ const CandidateDetails = () => {
   }
 
   if (!candidate) return null;
-  const calculateAverageRating = (feedbackArray) => {
-    if (!feedbackArray || feedbackArray.length === 0) {
+  const calculateAverageRating = () => {
+    if (!interviews || !Array.isArray(interviews) || interviews.length === 0) {
       return 0;
     }
 
-    const totalRatings = feedbackArray.reduce((sum, feedback) => {
-      const ratings = feedback.ratings;
-      const ratingSum =
-        ratings.technicalSkills1 +
-        ratings.behavior +
-        ratings.softSkills +
-        ratings.technicalSkills2 +
-        ratings.technicalSkills3;
-      return sum + ratingSum / 5; // Average of all skills for this feedback
-    }, 0);
+    let validInterviewsCount = 0;
+    let sumOfAverageRatings = 0;
 
-    return (totalRatings / feedbackArray.length).toFixed(1);
+    interviews.forEach((interview) => {
+      if (interview?.feedback?.length > 0) {
+        const interviewTotalScore = interview.feedback.reduce((acc, fb) => {
+          const r = fb.ratings || {};
+          let score = 0;
+
+          // Check if it's legacy or task based on keys
+          const isLegacy = r.technicalRating !== undefined;
+          const isTask = r.EfficientWorkingSkills !== undefined;
+
+          if (isLegacy) {
+            score =
+              ((r.technicalRating || 0) +
+                (r.behaviorRating || 0) +
+                (r.softSkillRating || 0) +
+                (r.leadershipRating || 0) +
+                (r.teamworkRating || 0)) /
+              5;
+          } else if (isTask) {
+            score =
+              ((r.EfficientWorkingSkills || 0) +
+                (r.ProblemSolvingSkills || 0) +
+                (r.PresentationSkills || 0)) /
+              3;
+          }
+
+          return acc + score;
+        }, 0);
+
+        const interviewAvg = interviewTotalScore / interview.feedback.length;
+        sumOfAverageRatings += interviewAvg;
+        validInterviewsCount++;
+      }
+    });
+
+    if (validInterviewsCount === 0) return 0;
+    return (sumOfAverageRatings / validInterviewsCount).toFixed(1);
   };
 
   const deleteResume = async (index) => {
@@ -2339,6 +2371,7 @@ const CandidateDetails = () => {
                                       <InterviewFeedbackDisplay
                                         key={index}
                                         feedback={feedback}
+                                        loggedInUser={loggedInUser}
                                       />
                                     )
                                   )}
@@ -2370,55 +2403,6 @@ const CandidateDetails = () => {
                                         paddingBottom: "10px",
                                       }}
                                     >
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          minWidth: "fit-content",
-                                          flexShrink: 0,
-                                        }}
-                                      >
-                                        <div
-                                          style={{
-                                            height: "32px",
-                                            width: "32px",
-                                          }}
-                                        >
-                                          <img
-                                            src={
-                                              interview?.interviewerId
-                                                ?.imageUrl || user_icon
-                                            }
-                                            style={{
-                                              height: "100%",
-                                              width: "100%",
-                                              borderRadius: "50%",
-                                            }}
-                                          ></img>
-                                        </div>
-                                        <div style={{ marginLeft: "10px" }}>
-                                          <h3
-                                            style={{
-                                              fontSize: "14px",
-                                              fontWeight: "500",
-                                              marginBottom: "0",
-                                            }}
-                                          >
-                                            {interview.interviewerId?.fullName}
-                                          </h3>
-                                          <p
-                                            style={{
-                                              fontSize: "12px",
-                                              fontWeight: "450",
-                                              color: "#56616b",
-                                            }}
-                                          >
-                                            {
-                                              interview.interviewerId
-                                                ?.designationName
-                                            }
-                                          </p>
-                                        </div>
-                                      </div>
                                       {interview.assignedTo?.map(
                                         (interviewer) => (
                                           <div
@@ -2656,6 +2640,7 @@ const CandidateDetails = () => {
                                       <InterviewFeedbackDisplay
                                         key={index}
                                         feedback={feedback}
+                                        loggedInUser={loggedInUser}
                                       />
                                     )
                                   )}
@@ -3287,6 +3272,7 @@ const CandidateDetails = () => {
           onSubmit={handleTaskSubmit}
           candidate={candidate}
           authState={authState}
+          loading={creatingTask}
         />
 
         {/* Send Offer Modal */}

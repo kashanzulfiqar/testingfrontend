@@ -206,15 +206,18 @@ const LeaveEmployee = () => {
           render: (text, record) => (
             <div className="action-label text-center">
               <a className="btn btn-white btn-sm btn-rounded" href="javascript:void(0)">
-                <i className={text==="New" ? "fa fa-dot-circle-o text-purple" : text === "Pending" ?
-              "fa fa-dot-circle-o text-warning" : text === "Approved" ? "fa fa-dot-circle-o text-success" 
-              :"fa fa-dot-circle-o text-danger" } /> {text==="Approved" ? t('aRequests.Approved') : text==="Declined" ? t('aRequests.Declined') : text==="Pending" ? t('aDash.pending') : text==="Cancelled" ? t('aDash.cancelled') : text}
+                <i className={text==="New" ? "fa fa-dot-circle-o text-purple m-r-5" : text === "Pending" ?
+              "fa fa-dot-circle-o text-warning m-r-5" : text === "Approved" ? "fa fa-dot-circle-o text-success m-r-5" 
+              :"fa fa-dot-circle-o text-danger m-r-5" } />
+               {text==="Approved" ? t('aRequests.Approved') : text==="Declined" ? 
+              t('aRequests.Declined') : text==="Pending" ? t('aDash.pending') : text==="Cancelled" ?
+               t('aDash.cancelled') : text}
               </a>
             </div>
             ),
         },
         {
-          title: t('requests.approvedBy'),
+          title: t('Actioned By'),
           dataIndex: 'approvedBy',
           render: (text, record) => (            
               <h2 className="table-avatar">

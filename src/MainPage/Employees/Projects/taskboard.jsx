@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Avatar_12, user_icon } from "../../../Entryfile/imagepath";
 import Offcanvas from "../../../Entryfile/offcanvance";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -20,6 +20,7 @@ import {
   message,
   Popover,
   Badge,
+  Table,
 } from "antd";
 import {
   LoadingOutlined,
@@ -35,8 +36,10 @@ import { useSelector } from "react-redux";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useForm } from "react-hook-form";
 import TaskModal from "./taskModal";
+import TaskContent from "./taskContents";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import JoditEditor from 'jodit-react';
 import moment from 'moment';
 
 const TaskBoard = () => {
@@ -93,6 +96,11 @@ const TaskBoard = () => {
   const [selectedPriorityFilter, setSelectedPriorityFilter] = useState([]);
   const [selectedReporterFilter, setSelectedReporterFilter] = useState([]);
   const [filterDropdownVisible, setFilterDropdownVisible] = useState(false);
+  const [viewMode, setViewMode] = useState('board');
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [bulkStatusModal, setBulkStatusModal] = useState(false);
+  const [bulkDeleteModal, setBulkDeleteModal] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -156,6 +164,9 @@ const TaskBoard = () => {
 
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { id: urlBoardId } = useParams();
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -192,7 +203,7 @@ const TaskBoard = () => {
             //setIsLoading(false);
             //setLoader(false);
             //message.success('Task Moved successfully')
-            //closeTaskModal();
+            //closeAddTaskModal();
             setDisableDrag(false);
           }
         })
@@ -244,7 +255,7 @@ const TaskBoard = () => {
               //setIsLoading(false);
               //setLoader(false);
               //message.success('Task Moved successfully')
-              //closeTaskModal();
+              //closeAddTaskModal();
               setDisableDrag(false);
             }
           })
@@ -283,7 +294,7 @@ const TaskBoard = () => {
               //setIsLoading(false);
               //setLoader(false);
               //message.success('Task Moved successfully')
-              //closeTaskModal();
+              //closeAddTaskModal();
               setDisableDrag(false);
             }
           })
@@ -351,11 +362,10 @@ const TaskBoard = () => {
   };
 
   const closeViewModal = () => {
-    console.log("hello");
     setViewModal(false);
   };
 
-  const closeTaskModal = () => {
+  const closeAddTaskModal = () => {
     setSelectedTeamMembers([]);
     setTaskModal(false);
     setOpenUser(false);
@@ -370,7 +380,7 @@ const TaskBoard = () => {
       data: "",
       title: "",
     });
-    closeTaskModal();
+    closeAddTaskModal();
     getAllTasks(
       BoardData?._id
         ? BoardData?._id
@@ -434,6 +444,11 @@ const TaskBoard = () => {
     return task ? task.priority : "";
   };
 
+  const getTaskTicketNumber = (taskId) => {
+    const task = allTasks.find((task) => task._id === taskId);
+    return task ? task.ticketNumber : "";
+  };
+
   const getTaskAssignee = (taskId) => {
     const task = allTasks.find((task) => task._id === taskId);
     if (!task) return null;
@@ -466,7 +481,7 @@ const TaskBoard = () => {
     if (role === 'client' || role === 'focalperson') {
       apiServices(
         "GET",
-        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&taskId=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}&populate=assignedDevelopers`,
+        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&taskBoardId=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived || false}&populate=assignedDevelopers`,
         null,
         user_state
       )
@@ -496,8 +511,7 @@ const TaskBoard = () => {
 
     apiServices(
       "GET",
-      `tasks?id=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived
-      }&populate=assignedDevelopers`,
+      `tasks?taskBoardId=${taskId}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived || false}&populate=assignedDevelopers`,
       null,
       user_state
     )
@@ -528,8 +542,7 @@ const TaskBoard = () => {
   const getTasksOptions = (id) => {
     apiServices(
       "GET",
-      `tasks?id=${id}&lane=empty&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived
-      }`,
+      `tasks?taskBoardId=${id}&lane=empty&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived || false}`,
       null,
       user_state
     )
@@ -605,7 +618,7 @@ const TaskBoard = () => {
     // Default: existing endpoint
     apiServices(
       "GET",
-      `taskBoard/view-taskBoard?id=${taskboardId}&isArchived=${BoardData?.board?.isArchived}`,
+      `taskBoard/view-taskBoard?id=${taskboardId}&isArchived=${BoardData?.board?.isArchived || false}`,
       null,
       user_state
     )
@@ -656,23 +669,25 @@ const TaskBoard = () => {
       </Select.Option>
     ));
   };
+  // Get the effective board ID - from state or URL
+  const getEffectiveBoardId = useCallback(() => {
+    if (BoardData?._id) return BoardData._id;
+    if (BoardData?.board?.project?._id) return BoardData.board.project._id;
+    if (BoardData?.board?._id) return BoardData.board._id;
+    return urlBoardId;
+  }, [BoardData, urlBoardId]);
+
+  // Initial load - fetch board and tasks
   useEffect(() => {
+    const boardIdToUse = getEffectiveBoardId();
+    
+    if (!boardIdToUse) return;
+    
     setIsLoading(true);
     setIsTaskLoading(true);
-    getAllTasks(
-      BoardData?._id
-        ? BoardData?._id
-        : BoardData?.board?.project
-          ? BoardData?.board?.project?._id
-          : BoardData?.board?._id
-    );
-    getTaskBoard(
-      BoardData?._id
-        ? BoardData?._id
-        : BoardData?.board?.project
-          ? BoardData?.board?.project?._id
-          : BoardData?.board?._id
-    );
+    getTaskBoard(boardIdToUse);
+    getAllTasks(boardIdToUse);
+    
     const handleClickOutside = (event) => {
       if (!event.target.closest(".kanban-task-action")) {
         setActiveDropdown(null); // Close dropdown when clicking outside
@@ -683,7 +698,82 @@ const TaskBoard = () => {
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
-  }, []);
+  }, [urlBoardId]);
+
+  useEffect(() => {
+    if (boardId && allTasks.length === 0 && !isTaskLoading) {
+      setIsTaskLoading(true);
+      getAllTasks(boardId);
+    }
+  }, [boardId]);
+
+  // Check if we're viewing a specific task (separate screen)
+  const taskParam = searchParams.get('task');
+  const isTaskDetailView = !!taskParam;
+
+  // Load task for detail view
+  useEffect(() => {
+    if (!isTaskDetailView) return;
+    if (allTasks.length === 0 || columns.length === 0 || !boardId) return;
+    
+    // Find task in columns
+    let foundTask = null;
+    let taskColumnId = '';
+    let taskColumnTitle = '';
+    let taskColumnColor = 'primary';
+    
+    for (const col of columns) {
+      const colTask = col.tasks?.find(t => {
+        const taskData = allTasks.find(at => at._id === t.taskId);
+        return taskData?.ticketNumber?.toUpperCase() === taskParam.toUpperCase() || t.taskId === taskParam;
+      });
+      if (colTask) {
+        foundTask = allTasks.find(at => at._id === colTask.taskId);
+        taskColumnId = col._id;
+        taskColumnTitle = col.title;
+        taskColumnColor = col.color || 'primary';
+        break;
+      }
+    }
+    
+    if (!foundTask) return;
+    
+    const taskAssignedDevelopers = foundTask?.assignedDevelopers?.map(
+      (dev) => ({
+        ...dev,
+        ...(employees.find((emp) => emp._id === dev._id) || {}),
+      })
+    ) || [];
+    
+    const projectData = {
+      boardTitle: boardTitle,
+      _id: boardId,
+      project: null,
+      assignedDevelopers: employees,
+    };
+    
+    setSelectedTask({
+      ...foundTask,
+      ProjectData: projectData,
+      boardId: boardId,
+      columnId: taskColumnId,
+      columnName: taskColumnTitle,
+      assignedDevelopers: taskAssignedDevelopers,
+      columnColor: taskColumnColor,
+      allColumns: columns.map((col) => ({
+        id: col._id,
+        title: col.title,
+        color: col.color || "primary",
+      })),
+    });
+  }, [isTaskDetailView, taskParam, allTasks, columns, boardId, boardTitle, employees]);
+
+
+  const openTaskWithUrl = useCallback((task, columnId, columnTitle, columnColor) => {
+    const taskIdentifier = task.ticketNumber || task._id;
+    navigate(`/task-board/${boardId}?task=${taskIdentifier}`);
+  }, [boardId, navigate]);
+
 
   const onFinish = (values, info) => {
     setLoader(true);
@@ -803,7 +893,7 @@ const TaskBoard = () => {
             setIsLoading(false);
             setLoader(false);
             message.success("Task added successfully");
-            closeTaskModal();
+            closeAddTaskModal();
           }
         })
         .catch((err) => {
@@ -1145,7 +1235,7 @@ const TaskBoard = () => {
         if (res?.data?.success === true) {
           setEmployees(selectedEmployees);
           message.success("Board members updated successfully");
-          closeTaskModal();
+          closeAddTaskModal();
           getAllTasks(
             BoardData?._id
               ? BoardData?._id
@@ -1340,6 +1430,55 @@ const TaskBoard = () => {
 
     setFilteredColumns(filtered);
   }, [selectedAssigneeFilter, selectedTypeFilter, selectedPriorityFilter, selectedReporterFilter, columns, allTasks, searchQuery]);
+
+  // If viewing a specific task, show task detail page instead of board
+  if (isTaskDetailView) {
+    // Show loader if task is not loaded OR if task has no title (data not fully populated)
+    if (!selectedTask || !selectedTask.title || !selectedTask._id) {
+      return (
+        <div className="page-wrapper">
+          <div className="content container-fluid" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+            <Spin size="large" tip="Loading task..." />
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <>
+        <div className="page-wrapper">
+          <Helmet>
+            <title>{selectedTask.ticketNumber || 'Task'} - DaftarPro</title>
+            <meta name="description" content="Task Detail" />
+          </Helmet>
+          <div className="content container-fluid">
+            <div className="page-header">
+              <div className="row align-items-center">
+                <div className="col">
+                  <button 
+                    onClick={() => navigate(`/task-board/${boardId}`)} 
+                    className="btn btn-primary"
+                    style={{ marginBottom: '20px' }}
+                  >
+                    <i className="fa fa-arrow-left" style={{ marginRight: '8px' }}></i>
+                    Back to Board
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+              <TaskContent
+                closeModal={() => navigate(`/task-board/${boardId}`)}
+                taskDatas={selectedTask}
+                getTaskBoard={() => getTaskBoard(boardId)}
+                getAllTasks={getAllTasks}
+              />
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -1652,6 +1791,44 @@ const TaskBoard = () => {
                     </Badge>
                   </Popover>
 
+                  {/* Board/List View Toggle */}
+                  <div style={{ 
+                    display: 'flex', 
+                    border: '1px solid #d9d9d9', 
+                    borderRadius: '8px',
+                    overflow: 'hidden'
+                  }}>
+                    <Button
+                      style={{
+                        borderRadius: 0,
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        backgroundColor: viewMode === 'board' ? '#ff9b44' : '#fff',
+                        color: viewMode === 'board' ? '#fff' : '#333',
+                      }}
+                      onClick={() => setViewMode('board')}
+                    >
+                      <i className="fa fa-th-large" /> Board
+                    </Button>
+                    <Button
+                      style={{
+                        borderRadius: 0,
+                        border: 'none',
+                        borderLeft: '1px solid #d9d9d9',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        backgroundColor: viewMode === 'list' ? '#ff9b44' : '#fff',
+                        color: viewMode === 'list' ? '#fff' : '#333',
+                      }}
+                      onClick={() => setViewMode('list')}
+                    >
+                      <i className="fa fa-list" /> List
+                    </Button>
+                  </div>
+
                   <div className="project-members mr-3">
                     <ul
                       className="team-members"
@@ -1800,6 +1977,457 @@ const TaskBoard = () => {
             </div>
           </div>
           {/* /Page Header */}
+          
+          {/* List View */}
+          {viewMode === 'list' && (
+            <div className="card mb-0">
+              {selectedRowKeys.length > 0 && (
+                <div style={{
+                  padding: '12px 16px',
+                  backgroundColor: '#fff7e6',
+                  borderBottom: '1px solid #ffd591',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ fontWeight: 500, color: '#d46b08' }}>
+                    {selectedRowKeys.length} task{selectedRowKeys.length > 1 ? 's' : ''} selected
+                  </span>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <Select
+                      placeholder="Change Status"
+                      style={{ width: 150 }}
+                      value={null}
+                      onChange={async (newStatus) => {
+                        const targetColumn = columns.find(col => col.title === newStatus);
+                        if (targetColumn) {
+                          setBulkActionLoading(true);
+                          try {
+                            const res = await apiServices(
+                              "PUT",
+                              "tasks/bulk-update-status",
+                              {
+                                taskIds: selectedRowKeys,
+                                columnId: targetColumn._id,
+                                boardId: boardId
+                              },
+                              user_state
+                            );
+                            if (res?.data?.success) {
+                              message.success(res?.data?.msg || `${selectedRowKeys.length} task(s) moved to ${newStatus}`);
+                              setSelectedRowKeys([]);
+                              const boardIdToFetch = BoardData?._id
+                                ? BoardData?._id
+                                : BoardData?.board?.project
+                                  ? BoardData?.board?.project?._id
+                                  : BoardData?.board?._id;
+                              getTaskBoard(boardIdToFetch);
+                            } else {
+                              message.error(res?.data?.msg || 'Failed to update tasks');
+                            }
+                          } catch (err) {
+                            message.error('Failed to update tasks');
+                          } finally {
+                            setBulkActionLoading(false);
+                          }
+                        }
+                      }}
+                      loading={bulkActionLoading}
+                      disabled={bulkActionLoading}
+                    >
+                      {columns.map(col => (
+                        <Select.Option key={col._id} value={col.title}>
+                          {col.title}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    {!(role === 'client' || role === 'focalperson') && (
+                      <Button
+                        danger
+                        onClick={() => setBulkDeleteModal(true)}
+                        loading={bulkActionLoading}
+                        disabled={bulkActionLoading}
+                      >
+                        Delete Selected
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => {
+                        const selectedTasks = filteredColumns?.flatMap(column =>
+                          column.tasks
+                            .filter(task => selectedRowKeys.includes(task.taskId))
+                            .map(task => {
+                              const taskDetails = allTasks.find(t => t._id === task.taskId);
+                              return {
+                                Title: taskDetails?.title || '',
+                                Project: BoardData?.projectName || BoardData?.board?.project?.projectName || '-',
+                                'Task Board': boardTitle || '-',
+                                Tags: taskDetails?.tags?.join(', ') || '',
+                                Status: column.title,
+                              };
+                            })
+                        );
+                        const headers = ['Title', 'Project', 'Task Board', 'Tags', 'Status'];
+                        const csvContent = [
+                          headers.join(','),
+                          ...selectedTasks.map(task => 
+                            headers.map(h => `"${(task[h] || '').replace(/"/g, '""')}"`).join(',')
+                          )
+                        ].join('\n');
+                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `tasks_export_${moment().format('YYYY-MM-DD')}.csv`;
+                        link.click();
+                        message.success(`${selectedRowKeys.length} task(s) exported`);
+                      }}
+                    >
+                      Export Selected
+                    </Button>
+                    <Button
+                      type="text"
+                      onClick={() => setSelectedRowKeys([])}
+                      style={{ color: '#666' }}
+                    >
+                      Clear Selection
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <div className="card-body" style={{ padding: 0 }}>
+                {isLoading ? (
+                  <div className="text-center py-5">
+                    <Spin size="large" tip="Loading..." />
+                  </div>
+                ) : (
+                  <Table
+                    rowSelection={{
+                      selectedRowKeys,
+                      onChange: (keys) => setSelectedRowKeys(keys),
+                    }}
+                    dataSource={filteredColumns?.flatMap(column => 
+                      column.tasks.map(task => {
+                        const taskDetails = allTasks.find(t => t._id === task.taskId);
+                        return {
+                          key: task.taskId,
+                          taskId: task.taskId,
+                          title: taskDetails?.title || task.title,
+                          ticketNumber: taskDetails?.ticketNumber || '',
+                          project: BoardData?.projectName || BoardData?.board?.project?.projectName || '-',
+                          taskBoard: boardTitle || '-',
+                          tags: taskDetails?.tags || [],
+                          status: column.title,
+                          statusColor: column.color || 'primary',
+                          columnId: column._id,
+                          taskDetails: taskDetails,
+                        };
+                      })
+                    )}
+                    columns={[
+                      {
+                        title: 'Title',
+                        dataIndex: 'title',
+                        key: 'title',
+                        sorter: (a, b) => (a.title || '').localeCompare(b.title || ''),
+                        sortDirections: ['ascend', 'descend', 'ascend'],
+                        render: (text, record) => (
+                          <div 
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                              const taskDetails = record.taskDetails;
+                              if (taskDetails) {
+                                const taskAssignedDevelopers = taskDetails?.assignedDevelopers?.map(
+                                  (dev) => ({
+                                    ...dev,
+                                    ...(employees.find((emp) => emp._id === dev._id) || {}),
+                                  })
+                                );
+                                setSelectedTask({
+                                  ...taskDetails,
+                                  ProjectData: BoardData?._id
+                                    ? {
+                                        projectName: BoardData?.projectName,
+                                        _id: BoardData?._id,
+                                        assignedDevelopers: employees,
+                                      }
+                                    : BoardData?.board?.project
+                                    ? {
+                                        projectName: BoardData?.board?.project?.projectName,
+                                        _id: BoardData?.board?.project?._id,
+                                        assignedDevelopers: employees,
+                                      }
+                                    : {
+                                        boardTitle: BoardData?.board?.boardTitle,
+                                        _id: BoardData?.board?._id,
+                                        project: null,
+                                        assignedDevelopers: employees,
+                                      },
+                                  boardId: boardId,
+                                  columnId: record.columnId,
+                                  columnName: record.status,
+                                  assignedDevelopers: taskAssignedDevelopers,
+                                  columnColor: record.statusColor,
+                                  allColumns: columns.map((col) => ({
+                                    id: col._id,
+                                    title: col.title,
+                                    color: col.color || "primary",
+                                  })),
+                                });
+                                setViewModal(true);
+                              }
+                            }}
+                          >
+                            {record.ticketNumber && (
+                              <span style={{
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color: '#FF9B44',
+                                display: 'block',
+                                marginBottom: '2px'
+                              }}>
+                                {record.ticketNumber}
+                              </span>
+                            )}
+                            <span style={{ fontWeight: 500 }}>{text}</span>
+                          </div>
+                        ),
+                      },
+                      {
+                        title: 'Project',
+                        dataIndex: 'project',
+                        key: 'project',
+                        sorter: (a, b) => (a.project || '').localeCompare(b.project || ''),
+                        sortDirections: ['ascend', 'descend', 'ascend'],
+                        render: (text) => (
+                          <span style={{ 
+                            maxWidth: '180px', 
+                            display: 'inline-block', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            whiteSpace: 'nowrap' 
+                          }}>
+                            {text}
+                          </span>
+                        ),
+                      },
+                      {
+                        title: 'Task Boards',
+                        dataIndex: 'taskBoard',
+                        key: 'taskBoard',
+                        sorter: (a, b) => (a.taskBoard || '').localeCompare(b.taskBoard || ''),
+                        sortDirections: ['ascend', 'descend', 'ascend'],
+                        render: (text) => text || '-',
+                      },
+                      {
+                        title: 'Tags',
+                        dataIndex: 'tags',
+                        key: 'tags',
+                        sorter: (a, b) => (a.tags?.join(',') || '').localeCompare(b.tags?.join(',') || ''),
+                        sortDirections: ['ascend', 'descend', 'ascend'],
+                        render: (tags) => (
+                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                            {tags?.length > 0 ? tags.map((tag, idx) => (
+                              <Tag 
+                                key={idx}
+                                style={{ 
+                                  borderRadius: '4px',
+                                  margin: 0,
+                                  backgroundColor: '#f5f5f5',
+                                  border: '1px solid #d9d9d9',
+                                  color: '#595959'
+                                }}
+                              >
+                                {tag}
+                              </Tag>
+                            )) : '-'}
+                          </div>
+                        ),
+                      },
+                      {
+                        title: 'Status',
+                        dataIndex: 'status',
+                        key: 'status',
+                        width: 160,
+                        sorter: (a, b) => (a.status || '').localeCompare(b.status || ''),
+                        sortDirections: ['ascend', 'descend', 'ascend'],
+                        render: (text, record) => {
+                          const colorMap = {
+                            primary: '#ff902f',
+                            success: '#55ce63',
+                            info: '#009efb',
+                            warning: '#ffbc34',
+                            danger: '#f62d51',
+                            purple: '#9368e9',
+                          };
+                          const statusColor = colorMap[record.statusColor] || '#ff902f';
+                          return (
+                            <Select
+                              value={text}
+                              style={{ width: '100%' }}
+                              bordered={false}
+                              dropdownMatchSelectWidth={false}
+                              onChange={(newStatus) => {
+                                const targetColumn = columns.find(col => col.title === newStatus);
+                                if (targetColumn && record.columnId !== targetColumn._id) {
+                                  // Move task to new column
+                                  const sourceColumn = columns.find(col => col._id === record.columnId);
+                                  const taskIndex = sourceColumn.tasks.findIndex(t => t.taskId === record.taskId);
+                                  
+                                  if (taskIndex !== -1) {
+                                    const [movedTask] = sourceColumn.tasks.splice(taskIndex, 1);
+                                    targetColumn.tasks.push(movedTask);
+                                    
+                                    // Update columns state
+                                    setColumns([...columns]);
+                                    
+                                    // Call API to update task status
+                                    apiServices(
+                                      "PUT",
+                                      `task/update-task/${record.taskId}`,
+                                      { columnId: targetColumn._id },
+                                      user_state
+                                    ).then(() => {
+                                      message.success('Task status updated');
+                                    }).catch(() => {
+                                      message.error('Failed to update task status');
+                                      // Revert on error
+                                      fetchBoard();
+                                    });
+                                  }
+                                }
+                              }}
+                            >
+                              {columns.map(col => {
+                                const colColor = colorMap[col.color] || '#ff902f';
+                                return (
+                                  <Select.Option key={col._id} value={col.title}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <span style={{
+                                        width: '8px',
+                                        height: '8px',
+                                        borderRadius: '50%',
+                                        backgroundColor: colColor,
+                                        display: 'inline-block'
+                                      }} />
+                                      {col.title}
+                                    </div>
+                                  </Select.Option>
+                                );
+                              })}
+                            </Select>
+                          );
+                        },
+                      },
+                      {
+                        title: 'Action',
+                        key: 'action',
+                        width: 80,
+                        align: 'center',
+                        render: (_, record) => (
+                          <div className="dropdown">
+                            <a
+                              style={{ cursor: 'pointer', fontSize: '18px', color: '#999' }}
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false"
+                            >
+                              <i className="fa fa-ellipsis-v" />
+                            </a>
+                            <div className="dropdown-menu dropdown-menu-right">
+                              <a
+                                className="dropdown-item"
+                                onClick={() => {
+                                  const taskDetails = record.taskDetails;
+                                  if (taskDetails) {
+                                    const taskAssignedDevelopers = taskDetails?.assignedDevelopers?.map(
+                                      (dev) => ({
+                                        ...dev,
+                                        ...(employees.find((emp) => emp._id === dev._id) || {}),
+                                      })
+                                    );
+                                    setSelectedTask({
+                                      ...taskDetails,
+                                      ProjectData: BoardData?._id
+                                        ? {
+                                            projectName: BoardData?.projectName,
+                                            _id: BoardData?._id,
+                                            assignedDevelopers: employees,
+                                          }
+                                        : BoardData?.board?.project
+                                        ? {
+                                            projectName: BoardData?.board?.project?.projectName,
+                                            _id: BoardData?.board?.project?._id,
+                                            assignedDevelopers: employees,
+                                          }
+                                        : {
+                                            boardTitle: BoardData?.board?.boardTitle,
+                                            _id: BoardData?.board?._id,
+                                            project: null,
+                                            assignedDevelopers: employees,
+                                          },
+                                      boardId: boardId,
+                                      columnId: record.columnId,
+                                      columnName: record.status,
+                                      assignedDevelopers: taskAssignedDevelopers,
+                                      columnColor: record.statusColor,
+                                      allColumns: columns.map((col) => ({
+                                        id: col._id,
+                                        title: col.title,
+                                        color: col.color || "primary",
+                                      })),
+                                      isEditing: true,
+                                    });
+                                    setViewModal(true);
+                                  }
+                                }}
+                              >
+                                Edit
+                              </a>
+                              {!(role === 'client' || role === 'focalperson') && (
+                                <a
+                                  className="dropdown-item"
+                                  onClick={() => {
+                                    const taskDetails = record.taskDetails;
+                                    setAddTask({
+                                      isDelOpen: true,
+                                      isAddOpen: false,
+                                      data: { taskId: record.taskId },
+                                      title: taskDetails?.title || record.title,
+                                    });
+                                    setColumnId(record.columnId);
+                                  }}
+                                >
+                                  Remove
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        ),
+                      },
+                    ]}
+                    pagination={{
+                      pageSize: 20,
+                      showSizeChanger: true,
+                      showTotal: (total) => `Total ${total} tasks`,
+                    }}
+                    scroll={{ x: 900 }}
+                    locale={{
+                      emptyText: (
+                        <Empty
+                          image={EmptyTable}
+                          imageStyle={{ height: 100 }}
+                          description="No tasks found"
+                        />
+                      ),
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Board View */}
+          {viewMode === 'board' && (
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable
               droppableId="all-columns"
@@ -2032,113 +2660,30 @@ const TaskBoard = () => {
                                                             width: "100%",
                                                           }}
                                                         >
+                                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden', maxWidth: '100%' }}>
+                                                            {getTaskTicketNumber(task.taskId) && (
+                                                              <span style={{
+                                                                fontSize: '11px',
+                                                                fontWeight: 600,
+                                                                color: '#FF9B44',
+                                                                letterSpacing: '0.3px'
+                                                              }}>
+                                                                {getTaskTicketNumber(task.taskId)}
+                                                              </span>
+                                                            )}
                                                           <a
                                                             style={{
-                                                              wordBreak:
-                                                                "break-word",
+                                                                wordBreak: "break-word",
                                                               display: "block",
                                                               overflow: "hidden",
                                                               textOverflow: "ellipsis",
                                                               whiteSpace: "nowrap",
                                                               maxWidth: "100%"
                                                             }}
-                                                          // onClick={() => {
-                                                          //   const title =
-                                                          //     getTaskTitle(
-                                                          //       task.taskId
-                                                          //     );
-                                                          //   const tags =
-                                                          //     getTaskTags(
-                                                          //       task.taskId
-                                                          //     );
-                                                          //   const description =
-                                                          //     getTaskDescription(
-                                                          //       task.taskId
-                                                          //     );
-                                                          //   const status =
-                                                          //     column.title;
-                                                          //   const taskAssignedDevelopers =
-                                                          //     getTaskAssignedDevelopers(
-                                                          //       task.taskId
-                                                          //     );
-
-                                                          //   setSelectedTask({
-                                                          //     _id: task.taskId,
-                                                          //     title,
-                                                          //     tags,
-                                                          //     description,
-                                                          //     ProjectData:
-                                                          //       BoardData?._id
-                                                          //         ? {
-                                                          //             projectName:
-                                                          //               BoardData?.projectName,
-                                                          //             _id: BoardData?._id,
-                                                          //             assignedDevelopers:
-                                                          //               employees,
-                                                          //           }
-                                                          //         : BoardData
-                                                          //             ?.board
-                                                          //             ?.project
-                                                          //         ? {
-                                                          //             projectName:
-                                                          //               BoardData
-                                                          //                 ?.board
-                                                          //                 ?.project
-                                                          //                 ?.projectName,
-                                                          //             _id: BoardData
-                                                          //               ?.board
-                                                          //               ?.project
-                                                          //               ?._id,
-                                                          //             assignedDevelopers:
-                                                          //               employees,
-                                                          //           }
-                                                          //         : {
-                                                          //             boardTitle:
-                                                          //               BoardData
-                                                          //                 ?.board
-                                                          //                 ?.boardTitle,
-                                                          //             _id: BoardData
-                                                          //               ?.board
-                                                          //               ?._id,
-                                                          //             project:
-                                                          //               null,
-                                                          //             assignedDevelopers:
-                                                          //               employees,
-                                                          //           },
-                                                          //     status,
-                                                          //     boardId:
-                                                          //       boardId,
-                                                          //     columnId:
-                                                          //       column._id,
-                                                          //     columnName:
-                                                          //       column.title,
-                                                          //     assignedDevelopers:
-                                                          //       taskAssignedDevelopers,
-                                                          //     columnColor:
-                                                          //       column.color ||
-                                                          //       "primary", // Add column color
-                                                          //     allColumns:
-                                                          //       columns.map(
-                                                          //         (col) => ({
-                                                          //           // Add all columns data
-                                                          //           id: col._id,
-                                                          //           title:
-                                                          //             col.title,
-                                                          //           color:
-                                                          //             col.color ||
-                                                          //             "primary",
-                                                          //         })
-                                                          //       ),
-                                                          //   });
-                                                          //   setViewModal(
-                                                          //     true
-                                                          //   );
-                                                          // }}
-                                                          >
-                                                            {getTaskTitle(
-                                                              task.taskId
-                                                            )}
-                                                          </a>
+                                                            >
+                                                              {getTaskTitle(task.taskId)}
+                                                            </a>
+                                                          </div>
                                                           <div
                                                             style={{
                                                               display: "flex",
@@ -2590,6 +3135,7 @@ const TaskBoard = () => {
               )}
             </Droppable>
           </DragDropContext>
+          )}
         </div>
         {/* /Page Content */}
         <Offcanvas />
@@ -2836,24 +3382,109 @@ const TaskBoard = () => {
       </Modal>
 
       <Modal
+        open={bulkDeleteModal}
+        onClose={() => setBulkDeleteModal(false)}
+        aria-labelledby="bulk-delete-modal"
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content" style={{ height: "280px" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <div className="form-header">
+                <h3 style={{ marginBottom: "30px" }}>Delete Selected Tasks</h3>
+                <p>
+                  Are you sure you want to delete {selectedRowKeys.length} selected task{selectedRowKeys.length > 1 ? 's' : ''}? This action cannot be undone.
+                </p>
+              </div>
+              <div className="modal-btn delete-action">
+                <div className="row">
+                  <div className="col-6">
+                    <Button
+                      className="btn btn-primary continue-btn"
+                      onClick={async () => {
+                        setBulkActionLoading(true);
+                        try {
+                          const res = await apiServices(
+                            "DELETE",
+                            "tasks/bulk-delete",
+                            {
+                              taskIds: selectedRowKeys,
+                              boardId: boardId
+                            },
+                            user_state
+                          );
+                          if (res?.data?.success) {
+                            message.success(res?.data?.msg || `${selectedRowKeys.length} task(s) deleted`);
+                            setSelectedRowKeys([]);
+                            setBulkDeleteModal(false);
+                            const boardIdToFetch = BoardData?._id
+                              ? BoardData?._id
+                              : BoardData?.board?.project
+                                ? BoardData?.board?.project?._id
+                                : BoardData?.board?._id;
+                            getTaskBoard(boardIdToFetch);
+                          } else {
+                            message.error(res?.data?.msg || 'Failed to delete tasks');
+                          }
+                        } catch (err) {
+                          message.error('Failed to delete tasks');
+                        } finally {
+                          setBulkActionLoading(false);
+                        }
+                      }}
+                      disabled={bulkActionLoading}
+                      style={{ width: "100%" }}
+                    >
+                      {bulkActionLoading ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
+                  </div>
+                  <div className="col-6">
+                    <Button
+                      onClick={() => setBulkDeleteModal(false)}
+                      className="btn btn-primary submit-btn"
+                      style={{ width: "100%" }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
         open={taskModal}
-        onClose={closeTaskModal}
+        onClose={closeAddTaskModal}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
         disableRestoreFocus
         BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
         }}
       >
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">{"Add Task"}</h5>
-              <button type="button" className="close" onClick={closeTaskModal}>
+              <button type="button" className="close" onClick={closeAddTaskModal}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>
-            {/* {columnId ? ( */}
             <div className="modal-body">
               <Form
                 name="control-hooks"
@@ -3163,7 +3794,7 @@ const TaskBoard = () => {
 
       <Modal
         open={openUser}
-        onClose={closeTaskModal}
+        onClose={closeAddTaskModal}
         aria-labelledby="modal-modal-title"
         className="modalScroll"
         aria-describedby="modal-modal-description"
@@ -3178,7 +3809,7 @@ const TaskBoard = () => {
             <div className="modal-header">
               <h5 className="modal-title">Edit Board Members</h5>
 
-              <button type="button" className="close" onClick={closeTaskModal}>
+              <button type="button" className="close" onClick={closeAddTaskModal}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>
@@ -3300,8 +3931,8 @@ const TaskBoard = () => {
           overflowY: "scroll",
         }}
       >
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content">
+        <div className="modal-dialog modal-dialog-centered modal-lg" role="document" style={{ maxWidth: '1000px', width: '95%' }}>
+          <div className="modal-content" style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             <div className="modal-header">
               <h5 className="modal-title">
                 {t("holiday.add")} {t("Timesheetemployee.task")}
@@ -3310,7 +3941,7 @@ const TaskBoard = () => {
                 <span aria-hidden="true">×</span>
               </button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body" style={{ overflowY: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
               <Form
                 form={form2}
                 onFinish={(values) => {
@@ -3395,9 +4026,6 @@ const TaskBoard = () => {
                             if (!plain || plain.trim() === '') {
                               return Promise.reject(t('Tasks.pleaseenterdescription'));
                             }
-                            if (/\s{2,}/.test(plain)) {
-                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                            }
                             if (plain.length <= 4) {
                               return Promise.reject(t('Tasks.descriptionLength'));
                             }
@@ -3406,11 +4034,48 @@ const TaskBoard = () => {
                         }]}
                         className="custom-border"
                       >
-                        <ReactQuill value={descValue} onChange={setDescValue} theme="snow" style={{ minHeight: 100 }} />
+                        <div className="jodit-description-editor">
+                          <style>{`
+                            .jodit-description-editor .jodit-wysiwyg ul { list-style-type: disc !important; padding-left: 20px !important; margin-left: 10px !important; }
+                            .jodit-description-editor .jodit-wysiwyg ol { list-style-type: decimal !important; padding-left: 20px !important; margin-left: 10px !important; }
+                            .jodit-description-editor .jodit-wysiwyg li { display: list-item !important; }
+                          `}</style>
+                          <JoditEditor
+                            value={descValue}
+                            onBlur={(content) => setDescValue(content)}
+                            config={{
+                              readonly: false,
+                              height: 150,
+                              toolbar: true,
+                              toolbarButtonSize: 'small',
+                              buttons: [
+                                { name: 'bold' },
+                                { name: 'italic' },
+                                {
+                                  name: 'ul',
+                                  list: null
+                                },
+                                {
+                                  name: 'ol', 
+                                  list: null
+                                },
+                                { name: 'paragraph' }
+                              ],
+                              placeholder: 'Enter description...',
+                              showCharsCounter: false,
+                              showWordsCounter: false,
+                              showXPathInStatusbar: false,
+                              askBeforePasteHTML: false,
+                              askBeforePasteFromWord: false,
+                              statusbar: false,
+                              disablePlugins: 'add-new-line',
+                            }}
+                          />
+                        </div>
                       </Form.Item>
                     </div>
                   </div>
-                  <div className="col-12">
+                  <div className="col-md-6">
                     <div className="form-group">
                       <label>
                         Assignee :
@@ -3440,7 +4105,7 @@ const TaskBoard = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-12">
+                  <div className="col-md-6">
                     <div className="form-group">
                       <label>
                         Priority :

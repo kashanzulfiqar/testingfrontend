@@ -29,6 +29,9 @@ import {
   InputNumber,
   Upload,
   Skeleton,
+  Modal as AntdModal,
+  Dropdown,
+  Menu,
 } from "antd";
 import Modal from "@mui/material/Modal";
 import { itemRender } from "../../paginationfunction";
@@ -43,6 +46,7 @@ import {
 } from "@ant-design/icons";
 import ImgCrop from "antd-img-crop";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
+import { uploadFunction } from "../../Employees/Projects/UploadAndDeleteFunc";
 import EmployeeProjectsScreen from "./clientProfileScreens/EmployeeProjectsScreen";
 import { useTranslation } from "react-i18next";
 import { all } from "axios";
@@ -102,6 +106,307 @@ const EmployeeProfile = () => {
     isDelOpen: false,
     data: "",
   });
+
+
+  const [uploadModalVisible, setUploadModalVisible] = useState(false);
+  const [uploadType, setUploadType] = useState(null);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [documents, setDocuments] = useState({});
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  
+
+  const [deleteDocModal, setDeleteDocModal] = useState(false);
+  const [docToDelete, setDocToDelete] = useState(null);
+
+  const [editDocModal, setEditDocModal] = useState(false);
+  const [docToEdit, setDocToEdit] = useState(null);
+  const [editFile, setEditFile] = useState(null);
+  const [editUploading, setEditUploading] = useState(false);
+
+  const DOCUMENT_TYPES = {
+    cv: { label: "CV", extensions: [".pdf"], maxSize: 5 * 1024 * 1024, maxSizeLabel: "5MB" },
+    idCard: { label: "ID Card", extensions: [".pdf", ".png", ".jpg", ".jpeg"], maxSize: 5 * 1024 * 1024, maxSizeLabel: "5MB" },
+    degree: { label: "Degree", extensions: [".pdf", ".png", ".jpg", ".jpeg"], maxSize: 5 * 1024 * 1024, maxSizeLabel: "5MB" },
+    contract: { label: "Contract", extensions: [".pdf", ".png", ".jpg", ".jpeg"], maxSize: 5 * 1024 * 1024, maxSizeLabel: "5MB" },
+  };
+
+  const showUploadModal = () => {
+    const uploadedDocTypes = Object.keys(documents || {}).filter(
+      key => DOCUMENT_TYPES[key] && documents[key]
+    );
+    
+    const availableDocTypes = Object.keys(DOCUMENT_TYPES).filter(
+      type => !uploadedDocTypes.includes(type)
+    );
+    
+    if (availableDocTypes.length === 0) {
+      message.error("All documents have been uploaded. Contact admin to re-upload.");
+      return;
+    }
+    
+    setUploadModalVisible(true);
+    setUploadType(null);
+    setUploadFile(null);
+  };
+
+  const handleUploadCancel = () => {
+    setUploadModalVisible(false);
+    setUploadType(null);
+    setUploadFile(null);
+  };
+
+  const handleUploadTypeChange = (value) => {
+    setUploadType(value);
+    setUploadFile(null); 
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (uploadType) {
+        const config = DOCUMENT_TYPES[uploadType];
+        const fileExtension = "." + file.name.split(".").pop().toLowerCase();
+        
+        if (!config.extensions.includes(fileExtension)) {
+          message.error(`Invalid file type. Allowed: ${config.extensions.join(", ")}`);
+          e.target.value = null;
+          return;
+        }
+        
+        if (file.size > config.maxSize) {
+          message.error(`File too large. Max size: ${config.maxSizeLabel}`);
+          e.target.value = null;
+          return;
+        }
+      }
+      setUploadFile(file);
+    }
+  };
+
+  const handleDocumentUpload = async () => {
+    if (!uploadType || !uploadFile) {
+      message.error("Please select a type and a file");
+      return;
+    }
+
+    setUploading(true);
+    const hide = message.loading("Uploading document...", 0);
+    
+    try {
+      // 1. Upload file to S3/Cloudinary using uploadFunction
+      // uploadFunction expects an array of files
+      const uploadedFiles = await uploadFunction([uploadFile], user_state);
+      
+      if (!uploadedFiles || uploadedFiles.length === 0) {
+        throw new Error("File upload failed");
+      }
+
+      const uploadedFileObject = uploadedFiles[0];
+
+      // 2. Save document metadata to backend
+      const payload = {
+        userId: allData._id,
+        type: uploadType,
+        file: uploadedFileObject,
+      };
+
+      // Endpoint is /user/documents
+      const res = await apiServices("POST", "user/documents", payload, user_state);
+
+      if (res.data.success) {
+        message.success("Document uploaded successfully");
+        handleUploadCancel();
+        fetchDocuments();
+      } else {
+        throw new Error(res.data.msg || "Failed to save document");
+      }
+
+    } catch (error) {
+      console.error("Upload error:", error);
+      message.error(error.message || "An error occurred during upload");
+    } finally {
+      hide();
+      setUploading(false);
+    }
+  };
+
+  const fetchDocuments = async () => {
+    if (!allData?._id) return;
+    setDocumentsLoading(true);
+    try {
+      const res = await apiServices("GET", `user/documents/${allData._id}`, null, user_state);
+      if (res.data.success) {
+        setDocuments(res.data.documents);
+      }
+    } catch (error) {
+      console.error("Failed to fetch documents:", error);
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "documents") {
+      fetchDocuments();
+    }
+  }, [activeTab, allData?._id]);
+
+  const handleViewDocument = (doc) => {
+    if (doc?.imageUrl) {
+      window.open(doc.imageUrl, '_blank');
+    }
+  };
+
+  const handleDownloadDocument = (doc) => {
+    if (doc?.imageUrl) {
+      // Try to fetch the file and download as blob to force download
+      (async () => {
+        try {
+          const response = await fetch(doc.imageUrl, { method: 'GET' });
+          if (!response.ok) throw new Error('Failed to fetch file');
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          // Use provided filename or fallback
+          const filename = doc.fileName || (doc?.file && doc.file.originalname) || 'document';
+          link.setAttribute('download', filename);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error('Download failed, falling back to direct open:', error);
+          // Fallback to opening in new tab if fetch/download fails
+          window.open(doc.imageUrl, '_blank');
+        }
+      })();
+    }
+  };
+
+  const handleDeleteDocument = (type, config) => {
+    setDocToDelete({ type, config });
+    setDeleteDocModal(true);
+  };
+
+  const confirmDeleteDocument = async () => {
+    if (!docToDelete) return;
+    
+    try {
+      setLoader(true);
+      const hide = message.loading("Deleting document...", 0);
+      
+      const payload = {
+        userId: allData._id,
+        type: docToDelete.type,
+      };
+
+      const res = await apiServices("DELETE", "user/documents", payload, user_state);
+
+      if (res.data.success) {
+        message.success("Document deleted successfully");
+        fetchDocuments();
+        setDeleteDocModal(false);
+        setDocToDelete(null);
+      } else {
+        throw new Error(res.data.msg || "Failed to delete document");
+      }
+
+      hide();
+    } catch (error) {
+      console.error("Delete error:", error);
+      message.error(error.message || "An error occurred while deleting");
+    } finally {
+      setLoader(false);
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteDocModal(false);
+    setDocToDelete(null);
+  };
+
+  const handleEditDocument = (docType, doc) => {
+    setDocToEdit({ type: docType, data: doc });
+    setEditFile(null);
+    setEditDocModal(true);
+  };
+
+  const handleEditFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (docToEdit) {
+        const config = DOCUMENT_TYPES[docToEdit.type];
+        const fileExtension = "." + file.name.split(".").pop().toLowerCase();
+        
+        if (!config.extensions.includes(fileExtension)) {
+          message.error(`Invalid file type. Allowed types: ${config.extensions.join(", ")}`);
+          return;
+        }
+        
+        if (file.size > config.maxSize) {
+          message.error(`File size exceeds ${config.maxSizeLabel} limit`);
+          return;
+        }
+      }
+      setEditFile(file);
+    }
+  };
+
+  const handleEditDocumentUpload = async () => {
+    if (!editFile || !docToEdit) {
+      message.error("Please select a file");
+      return;
+    }
+
+    setEditUploading(true);
+    const hide = message.loading("Updating document...", 0);
+    
+    try {
+      // Upload file to S3/Cloudinary
+      const uploadedFiles = await uploadFunction([editFile], user_state);
+      
+      if (!uploadedFiles || uploadedFiles.length === 0) {
+        throw new Error("File upload failed");
+      }
+
+      const uploadedFileObject = uploadedFiles[0];
+
+      // Update document metadata
+      const payload = {
+        userId: allData._id,
+        type: docToEdit.type,
+        file: uploadedFileObject,
+      };
+
+      const res = await apiServices("PUT", "user/documents", payload, user_state);
+
+      if (res.data.success) {
+        message.success("Document updated successfully");
+        closeEditModal();
+        fetchDocuments();
+      } else {
+        throw new Error(res.data.msg || "Failed to update document");
+      }
+
+    } catch (error) {
+      console.error("Update error:", error);
+      message.error(error.message || "An error occurred during update");
+    } finally {
+      hide();
+      setEditUploading(false);
+    }
+  };
+
+  const closeEditModal = () => {
+    setEditDocModal(false);
+    setDocToEdit(null);
+    setEditFile(null);
+  };
+
+ const uploadedCount = Object.entries(DOCUMENT_TYPES).filter(([key]) => documents?.[key]).length;
+
 
   useEffect(() => {
     if ($(".select").length > 0) {
@@ -1154,6 +1459,18 @@ const EmployeeProfile = () => {
                       {t("empProfile.assets")}
                     </a>
                   </li>
+                  <li className="nav-item">
+                    <a
+                      href="javascript:void(0)"
+                      className={`nav-link ${activeTab === "documents" ? "active" : ""
+                        }`}
+                      onClick={() => {
+                        setActiveTab("documents");
+                      }}
+                    >
+                      {t("empProfile.documents.tab") || "Documents"}
+                    </a>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -2011,6 +2328,126 @@ const EmployeeProfile = () => {
             {activeTab === "assets" && allData?._id && (
               <div className="tab-pane fade show active" id="emp_assets">
                 <AssetsByEmployee employeeId={allData?._id} />
+              </div>
+            )}
+            {activeTab === "documents" && allData?._id && (
+              <div className="tab-pane fade show active" id="emp_documents">
+                <div className="row">
+                  <div className="col-md-12">
+                    <div className="card">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h3 className="card-title mb-0">Document</h3>
+                          <a
+                            className="btn add-btn force-white" 
+                            onClick={showUploadModal}
+                            
+                          >
+                            Upload Document
+                          </a>
+                        </div>
+                        <div className="table-responsive">
+                          {documentsLoading ? (
+                            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                              <Spin size="large" />
+                            </div>
+                          ) : (
+                          <table className="table table-striped custom-table mb-0">
+                            <thead>
+                              <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Updated Date</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Object.entries(DOCUMENT_TYPES).map(([key, config]) => {
+                                const doc = documents?.[key];
+                                if (!doc) return null;
+                                
+                                const menu = (
+                                  <Menu>
+                                    <Menu.Item 
+                                      key="view" 
+                                      onClick={() => handleViewDocument(doc)}
+                                      icon={<i className="fa fa-eye" />}
+                                    >
+                                      View
+                                    </Menu.Item>
+                                    <Menu.Item 
+                                      key="download" 
+                                      onClick={() => handleDownloadDocument(doc)}
+                                      icon={<i className="fa fa-download" />}
+                                    >
+                                      Download
+                                    </Menu.Item>
+                                    {role === "admin" && (
+                                      <>
+                                        <Menu.Item 
+                                          key="edit" 
+                                          onClick={() => handleEditDocument(key, doc)}
+                                          icon={<i className="fa fa-edit" />}
+                                        >
+                                          Edit
+                                        </Menu.Item>
+                                        <Menu.Item 
+                                          key="delete" 
+                                          onClick={() => handleDeleteDocument(key, config)}
+                                          icon={<i className="fa fa-trash" />}
+                                          danger
+                                        >
+                                          Delete
+                                        </Menu.Item>
+                                      </>
+                                    )}
+                                  </Menu>
+                                );
+
+                                 return (
+                                  <tr key={key}>
+                                    <td>
+                                      <a 
+                                        href="javascript:void(0)" 
+                                        onClick={() => handleViewDocument(doc)}
+                                        style={{ 
+                                          color: 'inherit', 
+                                          textDecoration: 'none',
+                                          cursor: 'pointer'
+                                        }}
+                                        onMouseEnter={(e) => e.target.style.textDecoration = 'none'}
+                                        onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                                      >
+                                        {doc.fileName || config.label}
+                                      </a>
+                                    </td>
+                                    <td>{config.label}</td>
+                                    <td>{doc.uploadedAt ? moment(doc.uploadedAt).format("DD MMM YYYY") : "-"}</td>
+                                    <td>{doc.updatedAt ? moment(doc.updatedAt).format("DD MMM YYYY") : "-"}</td>
+                                    <td>
+                                      <Dropdown overlay={menu} trigger={['click']}>
+                                        <a className="action-icon" href="javascript:void(0)" onClick={(e) => e.preventDefault()}>
+                                          <i className="material-icons">more_vert</i>
+                                        </a>
+                                      </Dropdown>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                              {uploadedCount === 0 &&(
+                                <tr>
+                                  <td colSpan="5" className="text-center">No documents uploaded</td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -3219,6 +3656,227 @@ const EmployeeProfile = () => {
         </Modal>
         {/* <Delete/> */}
         {/* /Delete Leave Modal */}
+        {/* Document Upload Modal */}
+     <Modal
+  open={uploadModalVisible}
+  onClose={handleUploadCancel}
+  aria-labelledby="modal-modal-title"
+  className="modalScroll"
+  disableRestoreFocus
+  BackdropProps={{
+    style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+  }}
+  sx={{
+    overflowY: "scroll",
+  }}
+>
+  <div
+    className="modal-dialog modal-dialog-centered modal-dialog-md"
+    role="document"
+  >
+    <div className="modal-content">
+      <div className="modal-header">
+        <h5 className="modal-title">Upload Document</h5>
+        <button type="button" className="close" onClick={handleUploadCancel}>
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+
+      <div className="modal-body">
+        <div className="form-group">
+          <label>
+            Document Type <span className="text-danger">*</span>
+          </label>
+
+          <Select
+            style={{ width: "100%" }}
+            placeholder="Select Document Type"
+            onChange={handleUploadTypeChange}
+            value={uploadType}
+            size="large"
+          >
+            {Object.entries(DOCUMENT_TYPES)
+              .filter(([key, config]) => {
+                // Hide already uploaded documents for all users (including admins)
+                return !documents?.[key];
+              })
+              .map(([key, config]) => (
+                <Select.Option key={key} value={key}>
+                  {config.label}
+                </Select.Option>
+              ))}
+          </Select>
+        </div>
+
+        {uploadType && (
+          <div
+            className="alert alert-info"
+            style={{
+              marginBottom: "20px",
+              padding: "12px",
+              backgroundColor: "#ff9b44",
+              borderColor: "#ff9b44",
+              color: "#fff",
+            }}
+          >
+            <small>
+              Allowed formats: {DOCUMENT_TYPES[uploadType].extensions.join(", ")}
+              <br />
+              Max size: {DOCUMENT_TYPES[uploadType].maxSizeLabel}
+            </small>
+          </div>
+        )}
+
+        <div className="form-group">
+          <label>
+            Choose File <span className="text-danger">*</span>
+          </label>
+          <input
+            type="file"
+            className="form-control"
+            onChange={handleFileChange}
+            accept={
+              uploadType
+                ? DOCUMENT_TYPES[uploadType].extensions.join(",")
+                : ""
+            }
+            disabled={!uploadType}
+            style={{ padding: "8px" }}
+          />
+        </div>
+
+        <div
+          className="submit-section"
+          style={{ textAlign: "center", marginTop: "20px" }}
+        >
+          <button
+            type="button"
+            className="btn btn-primary submit-btn"
+            onClick={handleDocumentUpload}
+            disabled={!uploadType || !uploadFile || uploading}
+          >
+            {uploading ? <Spin size="small" /> : "Upload"}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</Modal>
+
+      {/* Delete Document Modal */}
+      <Modal
+        open={deleteDocModal}
+        onClose={closeDeleteModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content" style={{ height: "280px" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <div className="form-header">
+                <h3 style={{ marginBottom: "30px" }}>Delete Document</h3>
+                <p>
+                  Are you sure you want to Delete{" "}
+                  <b>{docToDelete?.config?.label}</b>?
+                </p>
+              </div>
+
+              <div className="modal-btn delete-action">
+                <div className="row">
+                  <div className="col-6">
+                    <Button
+                      htmlType="submit"
+                      className="btn btn-primary continue-btn"
+                      onClick={confirmDeleteDocument}
+                      style={{ width: "100%" }}
+                      disabled={loader}
+                    >
+                      {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="col-6">
+                    <Button
+                      onClick={closeDeleteModal}
+                      className="btn btn-primary submit-btn"
+                      style={{ width: "100%" }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Document Modal */}
+      <Modal
+        open={editDocModal}
+        onClose={closeEditModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" style={{ wordWrap: "break-word", overflowWrap: "break-word", maxWidth: "85%", lineHeight: "1.4" }}>
+                Update {docToEdit?.data?.fileName || DOCUMENT_TYPES[docToEdit?.type]?.label}
+              </h5>
+              <button type="button" className="btn-close" onClick={closeEditModal}></button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label className="col-form-label">Select New File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  accept={DOCUMENT_TYPES[docToEdit?.type]?.extensions?.join(",")}
+                  onChange={handleEditFileChange}
+                />
+             
+              </div>
+            </div>
+            <div className="modal-footer">
+              <Button onClick={closeEditModal} className="btn btn-secondary">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleEditDocumentUpload}
+                className="btn btn-primary"
+                disabled={!editFile || editUploading}
+              >
+                {editUploading ? (
+                  <Spin size="small" indicator={antIcon} />
+                ) : (
+                  "Update Document"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       </div>
       {/* <Offcanvas /> */}
     </>

@@ -8,6 +8,8 @@ import {
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../Entryfile/features/users.jsx";
+import { apiServices } from "../Services/apiServices";
+import { setHasAssignedInterviews } from "../Entryfile/features/users.jsx";
 
 import LoginPage from "./loginpage";
 import RegistrationPage from "./RegistrationPage";
@@ -68,6 +70,7 @@ import EmployeeTimesheet from "../MainPage/Employees/Employees/EmployeeTimesheet
 import AdminTimeSheet from "../MainPage/Employees/Employees/timesheetAdmin";
 import ViewDetailTimesheet from "../MainPage/Employees/Employees/ViewDetailTimesheet";
 import AttendanceReport from "../MainPage/HR/Reports/attendancereport";
+import AssetsReport from "../MainPage/HR/Reports/assetsreport";
 import EmployeesReport from "../MainPage/HR/Reports/EmployeesReport";
 import TaskBoard from "../MainPage/Employees/Projects/taskboard";
 import TaskBoardList from "../MainPage/Employees/Projects/taskboardlist";
@@ -162,6 +165,25 @@ const App = () => {
       // nav('/employee/dashboard');
     }
   }, []);
+
+  // On app load or when loginState changes, refresh 'hasAssignedInterviews' flag
+  useEffect(() => {
+    const checkAssigned = async () => {
+      try {
+        if (!loginState || !loginState.access_token) return;
+        const res = await apiServices("GET", "interview/assigned/check", null, loginState);
+        if (res && res.data) {
+          const hasAssigned = !!res.data.hasAssignedInterviews || !!res.data?.data?.hasAssignedInterviews;
+          dispatch(setHasAssignedInterviews(hasAssigned));
+        }
+      } catch (err) {
+        // silently ignore; no assigned interviews or auth issues handled elsewhere
+        console.debug('Failed to refresh assigned-interviews flag', err?.message || err);
+      }
+    };
+
+    checkAssigned();
+  }, [loginState, dispatch]);
 
   useEffect(() => {
     if (location?.pathname !== "/profile/employee-profile") {
@@ -319,6 +341,7 @@ const App = () => {
           <Route path="/profit-loss/view" element={<ViewPL />} />
 
           <Route path="/attendance-report" element={<AttendanceReport />} />
+          <Route path="/assets-report" element={<AssetsReport />} />
           <Route path="/lead-report" element={<LeadReport />} />
           <Route path="/client-report" element={<ClientReport />} />
           <Route path="/assets" element={<Assets />} />

@@ -26,6 +26,8 @@ import moment from "moment";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
 import { useTranslation } from "react-i18next";
+import { exportTimesheetToExcel, exportTimesheetToPDF } from "../../../utils/timesheetExport";
+import { DownloadOutlined, FileExcelOutlined, FilePdfOutlined } from "@ant-design/icons";
 
 const AdminTimeSheet = () => {
   const { t, i18n } = useTranslation();
@@ -39,6 +41,9 @@ const AdminTimeSheet = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [downloadLoading, setDownloadLoading] = useState({ excel: false, pdf: false });
+  const [allProjects, setAllProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -51,6 +56,7 @@ const AdminTimeSheet = () => {
     name: "",
     month: "",
     year: "",
+    projectId: "",
   });
 
   const [selectedFilters, setSelectedFilters] = useState({
@@ -58,43 +64,53 @@ const AdminTimeSheet = () => {
     name: "",
     month: "",
     year: "",
+    projectId: "",
   });
 
   const [selectedMonth, setSelectedMonth] = useState(moment().format('YYYY-MM'));
 
-  let splitArray = selectedMonth.split("-");
-  let variable1 = splitArray[0];
-  let variable2 = splitArray[1];
-  
   function getMonthStartEndDate(month, year) {
-    // Convert the month to a number
     const monthNumber = Number(month);
-  
-    // Create a Date object by setting the year and month (here, day is set as 1 for the start date)
     const startDate = new Date(year, monthNumber - 1, 1);
-  
-    // Get the last day of the month
     const endDate = new Date(year, monthNumber, 0);
-  
-    // Format the dates in 'YYYY-MM-DD' format
     const formattedStartDate = `${startDate.getFullYear()}-${(startDate.getMonth() + 1 + "").padStart(2, "0")}-01`;
     const formattedEndDate = `${endDate.getFullYear()}-${(endDate.getMonth() + 1 + "").padStart(2, "0")}-${endDate.getDate()}`;
-  
     return {
       startDate: formattedStartDate,
       endDate: formattedEndDate,
     };
   }
   
+  const currentMonthYear = filters.month || selectedMonth || moment().format('YYYY-MM');
+  let splitArray = currentMonthYear.split("-");
+  let variable1 = splitArray[0];
+  let variable2 = splitArray[1];
+  
   const { startDate, endDate } = getMonthStartEndDate(variable2, variable1);
-  const { startDate1, endDate1 } = getMonthStartEndDate(variable2, variable1);
   //console.log("Start Date:", startDate);
   //console.log("End Date:", endDate);
 
+  const getAllProjects = () => {
+    setProjectsLoading(true);
+    apiServices("GET", `project-management?page=${1}&limit=${99999}`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          const sortedData = res?.data?.projects?.docs
+            ?.slice()
+            .sort((a, b) => a.projectName.localeCompare(b.projectName));
+          setAllProjects(sortedData || []);
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching projects:', err);
+        message.error(t('Timesheetadmin.errorFetchingProjects') || 'Error fetching projects');
+      })
+      .finally(() => {
+        setProjectsLoading(false);
+      });
+  };
+
   const handleFilterChange = (value, filterType) => {
-    // if (filterType === "month") {
-    //   setSelectedMonth(value);
-    // }
     setSelectedFilters({
       ...selectedFilters,
       [filterType]: value,
@@ -103,36 +119,28 @@ const AdminTimeSheet = () => {
 
 
   const handleSearch = () => {
-    const { id, name, month, year } = selectedFilters;
+    const { id, name, month, year, projectId } = selectedFilters;
 
     if (month) {
       setSelectedMonth(month);
-      setFilters(selectedFilters);
-      setPagination({
-        ...pagination,
-        current: 1,
-      });
-    }
-    else if (name && !month) {
+    } else {
       setSelectedMonth(moment().format('YYYY-MM'));
-      setFilters(selectedFilters);
-      setPagination({
-        ...pagination,
-        current: 1,
-      });
     }
-    else {
-      message.warning(t('Timesheetadmin.noFiltersSelected'));
-    }
+
+    setFilters(selectedFilters);
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
   };
 
   const handleReset = () => { 
-
     setSelectedFilters({
       id: "",
       name: "",
       month: "",
       year: "",
+      projectId: "",
     });
 
     setSelectedMonth(moment().format('YYYY-MM'));
@@ -142,6 +150,7 @@ const AdminTimeSheet = () => {
       name: "",
       month: "",
       year: "",
+      projectId: "",
     });
 
     form.resetFields();
@@ -150,8 +159,7 @@ const AdminTimeSheet = () => {
       current: 1,
       pageSize: 20,
       total: 0,
-    })
-    
+    });
   };
 
   useEffect(() => {
@@ -227,20 +235,15 @@ const AdminTimeSheet = () => {
   );
 
   useEffect(() => {
-    // if (employees?.length === 0){
-    //   fetchEmployees();
-    //   firstAPI();
-    // }
-    // else if (employees?.length>0){
       if (
         role === "admin" || permissions?.timesheetManagement
       ) {
+        getAllProjects();
         setIsLoading(true);
         firstAPI();
       } else {
         nav("/restricted", { state: { unAuthorize: true } });
       }
-    //}
   }, [filters, pagination.current, pagination.pageSize]);
 
   const firstAPI = () => {
@@ -250,9 +253,18 @@ const AdminTimeSheet = () => {
       limit: pagination.pageSize,
     };
 
+    const monthToUse = filters.month || selectedMonth || moment().format('YYYY-MM');
+    const monthArray = monthToUse.split("-");
+    const year = monthArray[0];
+    const month = monthArray[1];
+    const { startDate: apiStartDate, endDate: apiEndDate } = getMonthStartEndDate(month, year);
+
+    const projectIdParam = filters.projectId ? `&projectId=${filters.projectId}` : '';
+    const userNameParam = filters.name ? `&userName=${filters.name}` : '';
+
     apiServices(
       "GET",
-      `timesheet/?userName=${filters.name}&page=${params.page}&limit=999999&timesheetFrom=${startDate}&timesheetTo=${endDate}&employeeOnly=${false}`,
+      `timesheet/?${userNameParam}&page=${params.page}&limit=999999&timesheetFrom=${apiStartDate}&timesheetTo=${apiEndDate}&employeeOnly=${false}${projectIdParam}`,
       null,
       user_state
     )
@@ -285,6 +297,130 @@ const AdminTimeSheet = () => {
       .finally(() => {
         setIsLoading(false);
       });
+  };
+
+  // Download handlers for project-level timesheet export
+  const handleDownloadExcel = async () => {
+    setDownloadLoading({ ...downloadLoading, excel: true });
+    try {
+      const monthToUse = filters.month || selectedMonth || moment().format('YYYY-MM');
+      const monthArray = monthToUse.split("-");
+      const year = monthArray[0];
+      const month = monthArray[1];
+      const { startDate: apiStartDate, endDate: apiEndDate } = getMonthStartEndDate(month, year);
+
+      const projectIdParam = filters.projectId ? `&projectId=${filters.projectId}` : '';
+      const userNameParam = filters.name ? `&userName=${filters.name}` : '';
+
+      const response = await apiServices(
+        "GET",
+        `timesheet/?${userNameParam}&page=${1}&limit=${99999}&timesheetFrom=${apiStartDate}&timesheetTo=${apiEndDate}&employeeOnly=${false}${projectIdParam}`,
+        null,
+        user_state
+      );
+
+      if (response?.data?.success === true) {
+        const timesheetData = response?.data?.Timesheet?.docs || [];
+        
+        if (timesheetData.length > 0) {
+          const exportType = filters.name ? 'single' : 'project';
+          
+          let projectName = 'All Projects';
+          if (filters.projectId) {
+            const selectedProject = allProjects.find(p => p._id === filters.projectId);
+            projectName = selectedProject?.projectName || 'Selected Project';
+          } else if (exportType === 'project' && timesheetData.length > 0) {
+            const firstProject = timesheetData[0]?.projectId?.projectName || 
+                                timesheetData[0]?.boardId?.boardTitle;
+            if (firstProject) {
+              projectName = firstProject;
+            }
+          }
+          
+          await exportTimesheetToExcel(timesheetData, {
+            type: exportType,
+            resourceName: filters.name || '',
+            projectName: projectName,
+            dateFrom: apiStartDate,
+            dateTo: apiEndDate,
+          });
+          message.success('Timesheet exported successfully');
+        } else {
+          message.warning('No timesheet data found');
+        }
+      }
+    } catch (err) {
+      console.error('Download error:', err);
+      message.error(
+        err?.response?.data?.msg ||
+        t('Timesheetadmin.errorDownloadingTimesheet') ||
+        'Error downloading timesheet'
+      );
+    } finally {
+      setDownloadLoading({ ...downloadLoading, excel: false });
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setDownloadLoading({ ...downloadLoading, pdf: true });
+    try {
+      const monthToUse = filters.month || selectedMonth || moment().format('YYYY-MM');
+      const monthArray = monthToUse.split("-");
+      const year = monthArray[0];
+      const month = monthArray[1];
+      const { startDate: apiStartDate, endDate: apiEndDate } = getMonthStartEndDate(month, year);
+
+      const projectIdParam = filters.projectId ? `&projectId=${filters.projectId}` : '';
+      const userNameParam = filters.name ? `&userName=${filters.name}` : '';
+
+      const response = await apiServices(
+        "GET",
+        `timesheet/?${userNameParam}&page=${1}&limit=${99999}&timesheetFrom=${apiStartDate}&timesheetTo=${apiEndDate}&employeeOnly=${false}${projectIdParam}`,
+        null,
+        user_state
+      );
+
+      if (response?.data?.success === true) {
+        const timesheetData = response?.data?.Timesheet?.docs || [];
+        
+        if (timesheetData.length > 0) {
+          const exportType = filters.name ? 'single' : 'project';
+          
+          let projectName = 'All Projects';
+          if (filters.projectId) {
+            const selectedProject = allProjects.find(p => p._id === filters.projectId);
+            projectName = selectedProject?.projectName || 'Selected Project';
+          } else if (exportType === 'project' && timesheetData.length > 0) {
+            const firstProject = timesheetData[0]?.projectId?.projectName || 
+                                timesheetData[0]?.boardId?.boardTitle;
+            if (firstProject) {
+              projectName = firstProject;
+            }
+          }
+          
+          exportTimesheetToPDF(timesheetData, {
+            type: exportType,
+            resourceName: filters.name || '',
+            projectName: projectName,
+            dateFrom: apiStartDate,
+            dateTo: apiEndDate,
+            userName: user_state?.user?.fullName || '',
+          });
+          message.success(t('Timesheetadmin.timesheetExportedSuccessfully') || 'Timesheet exported successfully');
+        } else {
+          message.warning(t('Timesheetadmin.noTimesheetDataFound') || 'No timesheet data found');
+        }
+      }
+    } catch (err) {
+      console.error('Download error:', err);
+      message.error(
+        err?.response?.data?.msg ||
+        t('Timesheetadmin.errorDownloadingTimesheet') ||
+        'Error downloading timesheet'
+      );
+    } finally {
+      setDownloadLoading({ ...downloadLoading, pdf: false });
+    }
   };
 
   function categorizeTimesheetByWeek(timesheetData, startDate, endDate) {
@@ -367,8 +503,13 @@ const AdminTimeSheet = () => {
   
 
 
-  const categorizedTimesheets = categorizeTimesheetByWeek(data, startDate, endDate);
-  //console.log(categorizedTimesheets); // Output the categorized timesheet data by weeks
+  const monthToUse = filters.month || selectedMonth || moment().format('YYYY-MM');
+  const monthArray = monthToUse.split("-");
+  const year = monthArray[0];
+  const month = monthArray[1];
+  const { startDate: displayStartDate, endDate: displayEndDate } = getMonthStartEndDate(month, year);
+
+  const categorizedTimesheets = categorizeTimesheetByWeek(data, displayStartDate, displayEndDate);
   
   // Your API response data
 
@@ -521,7 +662,7 @@ const AdminTimeSheet = () => {
   // const newData = combineData(employees, updatedData);
   // console.log("without api",newData);
   
-  const weekData = calculateWeeksInMonth(startDate, endDate);
+  const weekData = calculateWeeksInMonth(displayStartDate, displayEndDate);
   //console.log("Result:", weekData);
 
   function sortUserDataByDate(usersData) {
@@ -676,6 +817,17 @@ const generateWeekColumns = (weekData, finalData) => {
   
   return (
     <>
+      <style>
+        {`
+          .timesheet-filter-select .ant-select-selector {
+            height: 40px !important;
+          }
+          .timesheet-filter-select .ant-select-selection-item,
+          .timesheet-filter-select .ant-select-selection-placeholder {
+            line-height: 38px !important;
+          }
+        `}
+      </style>
       <div className="page-wrapper">
         <Helmet>
           <title>{t('Timesheetemployee.timesheetTitle')}</title>
@@ -688,7 +840,33 @@ const generateWeekColumns = (weekData, finalData) => {
             <div className="row align-items-center">
               <div className="col">
                 <h3 className="page-title">{t('Timesheetemployee.timesheet')}</h3>
-                
+              </div>
+              <div className="col-auto float-end ms-auto">
+                {data?.length > 0 ? (
+                  <div className="btn-group btn-group-sm">
+                    <button
+                      className="btn btn-white"
+                      onClick={handleDownloadPDF}
+                      style={{width: '46px', borderColor: '#cccccc', backgroundColor: '#fff'}}
+                      disabled={downloadLoading.pdf}
+                    >
+                      {downloadLoading.pdf ? <Spin size="small" /> : 'PDF'}
+                    </button>
+                    <button
+                      className="btn btn-white"
+                      onClick={handleDownloadExcel}
+                      style={{width: '64px', borderColor: '#cccccc', backgroundColor: '#fff'}}
+                      disabled={downloadLoading.excel}
+                    >
+                      {downloadLoading.excel ? <Spin size="small" /> : 'Excel'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="btn-group btn-group-sm">
+                    <button className="btn btn-white" style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop', width: '46px'}}>PDF</button>
+                    <button className="btn btn-white" style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop', width: '64px'}}>Excel</button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -700,16 +878,43 @@ const generateWeekColumns = (weekData, finalData) => {
   <div className="col-auto float-end ms-auto d-flex gap-2">
     <Form form={form}>
       <div className="row filter-row justify-content-end">
-        <div className="col-sm-6 col-md-6 col-lg-4 col-xl-4">
+        <div className="col-sm-6 col-md-6 col-lg-2 col-xl-2" style={{ minWidth: '180px' }}>
           <div className="form-group">
-            <Form.Item name="month">
+            <Form.Item name="projectId" style={{ marginBottom: 0 }}>
+              <Select
+                showSearch
+                allowClear
+                placeholder={t('Select Project') || 'Select Project'}
+                size="large"
+                loading={projectsLoading}
+                value={selectedFilters.projectId || undefined}
+                filterOption={(input, option) => {
+                  const projectName = allProjects.find(p => p._id === option.value)?.projectName || '';
+                  return projectName.toLowerCase().includes(input.toLowerCase());
+                }}
+                onChange={(value) => handleFilterChange(value || '', "projectId")}
+                style={{ width: '100%' }}
+                className="timesheet-filter-select"
+              >
+                {allProjects.map((project) => (
+                  <Select.Option key={project._id} value={project._id}>
+                    {project.projectName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </div>
+        </div>
+        <div className="col-sm-6 col-md-6 col-lg-2 col-xl-2" style={{ minWidth: '180px' }}>
+          <div className="form-group">
+            <Form.Item name="month" style={{ marginBottom: 0 }}>
               <DatePicker.MonthPicker
-                style={{ width: "100%" }}
-                className="form-control"
+                style={{ width: "100%", height: "40px" }}
                 placeholder={t('aAttend.selectMonth')}
                 size="large"
                 allowClear={false}
                 format="YYYY-MM"
+                value={selectedFilters.month ? moment(selectedFilters.month, 'YYYY-MM') : moment(selectedMonth, 'YYYY-MM')}
                 onChange={(date, dateString) => {
                   handleFilterChange(dateString, "month");
                 }}
@@ -717,19 +922,19 @@ const generateWeekColumns = (weekData, finalData) => {
             </Form.Item>
           </div>
         </div>
-        <div className="col-sm-6 col-md-6 col-lg-4 col-xl-4">
+        <div className="col-sm-6 col-md-6 col-lg-2 col-xl-2" style={{ minWidth: '180px' }}>
           <div className="form-group">
-            <Form.Item name="name" className="custom-border">
+            <Form.Item name="name" style={{ marginBottom: 0 }}>
               <Input
-                className="form-control"
-                allowClear={false}
                 placeholder={t('employeeName')}
+                value={selectedFilters.name || ''}
                 onChange={(e) => handleFilterChange(e.target.value, "name")}
+                size="large"
+                style={{ height: "40px" }}
               />
             </Form.Item>
           </div>
         </div>
-        
         <div className="col-sm-6 col-md-4 col-lg-2 col-xl-2">
           <div className="form-group">
             <Button
@@ -738,6 +943,7 @@ const generateWeekColumns = (weekData, finalData) => {
               onClick={handleSearch}
               className="btn-success btn-block w-100"
               style={{ borderRadius: "5px", display: "flex", justifyContent: "center", alignItems: "center" }}
+              size="large"
             >
               {t('search')}
             </Button>
@@ -757,6 +963,7 @@ const generateWeekColumns = (weekData, finalData) => {
                 justifyContent: "center",
                 alignItems: "center"
               }}
+              size="large"
             >
               {t('reset')}
             </Button>

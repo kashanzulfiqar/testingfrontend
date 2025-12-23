@@ -2278,6 +2278,19 @@ const Sidebar = (props) => {
                     )}
                     {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
                   </li>
+                  {user_state?.hasAssignedInterviews && !(user_state?.role === "admin" || permissions?.recruitmentManagement) && (
+                    <li className={pathname.includes("recruitment/interviews") ? "active" : ""}>
+                      <Link
+                        className={pathname.includes("recruitment/interviews") ? "active" : ""}
+                        to="/recruitment/interviews"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <i className="la la-users" /> <span>Interviews</span>
+                      </Link>
+                    </li>
+                  )}
+
                   {(user_state?.role === "admin" ||
                     permissions?.recruitmentManagement) && (
                     <li className="submenu">
@@ -2295,20 +2308,23 @@ const Sidebar = (props) => {
                       </a>
                       {isSideMenu == "recruitment" ? (
                         <ul>
-                          <li>
-                            <Link
-                              className={
-                                pathname.includes("recruitment/dashboard")
-                                  ? "active"
-                                  : ""
-                              }
-                              to="/recruitment/dashboard"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              Dashboard
-                            </Link>
-                          </li>
+                          {(user_state?.role === "admin" ||
+                            permissions?.recruitmentManagement) && (
+                            <li>
+                              <Link
+                                className={
+                                  pathname.includes("recruitment/dashboard")
+                                    ? "active"
+                                    : ""
+                                }
+                                to="/recruitment/dashboard"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Dashboard
+                              </Link>
+                            </li>
+                          )}
                           <li>
                             <Link
                               className={
@@ -2323,18 +2339,21 @@ const Sidebar = (props) => {
                               Interviews
                             </Link>
                           </li>
-                          <li>
-                            <Link
-                              className={
-                                pathname.includes("recruitment/resume-converter")
-                                  ? "active"
-                                  : ""
-                              }
-                              to="/recruitment/resume-converter"
-                            >
-                              Resume Converter
-                            </Link>
-                          </li>
+                          {(user_state?.role === "admin" ||
+                            permissions?.recruitmentManagement) && (
+                            <li>
+                              <Link
+                                className={
+                                  pathname.includes("recruitment/resume-converter")
+                                    ? "active"
+                                    : ""
+                                }
+                                to="/recruitment/resume-converter"
+                              >
+                                Resume Converter
+                              </Link>
+                            </li>
+                          )}
                         </ul>
                       ) : (
                         ""
@@ -2639,6 +2658,17 @@ const Sidebar = (props) => {
                           >
                             {" "}
                             Client Report{" "}
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            className={
+                              pathname.includes("assets-report") ? "active" : ""
+                            }
+                            to="/assets-report"
+                          >
+                            {" "}
+                            Assets Report{" "}
                           </Link>
                         </li>
                       </ul>

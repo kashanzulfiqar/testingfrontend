@@ -63,6 +63,7 @@ const TaskDetails = () => {
   const [loading, setLoading] = useState(true);
   const [task, setTask] = useState(null);
   const authState = useSelector((state) => state.user.loginvalue);
+  const loggedInUser = useSelector((state) => state.user.loginvalue?.user);
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [feedbackForm] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
@@ -1101,7 +1102,11 @@ const TaskDetails = () => {
             task.status === "REJECTED") && (
             <div>
               {task?.feedback.map((feedback, index) => (
-                <InterviewFeedbackDisplay key={index} feedback={feedback} />
+                <InterviewFeedbackDisplay 
+                  key={index} 
+                  feedback={feedback}
+                  loggedInUser={loggedInUser}
+                />
               ))}
             </div>
           )}

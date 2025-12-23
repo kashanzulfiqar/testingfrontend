@@ -258,9 +258,9 @@ const CreateInterviewModal = ({
             >
               <Form.Item
                 name="assignTo"
-                label="Primary Interviewer"
+                label="Interviewers"
                 rules={[
-                  { required: true, message: "Please select an interviewer" },
+                  { required: true, message: "Please select at least one interviewer" },
                 ]}
               >
                 <Select
@@ -275,7 +275,7 @@ const CreateInterviewModal = ({
                       .indexOf(input.toLowerCase()) >= 0
                   }
                   optionFilterProp="children"
-                  placeholder="Select interviewer"
+                  placeholder="Select interviewers"
                   className="customselect-height custom-select"
                   value={selectedInterviewers}
                   onFocus={handleAssignFocus}

@@ -61,6 +61,7 @@ const Interviews = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const user_state = useSelector((state) => state.user.loginvalue?.user);
 
   useEffect(() => {
     const token =
@@ -100,9 +101,15 @@ const Interviews = () => {
 
       console.log("Fetching interviews with params:", queryParams);
 
+      // Use assigned interviews endpoint for non-admin users with assigned interviews
+      const endpoint = 
+        user_state?.role !== "admin" && user_state?.hasAssignedInterviews
+          ? `interview/assigned/list?${new URLSearchParams(queryParams).toString()}`
+          : `interview/list?${new URLSearchParams(queryParams).toString()}`;
+
       const response = await apiServices(
         "GET",
-        `interview/list?${new URLSearchParams(queryParams).toString()}`,
+        endpoint,
         null,
         {
           access_token: {
@@ -295,65 +302,59 @@ const Interviews = () => {
       title: "Interviewers",
       key: "interviewers",
       render: (_, record) => {
-        const MainInterviewer = record.interviewerId;
         const OptionalInterviewer = record?.assignedTo || [];
-        const allInterviewers = [
-          MainInterviewer,
-          ...OptionalInterviewer,
-        ].filter(Boolean);
-        console.log("record of interviewers", record);
         return (
           <div className="project-members" style={{ margin: "4px auto" }}>
             <ul className="team-members" style={{ minWidth: "max-content" }}>
-              {allInterviewers?.slice(0, 3).map((interviewer, index) => (
-                <li key={index}>
-                  <Tooltip title={interviewer?.fullName}>
-                    <Avatar
-                      style={{ cursor: "pointer" }}
-                      src={interviewer?.imageUrl || user_icon}
-                    />
-                  </Tooltip>
-                </li>
-              ))}
-              {allInterviewers?.length > 3 && (
-                <li className="dropdown avatar-dropdown">
-                  <Link
-                    className="all-users dropdown-toggle projectTeamMember"
-                    style={{
-                      display: "inline-flex",
-                      height: "33px",
-                      width: "33px",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: "#f0f0f0",
-                      borderRadius: "50%",
-                      textDecoration: "none",
-                      color: "#333",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                    }}
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    +{allInterviewers?.length - 3}
-                  </Link>
-                  {/* Dropdown menu for additional interviewers */}
-                  <div className="dropdown-menu dropdown-menu-right">
-                    <div className="avatar-group">
-                      {allInterviewers?.slice(3).map((interviewer, index) => (
-                        <li key={index}>
-                          <Tooltip title={interviewer?.fullName}>
-                            <Avatar
-                              style={{ cursor: "pointer" }}
-                              src={interviewer?.imageUrl || user_icon}
-                            />
-                          </Tooltip>
-                        </li>
-                      ))}
-                    </div>
+            {OptionalInterviewer?.slice(0, 3).map((interviewer, index) => (
+              <li key={index}>
+                <Tooltip title={interviewer?.fullName}>
+                  <Avatar
+                    style={{ cursor: "pointer" }}
+                    src={interviewer?.imageUrl || user_icon}
+                  />
+                </Tooltip>
+              </li>
+            ))}
+            {OptionalInterviewer?.length > 3 && (
+              <li className="dropdown avatar-dropdown">
+                <Link
+                  className="all-users dropdown-toggle projectTeamMember"
+                  style={{
+                    display: "inline-flex",
+                    height: "33px",
+                    width: "33px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#f0f0f0",
+                    borderRadius: "50%",
+                    textDecoration: "none",
+                    color: "#333",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                  }}
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  +{OptionalInterviewer?.length - 3}
+                </Link>
+                {/* Dropdown menu for additional interviewers */}
+                <div className="dropdown-menu dropdown-menu-right">
+                  <div className="avatar-group">
+                    {OptionalInterviewer?.slice(3).map((interviewer, index) => (
+                      <li key={index}>
+                        <Tooltip title={interviewer?.fullName}>
+                          <Avatar
+                            style={{ cursor: "pointer" }}
+                            src={interviewer?.imageUrl || user_icon}
+                          />
+                        </Tooltip>
+                      </li>
+                    ))}
                   </div>
-                </li>
-              )}
+                </div>
+              </li>
+            )}
             </ul>
           </div>
         );
@@ -489,6 +490,21 @@ const Interviews = () => {
             .join("");
           const MainInterviewer = interview?.interviewerId?.imageUrl;
           const OptionalInterviewer = interview?.assignedTo || [];
+          
+          // Combine and dedupe interviewers to avoid duplicates
+          const allInterviewersData = [
+            interview?.interviewerId,
+            ...OptionalInterviewer
+          ].filter(Boolean);
+          
+          const seenIds = new Set();
+          const uniqueInterviewers = allInterviewersData.filter((iv) => {
+            const id = (iv && (iv._id || iv.id)) ? (iv._id || iv.id).toString() : null;
+            if (!id) return false;
+            if (seenIds.has(id)) return false;
+            seenIds.add(id);
+            return true;
+          });
           return (
             <Col xs={24} sm={12} md={8}>
               <Card className="job-card">
@@ -620,17 +636,8 @@ const Interviews = () => {
                   <div style={{ marginTop: "12px" }}>
                     <h3 style={{ fontSize: "15px" }}>Interviewers:</h3>
                     <div>
-                      <img
-                        src={MainInterviewer}
-                        style={{
-                          height: "30px",
-                          width: "30px",
-                          borderRadius: "50%",
-                          border: "2px solid white",
-                        }}
-                      ></img>
-                      {OptionalInterviewer.map((interviewer, index) => (
-                        <Link>
+                      {uniqueInterviewers.map((interviewer, index) => (
+                        <Link key={index}>
                           <img
                             src={interviewer?.imageUrl}
                             style={{
@@ -638,7 +645,7 @@ const Interviews = () => {
                               width: "30px",
                               borderRadius: "50%",
                               border: "2px solid white",
-                              marginLeft: "-10px",
+                              marginLeft: index === 0 ? "0px" : "-10px",
                             }}
                           />
                         </Link>

@@ -13,7 +13,7 @@ const ALLOWED_FILE_TYPES = [
   'application/x-zip-compressed'
 ];
 
-const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }) => {
+const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState, loading }) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const [uploadingTaskFile, setUploadingTaskFile] = useState(false);
@@ -306,6 +306,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
                 style={{ width: '100%' }} 
                 placeholder="Select Date"
                 format="DD-MM-YYYY"
+                inputReadOnly
                 className='custom-datepicker'
               />
             </Form.Item>
@@ -394,6 +395,8 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
           <Button 
             type="primary" 
             htmlType="submit"
+            loading={loading}
+            disabled={loading}
             style={{ 
               padding: '6px 24px',
               height: '40px',

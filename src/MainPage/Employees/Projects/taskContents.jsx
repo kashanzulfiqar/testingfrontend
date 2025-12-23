@@ -22,11 +22,13 @@ import { apiServices } from "../../../Services/apiServices";
 import { useSelector } from "react-redux";
 import { user_icon } from "../../../Entryfile/imagepath";
 import moment from 'moment';
+import axios from 'axios';
 import LikeIcon from "../../../assets/Icons/Like.svg";
 import EmojiIcon from "../../../assets/Icons/emojicon.svg";
 import EditIcon from "../../../assets/Icons/Edit.svg";
 import { BASE_URL } from '../../../config/apiConfig';
 import '../../../assets/css/taskDetails.css';
+import CommentText from "../../../Components/CommentText";
 
 const getPriorityIcon = (priority) => {
   switch (priority?.toLowerCase()) {
@@ -86,6 +88,11 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   const [postingComment, setPostingComment] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingCommentText, setEditingCommentText] = useState("");
+  const [commentAttachments, setCommentAttachments] = useState([]);
+  const [editingCommentAttachments, setEditingCommentAttachments] = useState([]);
+  const [removeAttachmentIds, setRemoveAttachmentIds] = useState([]);
+  const commentFileInputRef = useRef(null);
+  const editCommentFileInputRef = useRef(null);
   const [updatingComment, setUpdatingComment] = useState(false);
   const [showReactionPicker, setShowReactionPicker] = useState(null);
   const [reactingToComment, setReactingToComment] = useState(false);
@@ -204,6 +211,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   // Add user state from Redux
   const user_state = useSelector((state) => state?.user?.loginvalue);
   const userRole = user_state?.user?.role;
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
 
   // Add editing states at the top of the component
   const [editingAssignee, setEditingAssignee] = useState(false);
@@ -225,6 +233,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     // Initial setup of task data
     if (Object.keys(taskDatas).length !== 0) {
       setTaskData(taskDatas);
+      setInitialLoading(false);
     } else if (location.state?.taskData) {
       setTaskData(location.state.taskData);
       // Only fetch details on initial load if we have taskData in location state
@@ -304,8 +313,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
         ? res?.data?.Task?.docs?.[0]
         : res?.data?.Task;
         setTaskData(updatedTask);
-        // Update the location state to keep it in sync
-        navigate(location.pathname, {
+        navigate(location.pathname + location.search, {
           state: { ...location.state, taskData: updatedTask },
           replace: true,
         });
@@ -506,7 +514,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
       description: descriptionValue,
     };
     setTaskData(updatedTaskData);
-    navigate(location.pathname, {
+    navigate(location.pathname + location.search, {
       state: { ...location.state, taskData: updatedTaskData },
       replace: true,
     });
@@ -525,7 +533,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
       } else {
         // Revert changes if API call fails
         setTaskData(taskData);
-        navigate(location.pathname, {
+        navigate(location.pathname + location.search, {
           state: { ...location.state, taskData: taskData },
           replace: true,
         });
@@ -534,7 +542,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     } catch (err) {
       // Revert changes if API call fails
       setTaskData(taskData);
-      navigate(location.pathname, {
+      navigate(location.pathname + location.search, {
         state: { ...location.state, taskData: taskData },
         replace: true,
       });
@@ -563,23 +571,31 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     }
     setCommentsLoading(false);
   };
-  // Post a new comment
+  const handleCommentFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setCommentAttachments(prev => [...prev, ...files]);
+    e.target.value = '';
+  };
+
+  const removeCommentAttachment = (index) => {
+    setCommentAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const postComment = async () => {
-    // Enhanced validation for empty comments
     const trimmedComment = commentRichText?.trim();
-    if (!trimmedComment || trimmedComment === '' || trimmedComment === '<p></p>' || trimmedComment === '<p><br></p>' || !taskData?._id) {
+    if ((!trimmedComment || trimmedComment === '' || trimmedComment === '<p></p>' || trimmedComment === '<p><br></p>') && commentAttachments.length === 0) {
       return;
     }
+    if (!taskData?._id) return;
+    
     setPostingComment(true);
     try {
-      // Extract mentions from the comment text
       const mentionRegex = /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g;
       const mentions = [];
       let match;
       
       while ((match = mentionRegex.exec(commentRichText)) !== null) {
         const mentionedName = match[1];
-        // Find user by first two words or first name
         const mentionedUser = allEmployees.find(user => {
           const userFirstTwoWords = user.fullName?.split(' ').slice(0, 2).join(' ').toLowerCase();
           const userFirstName = user.fullName?.split(' ')[0]?.toLowerCase();
@@ -591,18 +607,28 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
         }
       }
 
-      const res = await apiServices("POST", `tasks/${taskData._id}/comments`, { 
-        text: commentRichText,
-        mentions: mentions
-      }, user_state);
+      const formData = new FormData();
+      formData.append('text', commentRichText || '');
+      if (mentions.length > 0) {
+        formData.append('mentions', JSON.stringify(mentions));
+      }
+      commentAttachments.forEach(file => {
+        formData.append('attachments', file);
+      });
+
+      const res = await axios.post(`${BASE_URL}/tasks/${taskData._id}/comments`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${user_state?.access_token?.accessToken}`
+        }
+      });
       
       if (res?.data?.success) {
         setCommentRichText("");
+        setCommentAttachments([]);
         fetchComments(taskData._id);
-        // Refresh activity feed
         fetchHistory(taskData._id);
         
-        // Show success message with mention info
         if (mentions.length > 0) {
           const mentionedNames = mentions.map(id => 
             allEmployees.find(u => u._id === id)?.fullName
@@ -621,19 +647,47 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   const startEditComment = (comment) => {
     setEditingCommentId(comment._id);
     setEditingCommentText(comment.text);
+    setEditingCommentAttachments(comment.attachments || []);
+    setRemoveAttachmentIds([]);
   };
 
   const cancelEditComment = () => {
     setEditingCommentId(null);
     setEditingCommentText("");
+    setEditingCommentAttachments([]);
+    setRemoveAttachmentIds([]);
+  };
+
+  const handleEditCommentFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const newFiles = files.map(file => ({
+      file,
+      isNew: true,
+      filename: file.name,
+      type: file.type,
+      bytes: file.size
+    }));
+    setEditingCommentAttachments(prev => [...prev, ...newFiles]);
+    e.target.value = '';
+  };
+
+  const removeEditingAttachment = (index) => {
+    const attachment = editingCommentAttachments[index];
+    if (attachment._id) {
+      setRemoveAttachmentIds(prev => [...prev, attachment._id]);
+    }
+    setEditingCommentAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const updateComment = async () => {
     // Enhanced validation for empty comments
     const trimmedComment = editingCommentText?.trim();
-    if (!trimmedComment || trimmedComment === '' || trimmedComment === '<p></p>' || trimmedComment === '<p><br></p>' || !taskData?._id) {
+    const hasAttachments = editingCommentAttachments.length > 0;
+    if ((!trimmedComment || trimmedComment === '' || trimmedComment === '<p></p>' || trimmedComment === '<p><br></p>') && !hasAttachments) {
       return;
     }
+    if (!taskData?._id) return;
+    
     setUpdatingComment(true);
     try {
       // Extract mentions from the comment text
@@ -655,14 +709,35 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
         }
       }
 
-      const res = await apiServices("PUT", `tasks/${taskData._id}/comments/${editingCommentId}`, { 
-        text: editingCommentText,
-        mentions: mentions
-      }, user_state);
+      
+      const formData = new FormData();
+      formData.append('text', editingCommentText || '');
+      if (mentions.length > 0) {
+        formData.append('mentions', JSON.stringify(mentions));
+      }
+      
+      editingCommentAttachments.forEach(att => {
+        if (att.isNew && att.file) {
+          formData.append('attachments', att.file);
+        }
+      });
+      
+      if (removeAttachmentIds.length > 0) {
+        formData.append('removeAttachmentIds', JSON.stringify(removeAttachmentIds));
+      }
+
+      const res = await axios.put(`${BASE_URL}/tasks/${taskData._id}/comments/${editingCommentId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${user_state?.access_token?.accessToken}`
+        }
+      });
       
       if (res?.data?.success) {
         setEditingCommentId(null);
         setEditingCommentText("");
+        setEditingCommentAttachments([]);
+        setRemoveAttachmentIds([]);
         fetchComments(taskData._id);
         // Refresh activity feed
         fetchHistory(taskData._id);
@@ -1128,11 +1203,106 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   // In the return, show a spinner if initialLoading is true
   if (initialLoading) return <Spin size="large" style={{margin: '100px auto', display: 'block'}} />;
 
+  const copyTaskLink = () => {
+    const baseUrl = window.location.origin;
+    const currentPath = window.location.pathname;
+    const taskIdentifier = taskData?.ticketNumber || taskData?._id;
+    const taskUrl = `${baseUrl}${currentPath}?task=${encodeURIComponent(taskIdentifier)}`;
+    
+    navigator.clipboard.writeText(taskUrl).then(() => {
+      message.success('Task link copied to clipboard!');
+    }).catch(() => {
+      message.error('Failed to copy link');
+    });
+  };
+
   return (
     <div>
       <div className="content container-fluid bg-[#F7F7F7]">
         <div className="row">
           <div className="col-xl-9">
+            {/* Ticket Number & Copy Link */}
+            {(taskData?.ticketNumber || taskData?._id) && (
+              <div style={{ 
+                marginBottom: 16, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {taskData?.ticketNumber && (
+                    new URLSearchParams(location.search).get('task') ? (
+                      <span style={{
+                        background: '#FF9B44',
+                        color: 'white',
+                        padding: '4px 12px',
+                        borderRadius: 6,
+                        fontWeight: 600,
+                        fontSize: 13,
+                        letterSpacing: '0.5px'
+                      }}>
+                        {taskData.ticketNumber}
+                      </span>
+                    ) : (
+                      <Tooltip title="Click to open in new tab">
+                        <span 
+                          onClick={() => {
+                            const baseUrl = window.location.origin;
+                            const currentPath = window.location.pathname;
+                            const taskUrl = `${baseUrl}${currentPath}?task=${encodeURIComponent(taskData.ticketNumber)}`;
+                            window.open(taskUrl, '_blank');
+                          }}
+                          style={{
+                            background: '#FF9B44',
+                            color: 'white',
+                            padding: '4px 12px',
+                            borderRadius: 6,
+                            fontWeight: 600,
+                            fontSize: 13,
+                            letterSpacing: '0.5px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.background = '#ff8a2b';
+                            e.target.style.transform = 'translateY(-1px)';
+                            e.target.style.boxShadow = '0 2px 8px rgba(255,155,68,0.4)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.background = '#FF9B44';
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                        >
+                          {taskData.ticketNumber}
+                        </span>
+                      </Tooltip>
+                    )
+                  )}
+                </div>
+                <Tooltip title="Copy task link">
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<i className="fa fa-link" style={{ fontSize: 14 }} />}
+                    onClick={copyTaskLink}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      color: '#666',
+                      border: '1px solid #e1e5e9',
+                      borderRadius: 6,
+                      padding: '4px 12px',
+                      height: 'auto'
+                    }}
+                  >
+                    Copy Link
+                  </Button>
+                </Tooltip>
+              </div>
+            )}
+            
             {/* Task Name Section */}
             <div style={{ marginBottom: 24 }}>
               <div style={{ 
@@ -1285,25 +1455,32 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                         users={boardAssociatedUsers}
                       />
                 ) : (
-                      <div
-                        style={{
-                      color: taskData?.description ? '#333' : '#999',
-                      lineHeight: '1.6',
-                      fontSize: '14px',
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      cursor: 'pointer',
-                      minHeight: '80px',
-                      fontStyle: taskData?.description ? 'normal' : 'italic'
-                    }}
-                    dangerouslySetInnerHTML={{ 
-                      __html: taskData?.description || "Enter task description..." 
-                    }}
-                    onClick={() => {
-                      setDescriptionValue(taskData?.description || "");
-                      setIsEditing(true);
-                    }}
-                  />
+                      <>
+                        <style>{`
+                          .task-description-content ul { list-style-type: disc !important; padding-left: 20px !important; margin-left: 10px !important; margin-bottom: 10px !important; }
+                          .task-description-content ol { list-style-type: decimal !important; padding-left: 20px !important; margin-left: 10px !important; margin-bottom: 10px !important; }
+                          .task-description-content li { display: list-item !important; margin-bottom: 4px !important; }
+                        `}</style>
+                        <div
+                          className="task-description-content"
+                          style={{
+                            color: taskData?.description ? '#333' : '#999',
+                            lineHeight: '1.6',
+                            fontSize: '14px',
+                            wordBreak: 'break-word',
+                            cursor: 'pointer',
+                            minHeight: '80px',
+                            fontStyle: taskData?.description ? 'normal' : 'italic'
+                          }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: taskData?.description || "Enter task description..." 
+                          }}
+                          onClick={() => {
+                            setDescriptionValue(taskData?.description || "");
+                            setIsEditing(true);
+                          }}
+                        />
+                      </>
                 )}
                                 </div>
               
@@ -1422,15 +1599,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             const isVideo = file.imageUrl && /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(file.fileName || '');
                             const isDocument = file.imageUrl && /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/i.test(file.fileName || '');
                             
-                            const menu = (
-                              <Menu>
-                                <Menu.Item key="delete" icon={<DeleteOutlined />} onClick={() => handleDeleteAttachment(file._id)}>
-                                  Delete
-                                </Menu.Item>
-                              </Menu>
-                            );
-                            
-                        const fileDate = file.createdAt ? new Date(file.createdAt) : new Date();
+                            const fileDate = file.createdAt ? new Date(file.createdAt) : new Date();
                             const formattedDate = fileDate.toLocaleDateString('en-US', { 
                               month: '2-digit', 
                               day: '2-digit', 
@@ -1445,14 +1614,14 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             return (
                               <div
                                 key={file._id}
-                            style={{ 
-                              width: 200, 
+                                style={{ 
+                                  width: 200, 
                                   borderRadius: 12,
                                   border: '1px solid #e1e5e9',
                                   backgroundColor: '#fff',
                                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                                   overflow: 'hidden',
-                              position: 'relative',
+                                  position: 'relative',
                                   transition: 'transform 0.2s, box-shadow 0.2s',
                                   cursor: 'pointer'
                                 }}
@@ -1464,6 +1633,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                   e.currentTarget.style.transform = 'translateY(0)';
                                   e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
                                 }}
+                                onClick={() => window.open(file.imageUrl, '_blank')}
                               >
                                 {/* Image Preview */}
                                 <div style={{ position: 'relative', height: 140 }}>
@@ -1519,7 +1689,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                     </div>
                                   )}
                                   
-                                  {/* Action Icons */}
+                                  {/* Download Icon */}
                                   <div style={{ 
                                     position: 'absolute', 
                                     top: 8, 
@@ -1528,60 +1698,39 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                     gap: 4, 
                                     zIndex: 2 
                                   }}>
-                                      <Tooltip title="Download">
-      <div
-        onClick={() => handleDownload(file)}
-        style={{
-          background: "#fff",
-          borderRadius: "50%",
-          width: 32,
-          height: 32,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.2s",
-          cursor: "pointer",
-          textDecoration: "none",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.1)";
-          e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-        }}
-      >
-        <DownloadOutlined style={{ fontSize: 16, color: "#1890ff" }} />
-      </div>
-    </Tooltip>
-                                      <Dropdown overlay={menu} trigger={['click']}>
+                                    <Tooltip title="Download">
                                       <div
-                                          style={{
-                                            background: '#fff',
-                                          borderRadius: '50%',
-                                            width: 32,
-                                            height: 32,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                          transition: 'all 0.2s',
-                                            cursor: 'pointer',
-                                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDownload(file);
+                                        }}
+                                        style={{
+                                          background: "#fff",
+                                          borderRadius: "50%",
+                                          width: 32,
+                                          height: 32,
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          transition: "all 0.2s",
+                                          cursor: "pointer",
+                                          textDecoration: "none",
+                                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
                                         }}
                                         onMouseEnter={(e) => {
-                                          e.currentTarget.style.transform = 'scale(1.1)';
+                                          e.currentTarget.style.transform = "scale(1.1)";
+                                          e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
                                         }}
                                         onMouseLeave={(e) => {
-                                          e.currentTarget.style.transform = 'scale(1)';
+                                          e.currentTarget.style.transform = "scale(1)";
+                                          e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
                                         }}
                                       >
-                                        <EllipsisOutlined style={{ fontSize: 16, color: '#666' }} />
+                                        <DownloadOutlined style={{ fontSize: 16, color: "#1890ff" }} />
                                       </div>
-                                      </Dropdown>
-                                    </div>
+                                    </Tooltip>
                                   </div>
+                                </div>
                                 
                                 {/* File Info */}
                             <div style={{ padding: '12px' }}>
@@ -1778,56 +1927,218 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                           </div>
                                         </div>
                                         
+                                        {/* Edit Comment Attachments Display */}
+                                        {editingCommentAttachments.length > 0 && (
+                                          <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                            {editingCommentAttachments.map((att, idx) => {
+                                              const isImage = att.isNew 
+                                                ? att.type?.startsWith('image/') 
+                                                : (att.type?.startsWith('image/') && !att.filename?.toLowerCase().endsWith('.pdf'));
+                                              const fileSize = att.bytes 
+                                                ? att.bytes > 1024 * 1024 
+                                                  ? `${(att.bytes / (1024 * 1024)).toFixed(1)} MB`
+                                                  : `${(att.bytes / 1024).toFixed(1)} KB`
+                                                : '';
+                                              
+                                              return (
+                                                <div key={idx} style={{
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  gap: 8,
+                                                  padding: '8px 12px',
+                                                  background: '#f5f5f5',
+                                                  borderRadius: 6,
+                                                  border: '1px solid #e8e8e8'
+                                                }}>
+                                                  {isImage ? (
+                                                    <img 
+                                                      src={att.isNew ? URL.createObjectURL(att.file) : att.url} 
+                                                      alt={att.filename}
+                                                      style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 4 }}
+                                                    />
+                                                  ) : (
+                                                    <div style={{
+                                                      width: 32,
+                                                      height: 32,
+                                                      borderRadius: 4,
+                                                      background: att.filename?.toLowerCase().endsWith('.pdf') ? '#ff4d4f' : '#FF9B44',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center',
+                                                      color: 'white',
+                                                      fontSize: 9,
+                                                      fontWeight: 600
+                                                    }}>
+                                                      {att.filename?.split('.').pop()?.toUpperCase() || 'FILE'}
+                                                    </div>
+                                                  )}
+                                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ 
+                                                      fontSize: 12, 
+                                                      fontWeight: 500,
+                                                      overflow: 'hidden',
+                                                      textOverflow: 'ellipsis',
+                                                      whiteSpace: 'nowrap',
+                                                      maxWidth: 120
+                                                    }}>
+                                                      {att.filename}
+                                                    </div>
+                                                    {fileSize && <div style={{ fontSize: 10, color: '#888' }}>{fileSize}</div>}
+                                                  </div>
+                                                  <CloseOutlined 
+                                                    style={{ cursor: 'pointer', color: '#999', fontSize: 12 }}
+                                                    onClick={() => removeEditingAttachment(idx)}
+                                                  />
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                        
                                         {/* Edit Action Buttons */}
                                         <div style={{
                                           display: 'flex',
-                                          justifyContent: 'flex-end',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'center',
                                           marginTop: 12,
                                           gap: 8
                                         }}>
-                                          <Button 
-                                            size="small"
-                                            onClick={cancelEditComment}
-                                            style={{
-                                              background: 'transparent',
-                                              border: '1px solid #d9d9d9',
-                                              borderRadius: 6,
-                                              color: '#666'
-                                            }}
-                                          >
-                                            Cancel
-                                          </Button>
-                                          <Button 
-                                            size="small"
-                                            onClick={updateComment}
-                                            loading={updatingComment}
-                                            style={{
-                                              background: '#FF9B44',
-                                              border: '1px solid #FF9B44',
-                                              borderRadius: 6,
-                                              color: 'white'
-                                            }}
-                                          >
-                                            Update
-                                          </Button>
+                                          <div>
+                                            <input
+                                              type="file"
+                                              ref={editCommentFileInputRef}
+                                              onChange={handleEditCommentFileSelect}
+                                              multiple
+                                              style={{ display: 'none' }}
+                                              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                                            />
+                                            <Button
+                                              type="text"
+                                              size="small"
+                                              icon={<PaperClipOutlined />}
+                                              onClick={() => editCommentFileInputRef.current?.click()}
+                                              style={{ color: '#666' }}
+                                            >
+                                              Attach
+                                            </Button>
+                                          </div>
+                                          <div style={{ display: 'flex', gap: 8 }}>
+                                            <Button 
+                                              size="small"
+                                              onClick={cancelEditComment}
+                                              style={{
+                                                background: 'transparent',
+                                                border: '1px solid #d9d9d9',
+                                                borderRadius: 6,
+                                                color: '#666'
+                                              }}
+                                            >
+                                              Cancel
+                                            </Button>
+                                            <Button 
+                                              size="small"
+                                              onClick={updateComment}
+                                              loading={updatingComment}
+                                              style={{
+                                                background: '#FF9B44',
+                                                border: '1px solid #FF9B44',
+                                                borderRadius: 6,
+                                                color: 'white'
+                                              }}
+                                            >
+                                              Update
+                                            </Button>
+                                          </div>
                                         </div>
                                       </div>
                                     ) : (
-                                      <div 
-                                        className="comment-content"
-                                        style={{
-                                          color: '#333',
-                                          fontSize: 14,
-                                          lineHeight: '1.5',
-                                          marginBottom: 12
-                                        }}
-                                        dangerouslySetInnerHTML={{ 
-                                          __html: c.text.replace(
-                                            /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g, 
-                                            '<span style="background-color: #e6f7ff; color: #1890ff; padding: 2px 4px; border-radius: 4px; font-weight: 500;">@$1</span>'
-                                          )
-                                        }}
-                                      />
+                                      <>
+                                        <CommentText
+                                          html={c.text || ''}
+                                          mentions={c.mentions || []}
+                                          className="comment-content"
+                                        />
+                                        {c.attachments && c.attachments.length > 0 && (
+                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                                            {c.attachments.map((att, attIdx) => {
+                                              const isImage = att.type?.startsWith('image/') && 
+                                                !att.filename?.toLowerCase().endsWith('.pdf') &&
+                                                !att.type?.includes('pdf');
+                                              const fileSize = att.bytes 
+                                                ? att.bytes > 1024 * 1024 
+                                                  ? `${(att.bytes / (1024 * 1024)).toFixed(1)} MB`
+                                                  : `${(att.bytes / 1024).toFixed(1)} KB`
+                                                : '';
+                                              
+                                              return (
+                                                <div key={attIdx} style={{
+                                                  border: '1px solid #e8e8e8',
+                                                  borderRadius: 8,
+                                                  overflow: 'hidden',
+                                                  background: '#fafafa'
+                                                }}>
+                                                  {isImage ? (
+                                                    <a href={att.url} target="_blank" rel="noopener noreferrer">
+                                                      <img 
+                                                        src={att.url} 
+                                                        alt={att.filename}
+                                                        style={{ 
+                                                          maxWidth: 200, 
+                                                          maxHeight: 150, 
+                                                          objectFit: 'cover',
+                                                          display: 'block'
+                                                        }}
+                                                      />
+                                                    </a>
+                                                  ) : (
+                                                    <a 
+                                                      href={att.url} 
+                                                      target="_blank" 
+                                                      rel="noopener noreferrer"
+                                                      style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 10,
+                                                        padding: '12px 16px',
+                                                        color: '#333',
+                                                        textDecoration: 'none',
+                                                        minWidth: 180
+                                                      }}
+                                                    >
+                                                      <div style={{
+                                                        width: 40,
+                                                        height: 40,
+                                                        borderRadius: 6,
+                                                        background: att.filename?.toLowerCase().endsWith('.pdf') ? '#ff4d4f' : '#FF9B44',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        color: 'white',
+                                                        fontSize: 11,
+                                                        fontWeight: 600
+                                                      }}>
+                                                        {att.filename?.split('.').pop()?.toUpperCase() || 'FILE'}
+                                                      </div>
+                                                      <div style={{ flex: 1, minWidth: 0 }}>
+                                                        <div style={{ 
+                                                          fontSize: 13, 
+                                                          fontWeight: 500,
+                                                          overflow: 'hidden',
+                                                          textOverflow: 'ellipsis',
+                                                          whiteSpace: 'nowrap'
+                                                        }}>
+                                                          {att.filename}
+                                                        </div>
+                                                        <div style={{ fontSize: 11, color: '#888' }}>{fileSize}</div>
+                                                      </div>
+                                                    </a>
+                                                  )}
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                      </>
                                     )}
                                     
                                     {/* Reactions Display */}
@@ -2041,14 +2352,62 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                       </div>
                                     </div>
                                     
-                                    {/* Comment Button */}
+                                    {commentAttachments.length > 0 && (
+                                      <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                        {commentAttachments.map((file, idx) => (
+                                          <div key={idx} style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 6,
+                                            padding: '4px 8px',
+                                            background: '#f5f5f5',
+                                            borderRadius: 4,
+                                            fontSize: 12
+                                          }}>
+                                            {file.type?.startsWith('image/') ? (
+                                              <img 
+                                                src={URL.createObjectURL(file)} 
+                                                alt={file.name}
+                                                style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 2 }}
+                                              />
+                                            ) : (
+                                              <FileOutlined />
+                                            )}
+                                            <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                              {file.name}
+                                            </span>
+                                            <CloseOutlined 
+                                              style={{ cursor: 'pointer', color: '#999', fontSize: 10 }}
+                                              onClick={() => removeCommentAttachment(idx)}
+                                            />
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                    
                                     <div style={{
                                       display: 'flex',
-                                      justifyContent: 'flex-end',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
                                       marginTop: 12,
                                       paddingTop: 12,
-                                     
                                     }}>
+                                      <input
+                                        type="file"
+                                        ref={commentFileInputRef}
+                                        onChange={handleCommentFileSelect}
+                                        multiple
+                                        style={{ display: 'none' }}
+                                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                                      />
+                                      <Button
+                                        type="text"
+                                        icon={<PaperClipOutlined />}
+                                        onClick={() => commentFileInputRef.current?.click()}
+                                        style={{ color: '#666' }}
+                                      >
+                                        Attach
+                                      </Button>
                                       <Button 
                                         onClick={postComment} 
                                         loading={postingComment}
