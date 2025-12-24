@@ -112,6 +112,7 @@ const EmployeeDashboard = () => {
     leave_status_change: "/employee/requests",
     payment_success: "/payroll/payslip",
     celebration: "/employee/dashboard",
+    interview_assignment: "/recruitment/interviews",
   };
 
   const loadNotifications = () => {

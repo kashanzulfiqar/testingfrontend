@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { Button, Dropdown, Menu, message as Message1 } from "antd";
 import { DownOutlined, GlobalOutlined } from "@ant-design/icons";
 import { counter } from "../../Redux/Reducer/permissions/pendingCounterSlice";
+import { setHasAssignedInterviews } from "../../Entryfile/features/users.jsx";
 import {
   joinNotificationRooms,
   subscribeToNewNotifications,
@@ -82,6 +83,7 @@ const Header = (props) => {
     leave_status_change: "/employee/requests",
     payment_success: "/payroll/payslip",
     celebration: "/employee/dashboard",
+    interview_assignment: "/recruitment/interviews",
   };
   
   const LangMenu = (
@@ -202,6 +204,20 @@ const Header = (props) => {
             item?._id === notification?._id ? notification : item
           );
         }
+        // If this notification assigns an interview to the current user,
+        // ensure the UI knows the user has assigned interviews so the
+        // Interviews tab becomes visible without a full page refresh.
+        try {
+          if (
+            notification?.type === "interview_assignment" &&
+            (notification.userId === user_state?.user?._id || notification.userId === user_state?.email)
+          ) {
+            dispatch(setHasAssignedInterviews(true));
+          }
+        } catch (e) {
+          // best-effort: do not break notifications display
+        }
+
         return [notification, ...prev];
       });
     });
