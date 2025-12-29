@@ -8,6 +8,7 @@ import moment from "moment";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
 import { Empty, Pagination, message } from "antd";
+import axios from "axios";
 // import InfiniteScroll from "react-infinite-scroll-component";
 import { ItemRender } from "antd/lib/upload/interface";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
@@ -381,41 +382,161 @@ const AttendanceEmployee = () => {
     return `${hours}h ${minutes}m`;
   };
 
+ const getServerTimeFromAPI = async () => {
+   const requestStartTime = Date.now();
+   
+   try {
+     const response = await axios.get('https://api.timezonedb.com/v2.1/get-time-zone', {
+       params: {
+         key: 'VBQ3Q4HMILY9',
+         format: 'xml',
+         by: 'zone',
+         zone: 'UTC'
+       },
+       timeout: 10000,
+       headers: {
+         'Accept': 'application/xml, text/xml, */*'
+       }
+     });
+     
+     const requestEndTime = Date.now();
+     const networkLatency = requestEndTime - requestStartTime;
+     
+     let timestamp;
+     
+     if (typeof response.data === 'string') {
+       const parser = new DOMParser();
+       const xmlDoc = parser.parseFromString(response.data, 'text/xml');
+       const statusElement = xmlDoc.getElementsByTagName('status')[0];
+       const timestampElement = xmlDoc.getElementsByTagName('timestamp')[0];
+       
+       if (statusElement && statusElement.textContent === 'OK' && timestampElement) {
+         timestamp = parseInt(timestampElement.textContent);
+       } else {
+         throw new Error('Invalid response from time API');
+       }
+     } else if (response.data && response.data.status === 'OK' && response.data.timestamp) {
+       timestamp = parseInt(response.data.timestamp);
+     } else {
+       throw new Error('Invalid response from time API');
+     }
+     
+     if (timestamp) {
+       const utcTimestamp = timestamp * 1000;
+       const adjustedTime = new Date(utcTimestamp + (networkLatency / 2));
+       return adjustedTime;
+     }
+     
+     throw new Error('Invalid response from time API');
+   } catch (error) {
+     if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+       throw new Error('Time verification request timed out. Please check your internet connection.');
+     }
+     if (error.message && !error.message.includes('Time verification')) {
+       throw new Error('Unable to verify system time. Please check your internet connection and try again.');
+     }
+     throw error;
+   }
+ };
+
+ const validateSystemTime = async () => {
+   try {
+     const serverTime = await getServerTimeFromAPI();
+     const clientTime = new Date();
+     const timeDifference = Math.abs(serverTime.getTime() - clientTime.getTime());
+     const allowedDifference = 3 * 60 * 1000;
+     
+     if (timeDifference > allowedDifference) {
+       const differenceMinutes = Math.floor(timeDifference / 60000);
+       const differenceSeconds = Math.floor((timeDifference % 60000) / 1000);
+       const serverTimeStr = moment(serverTime).format('YYYY-MM-DD HH:mm:ss');
+       const clientTimeStr = moment(clientTime).format('YYYY-MM-DD HH:mm:ss');
+       
+       throw new Error(
+         `System time is incorrect. Please synchronize your system clock.\n\n` +
+         `Server time: ${serverTimeStr}\n` +
+         `Your system time: ${clientTimeStr}\n` +
+         `Difference: ${differenceMinutes} minutes ${differenceSeconds} seconds\n\n` +
+         `Please update your system time settings to match the server time.`
+       );
+     }
+     
+     return true;
+   } catch (error) {
+     throw error;
+   }
+ };
+
  const getDeviceLocation = () => {
    return new Promise((resolve, reject) => {
      if (!navigator || !navigator.geolocation) {
        return reject(new Error('Geolocation not supported'));
      }
-     navigator.geolocation.getCurrentPosition(
-       (pos) => {
-         resolve({
-           deviceLatitude: pos.coords.latitude,
-           deviceLongitude: pos.coords.longitude,
-           deviceAccuracy: pos.coords.accuracy,
-         });
-       },
-       (err) => {
-         reject(err);
-       },
-       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-     );
+     
+     if (navigator.permissions && navigator.permissions.query) {
+       navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+         if (result.state === 'denied') {
+           return reject({ code: 1, message: 'Location permission denied' });
+         }
+         requestLocation();
+       }).catch(() => {
+         requestLocation();
+       });
+     } else {
+       requestLocation();
+     }
+     
+     function requestLocation() {
+       navigator.geolocation.getCurrentPosition(
+         (pos) => {
+           resolve({
+             deviceLatitude: pos.coords.latitude,
+             deviceLongitude: pos.coords.longitude,
+             deviceAccuracy: pos.coords.accuracy,
+           });
+         },
+         (err) => {
+           let errorMessage = 'Location permission denied or unavailable';
+           if (err.code === 1) {
+             errorMessage = 'Location permission denied. Please enable location access in your browser settings.';
+           } else if (err.code === 2) {
+             errorMessage = 'Location unavailable. Please check your GPS/network connection.';
+           } else if (err.code === 3) {
+             errorMessage = 'Location request timed out. Please try again.';
+           }
+           reject({ ...err, userMessage: errorMessage });
+         },
+         { 
+           enableHighAccuracy: true, 
+           timeout: 20000,
+           maximumAge: 60000
+         }
+       );
+     }
    });
  };
 
  const handleCheckIn = async () => {
     setBdisbale(false);
-    //let current = new Date(Date.now());
     const moment = require("moment");
     let datebn = new Date(Date.now());
     let checkInTime = moment(datebn).format("HH:mm");
-    //let attendanceDate = "2023-08-10"
     let attendanceDate = moment(datebn).format("YYYY-MM-DD");
     try {
+      try {
+        await validateSystemTime();
+      } catch (timeError) {
+        message.error(timeError.message || 'System time validation failed. Please synchronize your system clock.');
+        setBdisbale(true);
+        return;
+      }
+
       let location;
       try {
         location = await getDeviceLocation();
       } catch (e) {
-        message.error(t('locationPermissionDenied') || 'Location permission denied or unavailable');
+        const errorMessage = e?.userMessage || e?.message || t('locationPermissionDenied') || 'Location permission denied or unavailable';
+        message.error(errorMessage);
         setBdisbale(true);
         return;
       }
@@ -489,11 +610,20 @@ const AttendanceEmployee = () => {
     let checkOutTime = moment(datebn).format("HH:mm");
 
     try {
+      try {
+        await validateSystemTime();
+      } catch (timeError) {
+        message.error(timeError.message || 'System time validation failed. Please synchronize your system clock.');
+        setBdisbale(true);
+        return;
+      }
+
       let location;
       try {
         location = await getDeviceLocation();
       } catch (e) {
-        message.error(t('locationPermissionDenied') || 'Location permission denied or unavailable');
+        const errorMessage = e?.userMessage || e?.message || t('locationPermissionDenied') || 'Location permission denied or unavailable';
+        message.error(errorMessage);
         setBdisbale(true);
         return;
       }
