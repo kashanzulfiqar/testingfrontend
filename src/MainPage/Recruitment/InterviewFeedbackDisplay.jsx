@@ -22,8 +22,7 @@ const InterviewFeedbackDisplay = ({ feedback, onEdit, loggedInUser }) => {
   // Check if current user can edit this feedback
   const canEditFeedback = 
     loggedInUser &&
-    (loggedInUser?.role === "admin" || 
-     (loggedInUser?._id && feedback?.submittedBy?._id === loggedInUser._id));
+    (loggedInUser?._id && feedback?.submittedBy?._id === loggedInUser._id);
 
   const data = hasLegacy
     ? [
