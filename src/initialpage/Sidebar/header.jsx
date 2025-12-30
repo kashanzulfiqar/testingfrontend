@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { Button, Dropdown, Menu, message as Message1 } from "antd";
 import { DownOutlined, GlobalOutlined } from "@ant-design/icons";
 import { counter } from "../../Redux/Reducer/permissions/pendingCounterSlice";
+import { setHasAssignedInterviews } from "../../Entryfile/features/users.jsx";
 import {
   joinNotificationRooms,
   subscribeToNewNotifications,
@@ -82,6 +83,7 @@ const Header = (props) => {
     leave_status_change: "/employee/requests",
     payment_success: "/payroll/payslip",
     celebration: "/employee/dashboard",
+    interview_assignment: "/recruitment/interviews",
   };
   
   const LangMenu = (
@@ -202,6 +204,20 @@ const Header = (props) => {
             item?._id === notification?._id ? notification : item
           );
         }
+        // If this notification assigns an interview to the current user,
+        // ensure the UI knows the user has assigned interviews so the
+        // Interviews tab becomes visible without a full page refresh.
+        try {
+          if (
+            notification?.type === "interview_assignment" &&
+            (notification.userId === user_state?.user?._id || notification.userId === user_state?.email)
+          ) {
+            dispatch(setHasAssignedInterviews(true));
+          }
+        } catch (e) {
+          // best-effort: do not break notifications display
+        }
+
         return [notification, ...prev];
       });
     });
@@ -263,15 +279,43 @@ const Header = (props) => {
 
         {notifList.slice(0, 5).map(
           (item, index) => (
-            (
-              <div key={index} className="border-bottom py-2" style={{ cursor: "pointer" }}
-              onClick={() => handleNotificationClick(item)} >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <strong>{item.title}</strong>
-                </div>
-                <p className="mb-1">{item.message}</p>
+            <div 
+              key={index} 
+              className="border-bottom py-2" 
+              style={{ 
+                cursor: "pointer",
+                backgroundColor: item.read ? "#ffffff" : "#fff3e0",
+                padding: "8px",
+                borderRadius: "4px",
+                marginBottom: "5px"
+              }}
+              onClick={() => {
+                handleNotificationClick(item);
+                if (!item.read) {
+                  markNotificationRead(item._id);
+                }
+              }} 
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <strong>{item.title}</strong>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#999",
+                    cursor: "pointer",
+                    marginLeft: "8px"
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    markNotificationRead(item._id);
+                  }}
+                  title={item.read ? "Mark as unread" : "Mark as read"}
+                >
+                  {item.read ? "✓" : "•"}
+                </span>
               </div>
-            )
+              <p className="mb-1">{item.message}</p>
+            </div>
           )
         )}
         {notifList.length > 5 && (
@@ -383,7 +427,7 @@ const Header = (props) => {
           >
             <i className="fa fa-bell" style={{ fontSize: "18px" }}></i>
 
-            {notifList.length > 0 && (
+            {notifList.filter(n => !n.read).length > 0 && (
               <span
                 className="badge bg-danger"
                 style={{
@@ -393,7 +437,7 @@ const Header = (props) => {
                   fontSize: "10px",
                 }}
               >
-                {notifList.length}
+                {notifList.filter(n => !n.read).length}
               </span>
             )}
           </a>
@@ -521,7 +565,7 @@ const Header = (props) => {
             }}
           >
             <i className="fa fa-bell me-2"></i> Notifications
-            {notifList.length > 0 && (
+            {notifList.filter(n => !n.read).length > 0 && (
               <span
                 className="badge bg-danger"
                 style={{
@@ -531,7 +575,7 @@ const Header = (props) => {
                   fontSize: "10px",
                 }}
               >
-                {notifList.length}
+                {notifList.filter(n => !n.read).length}
               </span>
             )}
           </a>
@@ -550,8 +594,23 @@ const Header = (props) => {
               )}
 
               {notifList.slice(0, 5).map((item, index) => (
-                <div key={index} className="border-bottom py-2"  style={{ cursor: "pointer" }}
-                onClick={() => handleNotificationClick(item)} >
+                <div 
+                  key={index} 
+                  className="border-bottom py-2"  
+                  style={{ 
+                    cursor: "pointer",
+                    backgroundColor: item.read ? "#ffffff" : "#fff3e0",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    marginBottom: "5px"
+                  }}
+                  onClick={() => {
+                    handleNotificationClick(item);
+                    if (!item.read) {
+                      markNotificationRead(item._id);
+                    }
+                  }}
+                >
                   <div
                     style={{
                       display: "flex",
@@ -560,6 +619,21 @@ const Header = (props) => {
                     }}
                   >
                     <strong>{item.title}</strong>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#999",
+                        cursor: "pointer",
+                        marginLeft: "8px"
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        markNotificationRead(item._id);
+                      }}
+                      title={item.read ? "Mark as unread" : "Mark as read"}
+                    >
+                      {item.read ? "✓" : "•"}
+                    </span>
                   </div>
                   <p className="mb-1">{item.message}</p>
                 </div>
