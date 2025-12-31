@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import WokringDays from "./WorkingDays";
 import AssetsManagement from "./AssetsManagement";
 import AI_Config from "./AI_Config";
+import Location from "./Location"
 
 
 const Settings = ({test}) => {
@@ -135,6 +136,8 @@ useEffect(() => {
           ? t('settings.companySettings.companySettings') 
           : showComponent==="Leave Settings" 
           ? t('settings.leaveSettings')
+          : showComponent==="Locations" 
+          ? t('settings.locations')
           : showComponent==="Roles" 
           ? t('settings.roles')
           : showComponent==="Departments" 
@@ -192,6 +195,18 @@ useEffect(() => {
                       >
                         <i className="fa fa-fw fa-info-circle" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.companySettings.companySettings')}
+                      </a>
+                    </li>
+                    <li className={showComponent === 'Locations' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Locations')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Locations');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-location-arrow" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
+                        Locations 
                       </a>
                     </li>
                     <li className={showComponent === 'Working Days' ? 'active' : ''}>
@@ -370,6 +385,7 @@ useEffect(() => {
              <div className="cardStyle col-sm-8 col-md-8 col-lg-8 col-xl-9">
               {
                 showComponent === 'Company Settings' ? <Company /> :
+                showComponent === 'Locations' ? <Location /> :
                 showComponent === 'Leave Settings' ? <Leaves /> :
                 showComponent === 'Roles' ? <Roles /> :
                 showComponent === 'Departments' ? <Departments /> :
