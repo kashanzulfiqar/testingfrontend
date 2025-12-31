@@ -136,8 +136,8 @@ useEffect(() => {
           ? t('settings.companySettings.companySettings') 
           : showComponent==="Leave Settings" 
           ? t('settings.leaveSettings')
-          : showComponent==="Locations" 
-          ? t('settings.locations')
+          : showComponent==="Location" 
+          ? t('settings.location')
           : showComponent==="Roles" 
           ? t('settings.roles')
           : showComponent==="Departments" 
@@ -197,12 +197,12 @@ useEffect(() => {
                         {t('settings.companySettings.companySettings')}
                       </a>
                     </li>
-                    <li className={showComponent === 'Locations' ? 'active' : ''}>
+                    <li className={showComponent === 'Location' ? 'active' : ''}>
                       <a 
-                        href={getMenuItemUrl('Locations')}
+                        href={getMenuItemUrl('Location')}
                         onClick={(e) => {
                           e.preventDefault();
-                          handleMenuClick('Locations');
+                          handleMenuClick('Location');
                         }}
                       >
                         <i className="fa fa-fw fa-location-arrow" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
@@ -385,7 +385,7 @@ useEffect(() => {
              <div className="cardStyle col-sm-8 col-md-8 col-lg-8 col-xl-9">
               {
                 showComponent === 'Company Settings' ? <Company /> :
-                showComponent === 'Locations' ? <Location /> :
+                showComponent === 'Location' ? <Location /> :
                 showComponent === 'Leave Settings' ? <Leaves /> :
                 showComponent === 'Roles' ? <Roles /> :
                 showComponent === 'Departments' ? <Departments /> :
