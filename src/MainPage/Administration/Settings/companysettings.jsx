@@ -14,6 +14,7 @@ import Departments from "./Departments";
 import Designation from "./Designation";
 import Shifts from "./Shifts";
 import TaxSlabs from "./TaxSlabs";
+import AutoDeductions from "./AutoDeductions";
 import { useSelector } from "react-redux";
 import InvoiceTaxes from "./InvoiceTaxes";
 import InvoiceTags from "./InvoiceTags";
@@ -145,6 +146,8 @@ useEffect(() => {
           ? t('settings.shifts')
           : showComponent==="Tax Slabs" 
           ? t('settings.taxSlabs')
+          : showComponent==="Auto Deductions" 
+          ? t('settings.autoDeductions.autoDeductions')
           : showComponent==="Bank Details" 
           ? t('settings.bankDetails')
           : showComponent==="Invoice Tax Slabs" 
@@ -278,6 +281,18 @@ useEffect(() => {
                         {t('settings.taxSlabs')}
                       </a>
                     </li>
+                    <li className={showComponent === 'Auto Deductions' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Auto Deductions')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Auto Deductions');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-minus-circle" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
+                        {t('settings.autoDeductions.autoDeductions')}
+                      </a>
+                    </li>
                     <li className={showComponent === 'Bank Details' ? 'active' : ''}>
                       <a 
                         href={getMenuItemUrl('Bank Details')}
@@ -376,6 +391,7 @@ useEffect(() => {
                 showComponent === 'Designations' ? <Designation /> :
                 showComponent === 'Shifts' ? <Shifts /> : 
                 showComponent === 'Tax Slabs' ? <TaxSlabs /> :
+                showComponent === 'Auto Deductions' ? <AutoDeductions /> :
                 showComponent === 'Invoice Tax Slabs' ? <InvoiceTaxes /> :
                 showComponent === 'Invoice Tags' ? <InvoiceTags /> : 
                 showComponent === 'Invoice Counter' ? <InvoiceCounter /> : 
