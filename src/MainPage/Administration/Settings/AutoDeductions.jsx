@@ -175,15 +175,16 @@ const AutoDeductions = () => {
     });
   };
 
-  // Handle delete
+  // Handle delete (soft delete on backend)
   const onHandleDelete = () => {
     setLoader(true);
     apiServices("DELETE", `auto-deductions/${open.data?._id}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
+          // Remove from local state (soft deleted on backend)
           setData(data.filter((item) => item._id !== open.data?._id));
           handleClose();
-          message.success(t('settings.autoDeductions.deductionDeleted'));
+          message.success(res?.data?.msg || t('settings.autoDeductions.deductionDeleted'));
         }
         setLoader(false);
       })
@@ -216,15 +217,10 @@ const AutoDeductions = () => {
       apiServices("PUT", `auto-deductions/${open.data._id}`, payload, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
-            setData(
-              data.map((item) =>
-                item._id === open.data._id
-                  ? { ...item, ...payload, _id: item._id }
-                  : item
-              )
-            );
+            // Refresh list to get properly populated data
+            getDeductions();
             handleClose();
-            message.success(t('settings.autoDeductions.deductionUpdated'));
+            message.success(res?.data?.msg || t('settings.autoDeductions.deductionUpdated'));
           }
           setLoader(false);
         })
@@ -241,9 +237,10 @@ const AutoDeductions = () => {
       apiServices("POST", "auto-deductions", payload, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
-            setData([...data, { ...payload, _id: res?.data?.deduction?._id }]);
+            // Refresh list to get properly populated data
+            getDeductions();
             handleClose();
-            message.success(t('settings.autoDeductions.deductionAdded'));
+            message.success(res?.data?.msg || t('settings.autoDeductions.deductionAdded'));
           }
           setLoader(false);
         })
@@ -278,18 +275,23 @@ const AutoDeductions = () => {
   };
 
   // Get employee names for tooltip
-  const getEmployeeTooltip = (employeeIds) => {
-    if (!employeeIds || employeeIds.length === 0) return '';
+  const getEmployeeTooltip = (employeeList) => {
+    if (!employeeList || employeeList.length === 0) return '';
     
-    const employeeNames = employeeIds
-      .map(id => {
-        const emp = employees.find(e => e._id === (id._id || id));
-        return emp?.fullName || 'Unknown';
+    const employeeNames = employeeList
+      .map(emp => {
+        // Handle both populated objects and plain IDs
+        if (typeof emp === 'object' && emp?.fullName) {
+          return emp.fullName;
+        }
+        // Fallback: lookup from employees list
+        const found = employees.find(e => e._id === (emp._id || emp));
+        return found?.fullName || 'Unknown';
       })
       .slice(0, 10);
     
-    if (employeeIds.length > 10) {
-      employeeNames.push(`+${employeeIds.length - 10} more`);
+    if (employeeList.length > 10) {
+      employeeNames.push(`+${employeeList.length - 10} more`);
     }
     
     return employeeNames.join(', ');
