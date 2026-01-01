@@ -27,6 +27,7 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
+import { subscribeToNewNotifications } from "../../Services/socketClient";
 import { useSelector } from "react-redux";
 import moment from "moment";
 import list from "../../assets/iconsRecruitment/list.svg";
@@ -75,6 +76,30 @@ const Interviews = () => {
 
     fetchInterviews();
   }, [filters, currentPage, pageSize]);
+
+  // Subscribe to socket notifications so assigned interviewers get live updates
+  useEffect(() => {
+    const unsubscribe = subscribeToNewNotifications((notification) => {
+      try {
+        if (!notification) return;
+
+        // Normalize ids to strings for robust comparison
+        const myId = String(user_state?._id || user_state?.email || "");
+        const notifUserId = notification?.userId ? String(notification.userId) : "";
+
+        // If the notification is an interview assignment for this user, refresh list
+        if (notification.type === "interview_assignment" && notifUserId === myId) {
+          fetchInterviews();
+        }
+      } catch (e) {
+        // ignore errors from live update
+      }
+    });
+
+    return () => {
+      if (typeof unsubscribe === "function") unsubscribe();
+    };
+  }, [user_state, filters, currentPage, pageSize]);
 
   const fetchInterviews = async () => {
     const token =
