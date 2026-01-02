@@ -164,6 +164,17 @@ function GenerateSalaryPDF(row, view, screen, print) {
     ['Deduction', `${row?.deduction?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`],
   ];
   
+  // Add auto-deductions to the table if they exist
+  if (row?.autoDeductions && row?.autoDeductions?.length > 0) {
+    row.autoDeductions.forEach((deduction) => {
+      const amount = (+deduction?.calculatedAmount || 0)?.toFixed(2)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      tableData.push([deduction?.title || 'Auto Deduction', amount]);
+    });
+  }
+  
+  // Calculate extra height needed for auto-deductions (each row is ~12px)
+  const autoDeductionsHeight = (row?.autoDeductions?.length || 0) * 12;
+  
   // Set the table options
   const options = {
     startY: 183 + newHeight,
@@ -203,28 +214,28 @@ function GenerateSalaryPDF(row, view, screen, print) {
   });
   doc.setFontSize(15);
   doc.setFont(undefined, 'normal')
-  doc.text(x + 110, 231 + newHeight, 'Total Deduction: ');
+  doc.text(x + 110, 231 + newHeight + autoDeductionsHeight, 'Total Deduction: ');
   const widthofDeduction = doc.getTextWidth('Total Deduction: ');
   doc.setFont(undefined, 'bold')
-  doc.text(x + widthofDeduction + 110, 231 + newHeight, `${(+row?.totalDeduction)?.toFixed(2)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
+  doc.text(x + widthofDeduction + 110, 231 + newHeight + autoDeductionsHeight, `${(+row?.totalDeduction)?.toFixed(2)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
 
   doc.setFontSize(18);
   doc.setFont(undefined, 'bold')
-  doc.text(x + 110, 246 + newHeight, 'Net Pay: ');
+  doc.text(x + 110, 246 + newHeight + autoDeductionsHeight, 'Net Pay: ');
   const widthofCredit = doc.getTextWidth('Net Pay: ');
   doc.setFont(undefined, 'bold')
-  doc.text(x + widthofCredit + 110, 246 + newHeight, `${row?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${row?.preferredCurrency ? row?.preferredCurrency : row?.companyId?.preferredCurrency ? row?.companyId?.preferredCurrency : ''}`);
+  doc.text(x + widthofCredit + 110, 246 + newHeight + autoDeductionsHeight, `${row?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${row?.preferredCurrency ? row?.preferredCurrency : row?.companyId?.preferredCurrency ? row?.companyId?.preferredCurrency : ''}`);
 
   // line 4
   doc.setFontSize(11);
   doc.setFont(undefined, 'normal')
-  doc.text(x, 260 + newHeight, '* This computer generated slip does not require signature.');
-  doc.text(x, 265 + newHeight, '* Contact us for any details.');
+  doc.text(x, 260 + newHeight + autoDeductionsHeight, '* This computer generated slip does not require signature.');
+  doc.text(x, 265 + newHeight + autoDeductionsHeight, '* Contact us for any details.');
 
   //footer
   doc.setDrawColor(68, 68, 68);
-  doc.line(x-1, 270 + newHeight, x+181, 270 + newHeight);
-  doc.text(x-1, 280 + newHeight, 'Note: "This digital salary slip is not applicable for official use."');
+  doc.line(x-1, 270 + newHeight + autoDeductionsHeight, x+181, 270 + newHeight + autoDeductionsHeight);
+  doc.text(x-1, 280 + newHeight + autoDeductionsHeight, 'Note: "This digital salary slip is not applicable for official use."');
 
 if(view){
     const pdfBlob = doc.output('blob'); 

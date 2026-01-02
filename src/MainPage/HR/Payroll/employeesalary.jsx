@@ -24,6 +24,7 @@ import {
   Empty,
   Input,
   Pagination,
+  Tooltip,
 } from "antd";
 import "antd/dist/antd.css";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
@@ -635,6 +636,27 @@ const EmployeeSalary = () => {
       ),
     },
     {
+      title: t('payroll.currentPayroll.autoDeductions'),
+      dataIndex: "totalAutoDeductions",
+      render: (text, record) => {
+        const autoDeductions = record?.autoDeductions || [];
+        const total = parseFloat(record?.totalAutoDeductions || 0);
+        if (autoDeductions.length === 0 && total === 0) {
+          return <span>-</span>;
+        }
+        const tooltipContent = autoDeductions.map(d => 
+          `${d.title}: ${(+d.calculatedAmount)?.toFixed(2)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
+        ).join('\n');
+        return (
+          <Tooltip title={<div style={{ whiteSpace: 'pre-line' }}>{tooltipContent || 'No details'}</div>}>
+            <span style={{ cursor: 'pointer', borderBottom: '1px dashed #1890ff' }}>
+              {total?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            </span>
+          </Tooltip>
+        );
+      },
+    },
+    {
       title: t('payroll.currentPayroll.totalDeduction'),
       dataIndex: "totalDeduction",
       render: (text, record) => (
@@ -822,6 +844,27 @@ const EmployeeSalary = () => {
           {record?.deductionReason ? record?.deductionReason : "-"}
         </label>
       ),
+    },
+    {
+      title: t('payroll.currentPayroll.autoDeductions'),
+      dataIndex: "totalAutoDeductions",
+      render: (text, record) => {
+        const autoDeductions = record?.autoDeductions || [];
+        const total = parseFloat(record?.totalAutoDeductions || 0);
+        if (autoDeductions.length === 0 && total === 0) {
+          return <span>-</span>;
+        }
+        const tooltipContent = autoDeductions.map(d => 
+          `${d.title}: ${(+d.calculatedAmount)?.toFixed(2)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
+        ).join('\n');
+        return (
+          <Tooltip title={<div style={{ whiteSpace: 'pre-line' }}>{tooltipContent || 'No details'}</div>}>
+            <span style={{ cursor: 'pointer', borderBottom: '1px dashed #1890ff' }}>
+              {total?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            </span>
+          </Tooltip>
+        );
+      },
     },
     {
       title: t('payroll.currentPayroll.totalDeduction'),
