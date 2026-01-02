@@ -521,9 +521,28 @@ const AutoDeductions = () => {
           style: { backgroundColor: "rgb(0 0 0 / 87%)" },
         }}
       >
-        <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div 
+          className="modal-dialog modal-dialog-centered modal-lg" 
+          role="document"
+          style={{
+            maxWidth: '800px',
+            width: '90%',
+            maxHeight: '90vh',
+            margin: '1.75rem auto',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <div 
+            className="modal-content"
+            style={{
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+            }}
+          >
+            <div className="modal-header" style={{ flexShrink: 0 }}>
               <h5 className="modal-title">
                 {open.data 
                   ? t('settings.autoDeductions.editDeduction')
@@ -533,7 +552,15 @@ const AutoDeductions = () => {
                 <span aria-hidden="true">×</span>
               </button>
             </div>
-            <div className="modal-body">
+            <div 
+              className="modal-body"
+              style={{
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                flex: '1 1 auto',
+                minHeight: 0,
+              }}
+            >
               <Form
                 form={form}
                 name="auto-deduction-form"
@@ -651,8 +678,9 @@ const AutoDeductions = () => {
                             max={100}
                             step={0.01}
                             precision={2}
-                            addonAfter="%"
                             placeholder="e.g., 5"
+                            formatter={(value) => value ? `${value}%` : ''}
+                            parser={(value) => value ? value.replace('%', '') : ''}
                           />
                         </Form.Item>
                       </div>

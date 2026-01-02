@@ -175,12 +175,25 @@ function WeekViewTimeSheet({
   const from_data = currentWeekDates[0];
   const to_data = currentWeekDates[currentWeekDates.length - 1];
 
+  // Calculate the current week's start date for filtering
+  const currentWeekStart = new Date(tableStartDate);
+  currentWeekStart.setDate(currentWeekStart.getDate() - ((currentWeekStart.getDay() + 6) % 7));
+  const currentWeekStartStr = moment(currentWeekStart).format('YYYY-MM-DD');
+
   setTableLoader(true);
   
   const currentDrafts = workingData.filter(item => {
     // Include boardId in key to properly identify taskboard entries
     const key = `${moment(item.date).format('YYYY-MM-DD')}_${idOf(item.projectId)}_${idOf(item.boardId)}_${idOf(item.taskId)}`;
-    return pendingChanges[key] || item.isDirty;
+    const hasPendingChanges = pendingChanges[key] || item.isDirty;
+    
+    // Only keep drafts that belong to this week (check by date or weekStart)
+    const itemDate = item.date ? moment(item.date).format('YYYY-MM-DD') : null;
+    const belongsToCurrentWeek = 
+      (itemDate && currentWeekDates.includes(itemDate)) ||
+      (item.weekStart === currentWeekStartStr);
+    
+    return hasPendingChanges && belongsToCurrentWeek;
   });
 
   try {
@@ -301,6 +314,11 @@ function WeekViewTimeSheet({
     // Determine whether user selected a project or a taskboard
     const isProject = allProjects?.some(proj => proj?._id === values?.selectedId);
 
+    // Calculate the current week's start date (Monday)
+    const currentWeekStart = new Date(tableStartDate);
+    currentWeekStart.setDate(currentWeekStart.getDate() - ((currentWeekStart.getDay() + 6) % 7));
+    const weekStartStr = moment(currentWeekStart).format('YYYY-MM-DD');
+
     // Build the base row for our data arrays
     const d = {
       projectId: isProject
@@ -319,6 +337,8 @@ function WeekViewTimeSheet({
         _id: values?.taskId,
         title: allTasks.find(task => task._id === values?.taskId)?.title,
       },
+      // Associate this row with the current week
+      weekStart: weekStartStr,
     };
 
     // Always add to allData for server persistence
@@ -330,7 +350,8 @@ function WeekViewTimeSheet({
         item =>
           idOf(item.projectId) === idOf(d.projectId) &&
           idOf(item.boardId) === idOf(d.boardId) &&
-          idOf(item.taskId) === idOf(d.taskId),
+          idOf(item.taskId) === idOf(d.taskId) &&
+          item.weekStart === weekStartStr,
       );
       if (exists) return prev;
 
@@ -1129,7 +1150,27 @@ const handleCancel = () => {
     />
   );
 
-const groupedData = workingData?.reduce((result, item) => {
+// Calculate the current week's start date for filtering displayed rows
+const displayWeekStart = new Date(tableStartDate);
+displayWeekStart.setDate(displayWeekStart.getDate() - ((displayWeekStart.getDay() + 6) % 7));
+const displayWeekStartStr = moment(displayWeekStart).format('YYYY-MM-DD');
+
+// Filter workingData to only show items belonging to the current week
+const filteredWorkingData = workingData?.filter(item => {
+  // If item has a date, check if it's within current week dates
+  if (item.date) {
+    const itemDate = moment(item.date).format('YYYY-MM-DD');
+    return currentWeekDates.includes(itemDate);
+  }
+  // If item has no date but has weekStart, check if it matches current week
+  if (item.weekStart) {
+    return item.weekStart === displayWeekStartStr;
+  }
+  // Items without date or weekStart (shouldn't happen) - exclude them
+  return false;
+});
+
+const groupedData = filteredWorkingData?.reduce((result, item) => {
   // Include boardId in key to properly group taskboard entries
   const key = `${idOf(item.projectId)}-${idOf(item.boardId)}-${idOf(item.taskId)}`;
 
