@@ -1202,6 +1202,7 @@
       "tax": "الضريبة",
       "deduction": "الخصم",
       "deductionReason": "سبب الخصم",
+      "autoDeductions": "الخصومات التلقائية",
       "totalDeduction": "إجمالي الخصم",
       "bonus": "مكافأة",
       "bonusReason": "سبب المكافأة",
