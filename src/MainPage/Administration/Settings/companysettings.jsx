@@ -14,6 +14,7 @@ import Departments from "./Departments";
 import Designation from "./Designation";
 import Shifts from "./Shifts";
 import TaxSlabs from "./TaxSlabs";
+import AutoDeductions from "./AutoDeductions";
 import { useSelector } from "react-redux";
 import InvoiceTaxes from "./InvoiceTaxes";
 import InvoiceTags from "./InvoiceTags";
@@ -24,6 +25,7 @@ import { useTranslation } from "react-i18next";
 import WokringDays from "./WorkingDays";
 import AssetsManagement from "./AssetsManagement";
 import AI_Config from "./AI_Config";
+import Location from "./Location"
 
 
 const Settings = ({test}) => {
@@ -135,6 +137,8 @@ useEffect(() => {
           ? t('settings.companySettings.companySettings') 
           : showComponent==="Leave Settings" 
           ? t('settings.leaveSettings')
+          : showComponent==="Location" 
+          ? t('settings.location')
           : showComponent==="Roles" 
           ? t('settings.roles')
           : showComponent==="Departments" 
@@ -145,6 +149,8 @@ useEffect(() => {
           ? t('settings.shifts')
           : showComponent==="Tax Slabs" 
           ? t('settings.taxSlabs')
+          : showComponent==="Auto Deductions" 
+          ? t('settings.autoDeductions.autoDeductions')
           : showComponent==="Bank Details" 
           ? t('settings.bankDetails')
           : showComponent==="Invoice Tax Slabs" 
@@ -192,6 +198,18 @@ useEffect(() => {
                       >
                         <i className="fa fa-fw fa-info-circle" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.companySettings.companySettings')}
+                      </a>
+                    </li>
+                    <li className={showComponent === 'Location' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Location')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Location');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-location-arrow" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
+                        Locations 
                       </a>
                     </li>
                     <li className={showComponent === 'Working Days' ? 'active' : ''}>
@@ -276,6 +294,18 @@ useEffect(() => {
                       >
                         <i className="fa fa-fw fa-money" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.taxSlabs')}
+                      </a>
+                    </li>
+                    <li className={showComponent === 'Auto Deductions' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Auto Deductions')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Auto Deductions');
+                        }}
+                      >
+                        <i className="fa fa-fw fa-minus-circle" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
+                        {t('settings.autoDeductions.autoDeductions')}
                       </a>
                     </li>
                     <li className={showComponent === 'Bank Details' ? 'active' : ''}>
@@ -370,12 +400,14 @@ useEffect(() => {
              <div className="cardStyle col-sm-8 col-md-8 col-lg-8 col-xl-9">
               {
                 showComponent === 'Company Settings' ? <Company /> :
+                showComponent === 'Location' ? <Location /> :
                 showComponent === 'Leave Settings' ? <Leaves /> :
                 showComponent === 'Roles' ? <Roles /> :
                 showComponent === 'Departments' ? <Departments /> :
                 showComponent === 'Designations' ? <Designation /> :
                 showComponent === 'Shifts' ? <Shifts /> : 
                 showComponent === 'Tax Slabs' ? <TaxSlabs /> :
+                showComponent === 'Auto Deductions' ? <AutoDeductions /> :
                 showComponent === 'Invoice Tax Slabs' ? <InvoiceTaxes /> :
                 showComponent === 'Invoice Tags' ? <InvoiceTags /> : 
                 showComponent === 'Invoice Counter' ? <InvoiceCounter /> : 

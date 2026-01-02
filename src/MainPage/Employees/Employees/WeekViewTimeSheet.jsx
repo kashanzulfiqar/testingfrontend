@@ -74,7 +74,7 @@ function WeekViewTimeSheet({
   const [openTimePickers, setOpenTimePickers] = useState({});
   // Build a stable key for a row (project or board + task + date)
   const rowKey = (e) =>
-    `${moment(e.date).format('YYYY-MM-DD')}::${e.projectId?._id || e.projectId || ''}::${e.taskId?._id || e.taskId || ''}`;
+    `${moment(e.date).format('YYYY-MM-DD')}::${e.projectId?._id || e.projectId || ''}::${e.boardId?._id || e.boardId || ''}::${e.taskId?._id || e.taskId || ''}`;
 
   // Upsert into workingData by key
   const upsertWorking = (arr, patch) => {
@@ -96,7 +96,13 @@ function WeekViewTimeSheet({
   };
 
     // Convert id or object to id string
-    const idOf = (x) => (x && x._id) ? x._id : x || '';
+    // Handles: null, undefined, string IDs, and objects with _id property
+    const idOf = (x) => {
+      if (!x) return '';
+      if (typeof x === 'string') return x;
+      if (x._id) return x._id;
+      return '';
+    };
 
     // Find a project name by id or object
     const nameOfProject = (x) => {
@@ -161,7 +167,7 @@ function WeekViewTimeSheet({
       setOldDurationValue("");
     }
   }, [
-    showCard?.isShown ? `${moment(showCard?.data?.date).format('YYYY-MM-DD')}_${idOf(showCard?.data?.projectId)}_${idOf(showCard?.data?.taskId)}` : null,
+    showCard?.isShown ? `${moment(showCard?.data?.date).format('YYYY-MM-DD')}_${idOf(showCard?.data?.projectId)}_${idOf(showCard?.data?.boardId)}_${idOf(showCard?.data?.taskId)}` : null,
   ]);
 
 
@@ -169,11 +175,25 @@ function WeekViewTimeSheet({
   const from_data = currentWeekDates[0];
   const to_data = currentWeekDates[currentWeekDates.length - 1];
 
+  // Calculate the current week's start date for filtering
+  const currentWeekStart = new Date(tableStartDate);
+  currentWeekStart.setDate(currentWeekStart.getDate() - ((currentWeekStart.getDay() + 6) % 7));
+  const currentWeekStartStr = moment(currentWeekStart).format('YYYY-MM-DD');
+
   setTableLoader(true);
   
   const currentDrafts = workingData.filter(item => {
-    const key = `${moment(item.date).format('YYYY-MM-DD')}_${idOf(item.projectId)}_${idOf(item.taskId)}`;
-    return pendingChanges[key] || item.isDirty;
+    // Include boardId in key to properly identify taskboard entries
+    const key = `${moment(item.date).format('YYYY-MM-DD')}_${idOf(item.projectId)}_${idOf(item.boardId)}_${idOf(item.taskId)}`;
+    const hasPendingChanges = pendingChanges[key] || item.isDirty;
+    
+    // Only keep drafts that belong to this week (check by date or weekStart)
+    const itemDate = item.date ? moment(item.date).format('YYYY-MM-DD') : null;
+    const belongsToCurrentWeek = 
+      (itemDate && currentWeekDates.includes(itemDate)) ||
+      (item.weekStart === currentWeekStartStr);
+    
+    return hasPendingChanges && belongsToCurrentWeek;
   });
 
   try {
@@ -294,6 +314,11 @@ function WeekViewTimeSheet({
     // Determine whether user selected a project or a taskboard
     const isProject = allProjects?.some(proj => proj?._id === values?.selectedId);
 
+    // Calculate the current week's start date (Monday)
+    const currentWeekStart = new Date(tableStartDate);
+    currentWeekStart.setDate(currentWeekStart.getDate() - ((currentWeekStart.getDay() + 6) % 7));
+    const weekStartStr = moment(currentWeekStart).format('YYYY-MM-DD');
+
     // Build the base row for our data arrays
     const d = {
       projectId: isProject
@@ -312,6 +337,8 @@ function WeekViewTimeSheet({
         _id: values?.taskId,
         title: allTasks.find(task => task._id === values?.taskId)?.title,
       },
+      // Associate this row with the current week
+      weekStart: weekStartStr,
     };
 
     // Always add to allData for server persistence
@@ -323,7 +350,8 @@ function WeekViewTimeSheet({
         item =>
           idOf(item.projectId) === idOf(d.projectId) &&
           idOf(item.boardId) === idOf(d.boardId) &&
-          idOf(item.taskId) === idOf(d.taskId),
+          idOf(item.taskId) === idOf(d.taskId) &&
+          item.weekStart === weekStartStr,
       );
       if (exists) return prev;
 
@@ -378,25 +406,27 @@ function WeekViewTimeSheet({
     }
   };
 
-  const handleTimePickerChange = (date, project, task, time, type) => {
+  const handleTimePickerChange = (date, project, board, task, time, type) => {
     const dateStr = moment(date).format('YYYY-MM-DD');
     
     const isFuture = moment(dateStr).isAfter(moment(), 'day');
     if (isFuture) return;
 
     setUpdatedDuration(time);
-    const key = `${dateStr}_${idOf(project)}_${idOf(task)}`;
+    // Include boardId in key to properly identify taskboard entries
+    const key = `${dateStr}_${idOf(project)}_${idOf(board)}_${idOf(task)}`;
 
     const patch = {
       date: dateStr,
       projectId: idOf(project),
-      boardId: idOf(project?.boardId) || idOf(showCard?.data?.boardId) || null,
+      boardId: idOf(board),
       taskId: idOf(task),
       hoursWorked: time,
       // Keep live card notes if editing the same row
       ...(showCard?.isShown &&
       moment(showCard?.data?.date).format('YYYY-MM-DD') === dateStr &&
       idOf(showCard?.data?.projectId) === idOf(project) &&
+      idOf(showCard?.data?.boardId) === idOf(board) &&
       idOf(showCard?.data?.taskId) === idOf(task)
         ? { notes: cardReason }
         : {}),
@@ -412,24 +442,26 @@ function WeekViewTimeSheet({
   };
 
 
-const handleNoteChange = (date, project, task, note) => {
+const handleNoteChange = (date, project, board, task, note) => {
   const dateStr = moment(date).format('YYYY-MM-DD');
   
   // block future dates
   const isFuture = moment(dateStr).isAfter(moment(), 'day');
-  const key = `${dateStr}_${idOf(project)}_${idOf(task)}`;
+  // Include boardId in key to properly identify taskboard entries
+  const key = `${dateStr}_${idOf(project)}_${idOf(board)}_${idOf(task)}`;
 
   if (isFuture) return;
 
   const patch = {
     date: dateStr,
     projectId: idOf(project),
-    boardId: idOf(project?.boardId) || idOf(showCard?.data?.boardId) || null,
+    boardId: idOf(board),
     taskId: idOf(task),
     notes: note,
     ...(showCard?.isShown &&
     moment(showCard?.data?.date).format('YYYY-MM-DD') === dateStr &&
     idOf(showCard?.data?.projectId) === idOf(project) &&
+    idOf(showCard?.data?.boardId) === idOf(board) &&
     idOf(showCard?.data?.taskId) === idOf(task)
       ? { hoursWorked: updatedDuration }
       : {}),
@@ -463,7 +495,8 @@ const handleUpdate = () => {
 
   setWorkingData(prev => upsertWorking(prev, patch));
   
-  const key = `${dateStr}_${idOf(patch.projectId)}_${idOf(patch.taskId)}`;
+  // Include boardId in key to properly identify taskboard entries
+  const key = `${dateStr}_${idOf(patch.projectId)}_${idOf(patch.boardId)}_${idOf(patch.taskId)}`;
   setPendingChanges(prev => ({ ...prev, [key]: patch }));
   
   setShowCard({ isShown: false, data: null });
@@ -487,7 +520,8 @@ const handleCreate = () => {
 
   setWorkingData(prev => upsertWorking(prev, patch));
   
-  const key = `${dateStr}_${idOf(patch.projectId)}_${idOf(patch.taskId)}`;
+  // Include boardId in key to properly identify taskboard entries
+  const key = `${dateStr}_${idOf(patch.projectId)}_${idOf(patch.boardId)}_${idOf(patch.taskId)}`;
   setPendingChanges(prev => ({ ...prev, [key]: patch }));
   
   setShowCard({ isShown: false, data: null });
@@ -622,6 +656,7 @@ const handleCancel = () => {
   const key = rowKey({
     date: dateStr,
     projectId: showCard.data.projectId?._id || showCard.data.projectId,
+    boardId: showCard.data.boardId?._id || showCard.data.boardId,
     taskId: showCard.data.taskId?._id || showCard.data.taskId,
   });
 
@@ -629,10 +664,12 @@ const handleCancel = () => {
     (e) =>
       moment(e.date).format('YYYY-MM-DD') === dateStr &&
       idOf(e.projectId) === idOf(showCard.data.projectId) &&
+      idOf(e.boardId) === idOf(showCard.data.boardId) &&
       idOf(e.taskId) === idOf(showCard.data.taskId)
   );
 
-  const pendingKey = `${dateStr}_${idOf(showCard.data.projectId)}_${idOf(showCard.data.taskId)}`;
+  // Include boardId in key to properly identify taskboard entries
+  const pendingKey = `${dateStr}_${idOf(showCard.data.projectId)}_${idOf(showCard.data.boardId)}_${idOf(showCard.data.taskId)}`;
   setPendingChanges(prev => {
     const next = { ...prev };
     delete next[pendingKey];
@@ -752,21 +789,22 @@ const handleCancel = () => {
                         ? moment(displayData?.hoursWorked, "HH:mm")
                         : null
                     }
-                    open={openTimePickers[`${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}`] || false}
+                    open={openTimePickers[`${cellDate}_${idOf(record?.projectId)}_${idOf(record?.boardId)}_${idOf(record?.taskId)}`] || false}
                     onOpenChange={(open) => {
-                      const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}`;
+                      const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.boardId)}_${idOf(record?.taskId)}`;
                       setOpenTimePickers(prev => ({ ...prev, [pickerKey]: open }));
                     }}
                     onSelect={(value) => {
                       handleTimePickerChange(
                         cellDate,
                         record?.projectId,
+                        record?.boardId,
                         record?.taskId,
                         moment(value).format("HH:mm"),
                         "Update"
                       );
                       setSaveButton(false);
-                      const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}`;
+                      const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.boardId)}_${idOf(record?.taskId)}`;
                       setOpenTimePickers(prev => ({ ...prev, [pickerKey]: false }));
                     }}
                     onClick={() => {
@@ -823,6 +861,7 @@ const handleCancel = () => {
                       handleTimePickerChange(
                         cellDate,
                         record?.projectId,
+                        record?.boardId,
                         record?.taskId,
                         moment(value).format("HH:mm"),
                         "Update"
@@ -841,7 +880,7 @@ const handleCancel = () => {
                         const cellDate = moment(
                           new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
                         ).format("YYYY-MM-DD");
-                        const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.taskId)}_${index}${index2}`;
+                        const pickerKey = `${cellDate}_${idOf(record?.projectId)}_${idOf(record?.boardId)}_${idOf(record?.taskId)}_${index}${index2}`;
                         
                         return (
                           <TimePicker
@@ -863,6 +902,7 @@ const handleCancel = () => {
                               handleTimePickerChange(
                                 cellDate,
                                 record?.projectId,
+                                record?.boardId,
                                 record?.taskId,
                                 moment(value).format("HH:mm"),
                                 "Add"
@@ -872,19 +912,20 @@ const handleCancel = () => {
                             }}
                             onClick={() => {
                               if (!isFuture1) {
+                                // Properly handle null projectId for taskboard entries
                                 const d = {
-                                  projectId: {
+                                  projectId: record?.projectId ? {
                                     _id: record?.projectId?._id,
                                     projectName: record?.projectId?.projectName,
-                                  },
-                                  boardId: {
+                                  } : null,
+                                  boardId: record?.boardId ? {
                                     _id: record?.boardId?._id,
                                     boardTitle: record?.boardId?.boardTitle,
-                                  },
-                                  taskId: {
+                                  } : null,
+                                  taskId: record?.taskId ? {
                                     _id: record?.taskId?._id,
                                     title: record?.taskId?.title,
-                                  },
+                                  } : null,
                                   date: cellDate,
                                   indexId: `${index}${index2}`,
                                 };
@@ -923,6 +964,7 @@ const handleCancel = () => {
                               handleTimePickerChange(
                                 cellDate,
                                 record?.projectId,
+                                record?.boardId,
                                 record?.taskId,
                                 moment(value).format("HH:mm"),
                                 "Add"
@@ -1108,8 +1150,29 @@ const handleCancel = () => {
     />
   );
 
-const groupedData = workingData?.reduce((result, item) => {
-  const key = `${idOf(item.projectId)}-${idOf(item.taskId)}`;
+// Calculate the current week's start date for filtering displayed rows
+const displayWeekStart = new Date(tableStartDate);
+displayWeekStart.setDate(displayWeekStart.getDate() - ((displayWeekStart.getDay() + 6) % 7));
+const displayWeekStartStr = moment(displayWeekStart).format('YYYY-MM-DD');
+
+// Filter workingData to only show items belonging to the current week
+const filteredWorkingData = workingData?.filter(item => {
+  // If item has a date, check if it's within current week dates
+  if (item.date) {
+    const itemDate = moment(item.date).format('YYYY-MM-DD');
+    return currentWeekDates.includes(itemDate);
+  }
+  // If item has no date but has weekStart, check if it matches current week
+  if (item.weekStart) {
+    return item.weekStart === displayWeekStartStr;
+  }
+  // Items without date or weekStart (shouldn't happen) - exclude them
+  return false;
+});
+
+const groupedData = filteredWorkingData?.reduce((result, item) => {
+  // Include boardId in key to properly group taskboard entries
+  const key = `${idOf(item.projectId)}-${idOf(item.boardId)}-${idOf(item.taskId)}`;
 
   if (!result[key]) {
     result[key] = {
@@ -1645,7 +1708,7 @@ const groupedData = workingData?.reduce((result, item) => {
                       >
                         <div>
                           <Input.TextArea
-                            key={`${moment(showCard?.data?.date).format("YYYY-MM-DD")}_${idOf(showCard?.data?.projectId)}_${idOf(showCard?.data?.taskId)}`}
+                            key={`${moment(showCard?.data?.date).format("YYYY-MM-DD")}_${idOf(showCard?.data?.projectId)}_${idOf(showCard?.data?.boardId)}_${idOf(showCard?.data?.taskId)}`}
                             rows={2}
                             value={cardReason}
                             style={{ resize: "none" }}
@@ -1656,6 +1719,7 @@ const groupedData = workingData?.reduce((result, item) => {
                               handleNoteChange(
                                 showCard.data.date,
                                 showCard.data.projectId,
+                                showCard.data.boardId,
                                 showCard.data.taskId,
                                 e.target.value
                               );

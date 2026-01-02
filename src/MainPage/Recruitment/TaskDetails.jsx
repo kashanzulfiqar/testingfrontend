@@ -25,6 +25,8 @@ import {
 } from "antd";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import { BASE_URL } from "../../config/apiConfig";
 import {
   ArrowLeftOutlined,
   ClockCircleOutlined,
@@ -242,7 +244,16 @@ const TaskDetails = () => {
   };
 
   const handleCommentSubmit = async (taskId) => {
-    if ((!comment || comment.trim().length === 0) && attachments.length === 0) {
+    // Check if there's actual text content (strip HTML tags from rich text)
+    const stripHtml = (html) => {
+      if (!html) return '';
+      return html.replace(/<[^>]*>/g, '').trim();
+    };
+    const richTextContent = stripHtml(commentRichText);
+    const plainTextContent = (comment || '').trim();
+    const hasTextContent = richTextContent.length > 0 || plainTextContent.length > 0;
+    
+    if (!hasTextContent && attachments.length === 0) {
       message.warning("Please enter a comment");
       return;
     }
@@ -263,28 +274,35 @@ const TaskDetails = () => {
         : "";
       const rawText = commentRichText && commentRichText.trim().length > 0 ? commentRichText : comment;
       const mentionsFromText = extractMentionIdsFromText(`${(rawText || '').trim()}${linksText}`);
-      const payload = {
-        taskId: taskId,
-        userId: authState?.user?._id,
-        userName: authState?.user?.fullName || authState?.user?.email,
-        text: `${(rawText || "").trim()}${linksText}`.trim(),
-        mentions: mentionsFromText,
-      };
+      const textContent = `${(rawText || "").trim()}${linksText}`.trim();
 
-      const response = await apiServices(
-        "POST",
-        `tasks/${taskId}/comments`,
-        payload,
+      // Use FormData with multipart/form-data (same as taskboard comments)
+      const formData = new FormData();
+      formData.append('text', textContent);
+      if (mentionsFromText.length > 0) {
+        formData.append('mentions', JSON.stringify(mentionsFromText));
+      }
+
+      const response = await axios.post(
+        `${BASE_URL}/tasks/${taskId}/comments`,
+        formData,
         {
-          access_token: {
-            accessToken: token,
-          },
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+          }
         }
       );
 
       if (response?.data?.status || response?.data?.success) {
         message.success("Comment added");
-        const created = response?.data?.data || payload;
+        const created = response?.data?.data || {
+          taskId: taskId,
+          userId: authState?.user?._id,
+          userName: authState?.user?.fullName || authState?.user?.email,
+          text: textContent,
+          mentions: mentionsFromText,
+        };
         setComments((prev) => [created, ...prev]);
         setCommentsByTask((prev) => ({
           ...prev,
@@ -298,7 +316,9 @@ const TaskDetails = () => {
       }
     } catch (error) {
       console.error("Error posting comment:", error);
-      message.error("Failed to add comment");
+      console.error("Error response:", error.response);
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message || "Failed to add comment";
+      message.error(errorMsg);
     } finally {
       setPostingComment(false);
     }
