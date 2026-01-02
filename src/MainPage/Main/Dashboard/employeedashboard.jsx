@@ -542,11 +542,19 @@ const EmployeeDashboard = () => {
       function requestLocation() {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            resolve({
+            const locationData = {
               deviceLatitude: pos.coords.latitude,
               deviceLongitude: pos.coords.longitude,
               deviceAccuracy: pos.coords.accuracy,
-            });
+            };
+            console.log('Device location obtained:', locationData);
+            console.log(`Accuracy: ${pos.coords.accuracy} meters`);
+            
+            if (pos.coords.accuracy > 100) {
+              console.warn(`Location accuracy is low: ${pos.coords.accuracy} meters. GPS signal may be weak.`);
+            }
+            
+            resolve(locationData);
           },
           (err) => {
             let errorMessage = 'Location permission denied or unavailable';
@@ -562,7 +570,7 @@ const EmployeeDashboard = () => {
           { 
             enableHighAccuracy: true, 
             timeout: 20000,
-            maximumAge: 60000
+            maximumAge: 0
           }
         );
       }

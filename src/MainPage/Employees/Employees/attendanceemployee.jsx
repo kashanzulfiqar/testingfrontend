@@ -486,33 +486,41 @@ const AttendanceEmployee = () => {
        requestLocation();
      }
      
-     function requestLocation() {
-       navigator.geolocation.getCurrentPosition(
-         (pos) => {
-           resolve({
-             deviceLatitude: pos.coords.latitude,
-             deviceLongitude: pos.coords.longitude,
-             deviceAccuracy: pos.coords.accuracy,
-           });
-         },
-         (err) => {
-           let errorMessage = 'Location permission denied or unavailable';
-           if (err.code === 1) {
-             errorMessage = 'Location permission denied. Please enable location access in your browser settings.';
-           } else if (err.code === 2) {
-             errorMessage = 'Location unavailable. Please check your GPS/network connection.';
-           } else if (err.code === 3) {
-             errorMessage = 'Location request timed out. Please try again.';
-           }
-           reject({ ...err, userMessage: errorMessage });
-         },
-         { 
-           enableHighAccuracy: true, 
-           timeout: 20000,
-           maximumAge: 60000
-         }
-       );
-     }
+    function requestLocation() {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const locationData = {
+            deviceLatitude: pos.coords.latitude,
+            deviceLongitude: pos.coords.longitude,
+            deviceAccuracy: pos.coords.accuracy,
+          };
+          console.log('Device location obtained:', locationData);
+          console.log(`Accuracy: ${pos.coords.accuracy} meters`);
+          
+          if (pos.coords.accuracy > 100) {
+            console.warn(`Location accuracy is low: ${pos.coords.accuracy} meters. GPS signal may be weak.`);
+          }
+          
+          resolve(locationData);
+        },
+        (err) => {
+          let errorMessage = 'Location permission denied or unavailable';
+          if (err.code === 1) {
+            errorMessage = 'Location permission denied. Please enable location access in your browser settings.';
+          } else if (err.code === 2) {
+            errorMessage = 'Location unavailable. Please check your GPS/network connection.';
+          } else if (err.code === 3) {
+            errorMessage = 'Location request timed out. Please try again.';
+          }
+          reject({ ...err, userMessage: errorMessage });
+        },
+        { 
+          enableHighAccuracy: true, 
+          timeout: 20000,
+          maximumAge: 0
+        }
+      );
+    }
    });
  };
 
