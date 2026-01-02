@@ -47,6 +47,19 @@ const FONT_OPTIONS = [
   { value: "Helvetica", label: "Helvetica" },
 ];
 
+//default theme added for fallback
+const DEFAULT_THEME = {
+  fontFamily: "Helvetica",
+  headingFontSize: 18,
+  subHeadingFontSize: 13,
+  textFontSize: 11,
+  textColor: "#000000",
+  headingColor: "#000000",
+  accentColor: "#E85C41",
+  logoWidth: 100,
+  logoHeight: 60,
+};
+
 export default function ResumeSettings() {
   const [currentConfig, setCurrentConfig] = useState(null);
   const [defaultConfig, setDefaultConfig] = useState(null);
@@ -103,12 +116,16 @@ const user_state = useSelector((state) => state.user.loginvalue);
         setCurrentConfig(res.data.config);
         setDefaultConfig(res.data.config);
       } else {
-        message.warning("No current theme found in database.");
+        //fallback if company has no presets
+        setCurrentConfig(DEFAULT_THEME);
+        setDefaultConfig(DEFAULT_THEME);
       }
     } catch (err) {
       console.error("❌ Failed to fetch current theme:", err);
       message.error("Failed to fetch current theme from server.");
     }
+      setCurrentConfig(DEFAULT_THEME);
+      setDefaultConfig(DEFAULT_THEME);
   };
 
   const fetchPresets = async () => {
@@ -208,10 +225,10 @@ const user_state = useSelector((state) => state.user.loginvalue);
         console.log("preset id found:", presetId);
       }
   
-      // 🧠 Fetch preset config
+      // Fetch preset config
       const res = await apiServices("GET", `resume-presets/${presetId}`, null, user_state);
   
-      // 🧩 Update Redux state (no await!)
+      //  Update Redux state (no await!)
       console.log('dispatching presetID', dispatch(setSelectedReduxPresetId(presetId)));
       
   
@@ -271,7 +288,7 @@ const user_state = useSelector((state) => state.user.loginvalue);
   };
 
   // ---------------------- RENDER LOADING ----------------------
-  if (loading || !currentConfig) {
+  if (loading) {
     return (
       <div className="p-4" style={{ maxWidth: "100%" }}>
         <Helmet>
