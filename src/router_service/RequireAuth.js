@@ -215,11 +215,12 @@ const RequireAuth = ({Role}) => {
       return <Navigate to='/change-password' replace={true} />;
     }
 
-    if (role === 'client' && 
-        !location.pathname.includes('/client/client-profile') && 
-        !location.pathname.includes('/client/focal-profile') && 
-        !location.pathname.includes('/change-password') && 
-        !location.pathname.includes('invoices/view-invoice') && 
+    if (role === 'client' &&
+        !location.pathname.includes('/client/client-profile') &&
+        !location.pathname.includes('/client/focal-profile') &&
+        !location.pathname.includes('/change-password') &&
+        !location.pathname.includes('invoices/view-invoice') &&
+        !location.pathname.includes('/client-timesheet') &&
         !location.pathname.includes('/projects/projects-view/') &&
         !location.pathname.includes('/projects/project_dashboard') &&
         !location.pathname.includes('/projects/tasks') &&
@@ -228,9 +229,10 @@ const RequireAuth = ({Role}) => {
       return <Navigate to='/client/client-profile' replace={true} />;
     }
 
-    if (role === 'focalperson' && 
-        !location.pathname.includes('/client/focal-profile') && 
-        !location.pathname.includes('/change-password') && 
+    if (role === 'focalperson' &&
+        !location.pathname.includes('/client/focal-profile') &&
+        !location.pathname.includes('/change-password') &&
+        !location.pathname.includes('/client-timesheet') &&
         !location.pathname.includes('/projects/projects-view/') &&
         !location.pathname.includes('/projects/project_dashboard') &&
         !location.pathname.includes('/projects/tasks') &&

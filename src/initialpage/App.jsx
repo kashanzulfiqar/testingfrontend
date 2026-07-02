@@ -68,6 +68,7 @@ import ProfitLoss from "../MainPage/HR/Sales/ProfitLoss";
 import ViewPL from "../MainPage/HR/Sales/ViewProfitLoss";
 import EmployeeTimesheet from "../MainPage/Employees/Employees/EmployeeTimesheet";
 import AdminTimeSheet from "../MainPage/Employees/Employees/timesheetAdmin";
+import ClientTimeSheet from "../MainPage/Employees/Employees/ClientTimeSheet";
 import ViewDetailTimesheet from "../MainPage/Employees/Employees/ViewDetailTimesheet";
 import AttendanceReport from "../MainPage/HR/Reports/attendancereport";
 import AssetsReport from "../MainPage/HR/Reports/assetsreport";
@@ -292,6 +293,11 @@ const App = () => {
           <Route path={`admin-timesheet`} element={<AdminTimeSheet />} />
           <Route
             path={`admin-timesheet/details`}
+            element={<ViewDetailTimesheet />}
+          />
+          <Route path={`client-timesheet`} element={<ClientTimeSheet />} />
+          <Route
+            path={`client-timesheet/details`}
             element={<ViewDetailTimesheet />}
           />
           <Route path={`employee-report`} element={<EmployeesReport />} />
