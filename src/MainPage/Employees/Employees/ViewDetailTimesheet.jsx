@@ -47,6 +47,7 @@ const ViewDetailTimesheet = () => {
     const user_state = useSelector((state) => state.user.loginvalue);
     const permissions = useSelector((state) => state?.permissionsSlice?.data);
     const role = user_state?.user?.role;
+    const isClient = role === "client" || role === "focalperson";
     const login_user_id = user_state?.user?._id;
     
     const location = useLocation();
@@ -500,6 +501,43 @@ const ViewDetailTimesheet = () => {
             spin
         />
         );
+
+      // Read-only status badge shown to clients / focal persons next to each
+      // week heading (they may only view the timesheet, not approve / decline).
+      const getWeekStatusBadge = (weekNo) => {
+        const weekData = allData[weekNo]?.data;
+        if (!weekData || !weekData[0]) return null;
+        const status = weekData[0]?.status;
+        let badgeStyle;
+        let text;
+        if (status === "Approved") {
+          badgeStyle = { background: '#E7F8EA', color: '#00B112', border: '1px solid #B7E9BF' };
+          text = t('Timesheetadmin.approved');
+        } else if (status === "Declined") {
+          badgeStyle = { background: '#FDE8E8', color: '#DD0000', border: '1px solid #F7C4C4' };
+          text = t('Timesheetadmin.declined');
+        } else {
+          badgeStyle = { background: '#FFF3E6', color: '#FF9B44', border: '1px solid #FFD9B3' };
+          text = t('Timesheetemployee.submittedForApproval');
+        }
+        return (
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              borderRadius: '20px',
+              padding: '3px 12px',
+              fontSize: '12px',
+              fontWeight: '500',
+              lineHeight: '16px',
+              marginLeft: '12px',
+              ...badgeStyle,
+            }}
+          >
+            {text}
+          </span>
+        );
+      };
     
   
   
@@ -519,7 +557,7 @@ const ViewDetailTimesheet = () => {
                     <h3 className="page-title">{t('Timesheetemployee.timesheet')}{" "}{t('Details')}</h3>
                     <ul className="breadcrumb">
                     <li className="breadcrumb-item">
-                        <Link to={"/admin-timesheet"}><span className="arrow_routes"></span>{t('Timesheetemployee.timesheet')}</Link>
+                        <Link to={isClient ? "/client-timesheet" : "/admin-timesheet"}><span className="arrow_routes"></span>{t('Timesheetemployee.timesheet')}</Link>
                     </li>
                     <li className="breadcrumb-item active">{t('Details')}</li>
                     </ul>
@@ -537,8 +575,8 @@ const ViewDetailTimesheet = () => {
             </div>
             <br/>
                 
-            <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
-            {t('Timesheetadmin.week')} 1
+            <div style={{display: 'flex', alignItems: 'center', color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
+            {t('Timesheetadmin.week')} 1 {isClient && getWeekStatusBadge(0)}
             </div>
 
                     {/* <Table dataSource={data} columns={columns} pagination={false} /> */}
@@ -693,6 +731,7 @@ const ViewDetailTimesheet = () => {
                     {t('aDash.total')}: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[0]?.weekTotal}</label>
                     </div>
                     {
+                      isClient ? null :
                       allData[0]?.data[0]?.status === "Approved" ?
                       <div style={{display: 'flex', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <button
@@ -744,8 +783,8 @@ const ViewDetailTimesheet = () => {
               </AccordionDetails>
             </Accordion>
 
-            <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
-            {t('Timesheetadmin.week')} 2
+            <div style={{display: 'flex', alignItems: 'center', color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
+            {t('Timesheetadmin.week')} 2 {isClient && getWeekStatusBadge(1)}
             </div>
             <Accordion expanded={expanded === 'week'}>
               <AccordionSummary
@@ -797,6 +836,7 @@ const ViewDetailTimesheet = () => {
                     </div>
 
                     {
+                      isClient ? null :
                       allData[1]?.data[0]?.status === "Approved" ?
                       <div style={{display: 'flex', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <button
@@ -848,8 +888,8 @@ const ViewDetailTimesheet = () => {
               </AccordionDetails>
             </Accordion>
 
-            <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
-            {t('Timesheetadmin.week')} 3
+            <div style={{display: 'flex', alignItems: 'center', color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
+            {t('Timesheetadmin.week')} 3 {isClient && getWeekStatusBadge(2)}
             </div>
             <Accordion expanded={expanded === 'week'}>
               <AccordionSummary
@@ -903,6 +943,7 @@ const ViewDetailTimesheet = () => {
                     </div>
 
                     {
+                      isClient ? null :
                       allData[2]?.data[0]?.status === "Approved" ?
                       <div style={{display: 'flex', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <button
@@ -953,8 +994,8 @@ const ViewDetailTimesheet = () => {
               </AccordionDetails>
             </Accordion>
 
-            <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
-            {t('Timesheetadmin.week')} 4
+            <div style={{display: 'flex', alignItems: 'center', color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
+            {t('Timesheetadmin.week')} 4 {isClient && getWeekStatusBadge(3)}
             </div>
             <Accordion expanded={expanded === 'week'}>
               <AccordionSummary
@@ -1008,6 +1049,7 @@ const ViewDetailTimesheet = () => {
                     </div>
 
                     {
+                      isClient ? null :
                       allData[3]?.data[0]?.status === "Approved" ?
                       <div style={{display: 'flex', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <button
@@ -1058,8 +1100,8 @@ const ViewDetailTimesheet = () => {
               </AccordionDetails>
             </Accordion>
 
-            <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
-            {t('Timesheetadmin.week')} 5
+            <div style={{display: 'flex', alignItems: 'center', color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
+            {t('Timesheetadmin.week')} 5 {isClient && getWeekStatusBadge(4)}
             </div>
             <Accordion expanded={expanded === 'week'}>
               <AccordionSummary
@@ -1113,6 +1155,7 @@ const ViewDetailTimesheet = () => {
                     </div>
 
                     {
+                      isClient ? null :
                       allData[4]?.data[0]?.status === "Approved" ?
                       <div style={{display: 'flex', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <button

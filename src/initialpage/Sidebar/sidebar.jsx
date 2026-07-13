@@ -2155,7 +2155,7 @@ const Sidebar = (props) => {
                     user_state?.role === "client" ||
                     user_state?.role === "focalperson" ||
                     permissions?.clientManagement) && (
-                    <li className={pathname.includes("client") ? "active" : ""}>
+                    <li className={pathname.includes("client") && !pathname.includes("client-timesheet") ? "active" : ""}>
                       {/* <Link to="/clients"><i className="la la-users" /> <span>Client</span> </Link> */}
                       <Link
                         to={
@@ -2255,6 +2255,22 @@ const Sidebar = (props) => {
                       ""
                     )}
                   </li>
+
+                  {/* TIMESHEET CLIENT (view only) */}
+                  {(user_state?.role === "client" ||
+                    user_state?.role === "focalperson") && (
+                    <li
+                      className={
+                        pathname.includes("client-timesheet") ? "active" : ""
+                      }
+                    >
+                      <Link to="/client-timesheet">
+                        <i className="la la-list-alt" />{" "}
+                        <span>{t("sideBar.timesheet")}</span>{" "}
+                      </Link>
+                    </li>
+                  )}
+
                   <li className={pathname.includes("leads") ? "active" : ""}>
                     {user_state?.role === "client" ||
                     user_state?.role === "focalperson" ? (
