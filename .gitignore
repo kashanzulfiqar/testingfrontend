@@ -18,8 +18,13 @@
 .env.development.local
 .env.test.local
 .env.production.local
-
+.env
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .cursorrules
+Procfile
+book.json
+webpack.config.js.backup*
+webpack.config.js.before_optimization
+
