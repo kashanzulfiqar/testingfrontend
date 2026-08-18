@@ -1,67 +1,38 @@
-name: Deploy Frontend to EC2
+name: Deploy Staging Frontend
 
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+    environment: staging # Uses Secrets bound to the 'staging' GitHub environment
 
     steps:
-      # Step 1: Checkout Code
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          ref: dev
+          node-version: '22'
+          cache: 'yarn'
 
-      # Step 2: Configure SSH
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY_FRONTEND }}
-          SSH_HOST: ${{ secrets.EC2_HOST }}
+      - name: Create .env file
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/frontend_deploy_key
-          chmod 600 ~/.ssh/frontend_deploy_key
-          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+          cat << 'EOF' > .env
+          REACT_APP_STRIPE_PUBLISHABLE_KEY=${{ secrets.REACT_APP_STRIPE_PUBLISHABLE_KEY }}
+          VAPID_PUBLIC_KEY=${{ secrets.VAPID_PUBLIC_KEY }}
+          EOF
 
-      # Step 3: Deploy Frontend
-      - name: Deploy Frontend to EC2
-        env:
-          SSH_HOST: ${{ secrets.EC2_HOST }}
+      - name: Install dependencies
         run: |
-          ssh -i ~/.ssh/frontend_deploy_key deploy@$SSH_HOST '
-            set -e
-            echo "Navigating to frontend directory..."
-            cd /var/www/daftarpro-frontend/daftarpro-web-frontend
+          yarn install --frozen-lockfile --ignore-engines || yarn install --ignore-engines
+          yarn add -D webpack webpack-cli --ignore-engines
 
-            echo "Starting SSH agent..."
-            eval "$(ssh-agent -s)"
-
-            echo "Adding SSH key..."
-            ssh-add ~/.ssh/frontend_deploy_key
-
-            echo "Pulling latest code from dev branch..."
-            git checkout dev
-            git pull origin dev
-
-            echo "Cleaning up old dependencies and build files..."
-            rm -rf node_modules dist
-
-            echo "Bumping node version"
-            nvm use 22
-
-            
-            echo "Installing dependencies..."
-            yarn install --frozen-lockfile || { echo "Dependency installation failed"; exit 1; }
-
-            echo "Building project..."
-            yarn build || { echo "Build failed"; exit 1; }
-
-            echo "Restarting nginx server..."
-            sudo systemctl restart nginx || { echo "Nginx restart failed"; exit 1; }
-
-            echo "Deployment completed successfully!"
-          '
+      - name: Build frontend production bundle
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+        run: npx webpack --mode production --progress
